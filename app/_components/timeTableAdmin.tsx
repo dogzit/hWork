@@ -143,10 +143,12 @@ export default function TimetableAdminBoard({
       }),
     );
   }, [activeDay, grid, maxLessonComputed]);
+
   const { push } = useRouter();
+
   return (
-    <div className="w-full max-w-3xl mx-auto mt-10">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="w-full max-w-3xl mx-auto mt-4 px-4 sm:mt-10 sm:px-6">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-3">
         <div>
           <span
             className="cursor-pointer flex items-center gap-2 text-sm text-gray-500 hover:text-black transition w-fit"
@@ -154,10 +156,10 @@ export default function TimetableAdminBoard({
           >
             ← Back
           </span>
-          <h2 className="text-lg font-semibold text-neutral-900">
+          <h2 className="text-base sm:text-lg font-semibold text-neutral-900 mt-2">
             Хичээлийн хуваарь (Admin)
           </h2>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-xs sm:text-sm text-neutral-500">
             Нүд дээр дарж засна • Enter = хадгалах • Esc = болих
           </p>
         </div>
@@ -165,14 +167,14 @@ export default function TimetableAdminBoard({
         <button
           onClick={fetchAll}
           disabled={loading}
-          className="border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-900 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed w-full sm:w-auto"
         >
           Refresh
         </button>
       </div>
 
       {error ? (
-        <div className="mb-4 border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-neutral-900">
+        <div className="mb-4 border border-neutral-300 bg-neutral-50 px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm text-neutral-900">
           ⚠ {error}
         </div>
       ) : null}
@@ -185,7 +187,7 @@ export default function TimetableAdminBoard({
               key={d}
               onClick={() => setActiveDay(d)}
               className={cn(
-                "px-4 py-2 text-sm transition-colors font-medium",
+                "px-3 py-2 text-xs sm:text-sm transition-colors font-medium flex-1 sm:flex-none min-w-[60px]",
                 active
                   ? "bg-neutral-900 text-white"
                   : "border border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
@@ -199,10 +201,10 @@ export default function TimetableAdminBoard({
 
       <div className="border border-neutral-200 bg-white">
         {loading ? (
-          <div className="p-6 text-sm text-neutral-500">Loading...</div>
+          <div className="p-4 sm:p-6 text-sm text-neutral-500">Loading...</div>
         ) : (
-          <div className="p-6">
-            <div className="space-y-3">
+          <div className="p-3 sm:p-6">
+            <div className="space-y-2 sm:space-y-3">
               {dayItems.map(({ lessonNumber, item }) => {
                 const key = `${activeDay}-${lessonNumber}`;
                 const isEditing = editKey === key;
@@ -211,37 +213,37 @@ export default function TimetableAdminBoard({
                   <div
                     key={lessonNumber}
                     className={cn(
-                      "group flex items-center justify-between gap-3 border px-4 py-3 transition-colors",
+                      "group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border px-3 py-3 sm:px-4 transition-colors",
                       item ? "bg-neutral-50" : "bg-white",
                       isEditing
                         ? "border-neutral-900"
                         : "border-neutral-200 hover:border-neutral-300",
                     )}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center border border-neutral-300 bg-white text-sm font-semibold text-neutral-900">
+                    <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                      <div className="flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center border border-neutral-300 bg-white text-xs sm:text-sm font-semibold text-neutral-900">
                         {lessonNumber}
                       </div>
 
                       {!isEditing ? (
                         <button
-                          className="text-left"
+                          className="text-left flex-1 min-w-0"
                           onClick={() => startEdit(activeDay, lessonNumber)}
                           type="button"
                         >
-                          <div className="text-sm font-medium text-neutral-900">
+                          <div className="text-sm font-medium text-neutral-900 break-words">
                             {item?.subject ?? (
                               <span className="text-neutral-400">
                                 — (хоосон)
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-neutral-500">
+                          <div className="text-xs text-neutral-500 mt-0.5">
                             Дарж засах
                           </div>
                         </button>
                       ) : (
-                        <div className="min-w-[280px]">
+                        <div className="flex-1 w-full min-w-0">
                           <input
                             autoFocus
                             value={editValue}
@@ -255,11 +257,11 @@ export default function TimetableAdminBoard({
                             placeholder="Хичээл..."
                             disabled={saving}
                           />
-                          <div className="mt-2 flex items-center gap-2">
+                          <div className="mt-2 flex items-center gap-2 flex-wrap">
                             <button
                               onClick={cancelEdit}
                               disabled={saving}
-                              className="border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                              className="border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-900 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed flex-1 sm:flex-none"
                             >
                               Cancel
                             </button>
@@ -267,7 +269,7 @@ export default function TimetableAdminBoard({
                               onClick={() => saveCell(activeDay, lessonNumber)}
                               disabled={saving || !editValue.trim()}
                               className={cn(
-                                "px-3 py-1.5 text-xs font-medium transition-colors",
+                                "px-3 py-1.5 text-xs font-medium transition-colors flex-1 sm:flex-none",
                                 saving || !editValue.trim()
                                   ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
                                   : "bg-neutral-900 text-white hover:bg-neutral-800",
@@ -281,7 +283,7 @@ export default function TimetableAdminBoard({
                     </div>
 
                     {!isEditing && item ? (
-                      <span className="hidden border border-neutral-300 bg-white px-3 py-1 text-xs text-neutral-600 group-hover:inline">
+                      <span className="hidden sm:group-hover:inline border border-neutral-300 bg-white px-3 py-1 text-xs text-neutral-600 flex-shrink-0">
                         Edit
                       </span>
                     ) : null}

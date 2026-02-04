@@ -24,11 +24,10 @@ function formatDate(iso: string) {
   });
 }
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("mn-MN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+function getDayOfWeek(iso: string) {
+  const days = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
+  const d = new Date(iso);
+  return days[d.getDay()];
 }
 
 const subjectColors: Record<
@@ -88,6 +87,7 @@ export default function HomeworkPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [subject, setSubject] = useState<string>("ALL");
+  const [modalImage, setModalImage] = useState<string | null>(null);
 
   const subjects = useMemo(() => {
     const set = new Set<string>();
@@ -146,6 +146,17 @@ export default function HomeworkPage() {
   useEffect(() => {
     fetchHomework();
   }, []);
+
+  useEffect(() => {
+    if (modalImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [modalImage]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
@@ -256,9 +267,14 @@ export default function HomeworkPage() {
               <div key={dayKey} className="space-y-4">
                 <div className="sticky top-3 z-10 rounded-2xl bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-base font-semibold text-slate-800">
-                      📅 {formatDate(dayKey)}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-semibold text-slate-800">
+                        📅 {formatDate(dayKey)}
+                      </h2>
+                      <span className="rounded-full bg-gradient-to-r from-blue-100 to-purple-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                        {getDayOfWeek(dayKey)}
+                      </span>
+                    </div>
                     <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
                       {items.length} даалгавар
                     </span>
@@ -284,7 +300,7 @@ export default function HomeworkPage() {
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                              <div className="mb-3 flex flex-wrap items-center gap-2">
+                              <div className="mb-3">
                                 <span
                                   className={cn(
                                     "rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm transition-transform duration-300 group-hover:scale-[1.02]",
@@ -293,9 +309,6 @@ export default function HomeworkPage() {
                                   )}
                                 >
                                   {x.subject}
-                                </span>
-                                <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 transition-colors duration-300 group-hover:bg-slate-200">
-                                  🕒 {formatTime(x.date)}
                                 </span>
                               </div>
 
@@ -307,7 +320,10 @@ export default function HomeworkPage() {
                         </div>
 
                         {x.image ? (
-                          <div className="relative overflow-hidden bg-slate-100">
+                          <div
+                            className="relative overflow-hidden bg-slate-100 cursor-pointer"
+                            onClick={() => setModalImage(x.image)}
+                          >
                             <img
                               src={x.image}
                               alt="homework"
@@ -315,16 +331,23 @@ export default function HomeworkPage() {
                               loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                            <div className="absolute top-4 right-4 rounded-full bg-white/90 p-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 shadow-lg">
+                              <svg
+                                className="w-5 h-5 text-slate-700"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                                />
+                              </svg>
+                            </div>
                           </div>
                         ) : null}
-
-                        <div className="bg-slate-50/50 px-6 py-4">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="flex items-center gap-1.5 text-slate-500">
-                              📅 {new Date(x.date).toLocaleString("mn-MN")}
-                            </span>
-                          </div>
-                        </div>
                       </div>
                     );
                   })}
@@ -334,6 +357,44 @@ export default function HomeworkPage() {
           </div>
         )}
       </div>
+
+      {/* Image Modal */}
+      {modalImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 animate-fadeIn"
+          onClick={() => setModalImage(null)}
+        >
+          <button
+            onClick={() => setModalImage(null)}
+            className="absolute top-4 right-4 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:scale-110"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
+          <div
+            className="relative max-h-[90vh] max-w-[95vw] animate-scaleIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={modalImage}
+              alt="Enlarged homework"
+              className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl object-contain"
+            />
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes fadeInUp {
@@ -360,8 +421,36 @@ export default function HomeworkPage() {
           }
         }
 
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
         .animate-shake {
           animation: shake 0.5s ease-in-out;
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
         }
       `}</style>
     </div>

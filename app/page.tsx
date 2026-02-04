@@ -6,9 +6,15 @@ export default function HomeworkAddPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black flex items-center justify-center">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 opacity-60">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 animate-gradient-shift"></div>
+      {/* Smooth radial gradient background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-900"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-orange-800/50 via-transparent to-cyan-800/50"></div>
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,60,200,0.4),transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(200,60,120,0.3),transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(60,120,200,0.2),transparent_60%)]"></div>
+        </div>
       </div>
 
       {/* Floating geometric shapes */}
@@ -19,9 +25,9 @@ export default function HomeworkAddPage() {
         <div className="absolute w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-float-reverse bottom-10 right-1/3"></div>
       </div>
 
-      {/* Grid overlay */}
+      {/* Subtle grid overlay */}
       <div
-        className="absolute inset-0 opacity-10"
+        className="absolute inset-0 opacity-5"
         style={{
           backgroundImage: `
                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
@@ -31,25 +37,24 @@ export default function HomeworkAddPage() {
         }}
       ></div>
 
-      {/* Main content */}
       <div className="relative z-10 flex flex-col gap-8 items-center p-8">
         <h1 className="text-6xl font-black text-white mb-4 text-center tracking-tight drop-shadow-2xl animate-fade-in">
-          Даалгавар нэмэх
+          Welcome 11д
         </h1>
 
         <div className="flex gap-6 flex-wrap justify-center">
           <button
             onClick={() => router.push("/timeTable")}
-            className="group relative px-8 py-4 text-lg hover:cursor-pointer  font-bold text-white overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-slide-up"
+            className="group relative px-8 py-4 text-lg hover:cursor-pointer font-bold text-white overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-slide-up"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-500 group-hover:to-purple-500 transition-all"></div>
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-cyan-400 to-blue-500 blur-xl transition-opacity"></div>
-            <span className="relative z-10 ">⏰ Хичээлийн хуваарь харах</span>
+            <span className="relative z-10">⏰ Хичээлийн хуваарь харах</span>
           </button>
 
           <button
             onClick={() => router.push("/homeWork")}
-            className="group relative px-8 py-4 hover:cursor-pointer  text-lg font-bold text-white overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-slide-up animation-delay-100"
+            className="group relative px-8 py-4 hover:cursor-pointer text-lg font-bold text-white overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-slide-up animation-delay-100"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-orange-600 group-hover:from-pink-500 group-hover:to-orange-500 transition-all"></div>
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-pink-400 to-orange-400 blur-xl transition-opacity"></div>
@@ -59,16 +64,6 @@ export default function HomeworkAddPage() {
       </div>
 
       <style jsx>{`
-        @keyframes gradient-shift {
-          0%,
-          100% {
-            transform: rotate(0deg) scale(1);
-          }
-          50% {
-            transform: rotate(180deg) scale(1.2);
-          }
-        }
-
         @keyframes float-slow {
           0%,
           100% {
@@ -138,10 +133,6 @@ export default function HomeworkAddPage() {
             opacity: 1;
             transform: translateY(0);
           }
-        }
-
-        .animate-gradient-shift {
-          animation: gradient-shift 15s ease-in-out infinite;
         }
 
         .animate-float-slow {
