@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id   String @id @default(nanoid())
+  name String
+}
+
+model Hwork {
+  id      String   @id @default(nanoid())
+  title   String
+  image   String?
+  subject String
+  date    DateTime
+}
+
+model Timetable {
+  id           String @id @default(nanoid())
+  day          Day
+  lessonNumber Int
+  subject      String
+
+  createdAt DateTime @default(now())
+
+  @@unique([day, lessonNumber])
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
