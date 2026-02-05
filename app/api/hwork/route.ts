@@ -7,29 +7,46 @@ function isNonEmptyString(x: unknown): x is string {
   return typeof x === "string" && x.trim().length > 0;
 }
 
+function normalizeImages(body: Record<string, unknown>): string[] {
+  const out: string[] = [];
+
+  // new: images[]
+  if (Array.isArray(body.images)) {
+    for (const v of body.images) {
+      if (typeof v === "string" && v.trim()) out.push(v.trim());
+    }
+  }
+
+  // old: image
+  if (typeof body.image === "string" && body.image.trim()) {
+    out.push(body.image.trim());
+  }
+
+  // dedupe
+  return Array.from(new Set(out));
+}
+
+function ymdRangeToUTC(ymd: string) {
+  const start = new Date(`${ymd}T00:00:00.000Z`);
+  if (Number.isNaN(start.getTime())) return null;
+  const next = new Date(start);
+  next.setUTCDate(next.getUTCDate() + 1);
+  return { start, next };
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
 
     const subject = searchParams.get("subject");
-    const date = searchParams.get("date"); // optional: 2026-02-04 (YYYY-MM-DD)
+    const date = searchParams.get("date"); // YYYY-MM-DD
 
-    const where: {
-      subject?: string;
-      date?: { gte: Date; lt: Date };
-    } = {};
+    const where: { subject?: string; date?: { gte: Date; lt: Date } } = {};
 
     if (subject && subject.trim()) where.subject = subject.trim();
-
     if (date && date.trim()) {
-      // date=YYYY-MM-DD => that day range
-      const start = new Date(`${date}T00:00:00.000Z`);
-      const end = new Date(`${date}T23:59:59.999Z`);
-      // Better: gte + lt next day (timezone safe-ish)
-      const next = new Date(start);
-      next.setUTCDate(next.getUTCDate() + 1);
-
-      where.date = { gte: start, lt: next };
+      const r = ymdRangeToUTC(date.trim());
+      if (r) where.date = { gte: r.start, lt: r.next };
     }
 
     const items = await prisma.hwork.findMany({
@@ -56,10 +73,10 @@ export async function POST(req: Request) {
     }
 
     const body = raw as Record<string, unknown>;
+
     const title = body.title;
     const subject = body.subject;
     const date = body.date;
-    const image = body.image;
 
     if (!isNonEmptyString(title)) {
       return NextResponse.json({ error: "title required" } satisfies ApiError, {
@@ -75,7 +92,7 @@ export async function POST(req: Request) {
 
     let parsedDate: Date;
     if (typeof date === "string" && date.trim()) {
-      const d = new Date(date);
+      const d = new Date(date.trim());
       if (Number.isNaN(d.getTime())) {
         return NextResponse.json({ error: "invalid date" } satisfies ApiError, {
           status: 400,
@@ -86,12 +103,19 @@ export async function POST(req: Request) {
       parsedDate = new Date();
     }
 
+    const images = normalizeImages(body);
+
     const created = await prisma.hwork.create({
       data: {
         title: title.trim(),
         subject: subject.trim(),
         date: parsedDate,
-        image: typeof image === "string" && image.trim() ? image.trim() : null,
+
+        // ✅ store many
+        images,
+
+        // (optional) хуучин field-ийг sync хийж болно
+        image: images[0] ?? null,
       },
     });
 

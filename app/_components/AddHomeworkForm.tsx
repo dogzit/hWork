@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 type HworkItem = {
   id: string;
@@ -27,6 +27,10 @@ const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function ymdToISOStart(ymd: string) {
   return new Date(`${ymd}T00:00:00.000Z`).toISOString();
+}
+
+function fileKey(f: File) {
+  return `${f.name}__${f.size}__${f.lastModified}`;
 }
 
 export default function AddHomeworkForm({
@@ -66,61 +70,125 @@ export default function AddHomeworkForm({
   }, []);
   const [dateYmd, setDateYmd] = useState<string>(todayYmd);
 
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [dragOver, setDragOver] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
-  const canSubmit = subject.trim() && title.trim() && dateYmd.trim();
   const { push } = useRouter();
-  const validateAndSetFile = (f: File | null) => {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const canSubmit = subject.trim() && title.trim() && dateYmd.trim();
+
+  const clearPreviews = () => {
+    previewUrls.forEach((u) => URL.revokeObjectURL(u));
+    setPreviewUrls([]);
+  };
+
+  const clearFiles = () => {
+    clearPreviews();
+    setFiles([]);
+  };
+
+  const validateFiles = (picked: File[]) => {
+    const maxBytes = maxFileMB * 1024 * 1024;
+    for (const f of picked) {
+      if (!ALLOWED_MIME.has(f.type)) {
+        return "Зөвхөн JPG / PNG / WEBP зураг зөвшөөрнө.";
+      }
+      if (f.size > maxBytes) {
+        return `"${f.name}" зураг ${maxFileMB}MB-аас их байна.`;
+      }
+    }
+    return "";
+  };
+
+  // ✅ merge mode: replace or append
+  const applyPickedFiles = (picked: File[], mode: "replace" | "append") => {
     setErr("");
     setOk("");
 
-    if (!f) {
-      setFile(null);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl("");
+    if (picked.length === 0) {
+      if (mode === "replace") clearFiles();
       return;
     }
 
-    if (!ALLOWED_MIME.has(f.type)) {
-      setErr("Зөвхөн JPG / PNG / WEBP зураг зөвшөөрнө.");
+    const validationErr = validateFiles(picked);
+    if (validationErr) {
+      setErr(validationErr);
       return;
     }
 
-    const maxBytes = maxFileMB * 1024 * 1024;
-    if (f.size > maxBytes) {
-      setErr(`Зураг ${maxFileMB}MB-аас их байна.`);
-      return;
-    }
+    const nextFiles =
+      mode === "replace"
+        ? picked
+        : (() => {
+            const existing = new Map(files.map((f) => [fileKey(f), f]));
+            for (const f of picked) existing.set(fileKey(f), f);
+            return Array.from(existing.values());
+          })();
 
-    setFile(f);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(f));
+    setFiles(nextFiles);
+
+    // rebuild previews from nextFiles
+    clearPreviews();
+    setPreviewUrls(nextFiles.map((f) => URL.createObjectURL(f)));
   };
 
-  const uploadImageIfAny = async (): Promise<string | null> => {
-    if (!file) return null;
+  const onPickFromInput = (
+    list: FileList | null,
+    mode: "replace" | "append",
+  ) => {
+    if (!list || list.length === 0) return;
+    applyPickedFiles(Array.from(list), mode);
 
-    const fd = new FormData();
-    fd.append("file", file);
+    // allow picking same file again later
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
-    const res = await fetch(uploadEndpoint, {
-      method: "POST",
-      body: fd,
-    });
+  const removeOne = (idx: number) => {
+    const next = files.filter((_, i) => i !== idx);
+    applyPickedFiles(next, "replace");
+  };
 
-    if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      throw new Error(t || `Upload failed: ${res.status}`);
+  // ✅ upload multiple, but DB will store only first URL
+  const uploadImagesIfAny = async (): Promise<string[]> => {
+    if (files.length === 0) return [];
+
+    const urls: string[] = [];
+
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const res = await fetch(uploadEndpoint, {
+        method: "POST",
+        body: fd,
+      });
+
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(t || `Upload failed: ${res.status}`);
+      }
+
+      const json = (await res.json()) as any;
+
+      // ✅ support different response shapes too
+      const url =
+        json?.url ??
+        json?.blob?.url ??
+        json?.data?.url ??
+        json?.result?.url ??
+        null;
+
+      if (!url) throw new Error("Upload response missing url");
+      urls.push(url);
     }
 
-    const json = (await res.json()) as { url?: string };
-    if (!json.url) throw new Error("Upload response missing url");
-    return json.url;
+    return urls;
   };
 
   const submit = async () => {
@@ -129,8 +197,7 @@ export default function AddHomeworkForm({
       setErr("");
       setOk("");
 
-      const imageUrl = await uploadImageIfAny();
-      const dateISO = ymdToISOStart(dateYmd);
+      const urls = await uploadImagesIfAny();
 
       const res = await fetch(hworkEndpoint, {
         method: "POST",
@@ -138,8 +205,8 @@ export default function AddHomeworkForm({
         body: JSON.stringify({
           subject: subject.trim(),
           title: title.trim(),
-          date: dateISO,
-          image: imageUrl,
+          date: ymdToISOStart(dateYmd),
+          images: urls,
         }),
       });
 
@@ -152,10 +219,7 @@ export default function AddHomeworkForm({
 
       setOk("Амжилттай нэмлээ ✅");
       setTitle("");
-
-      setFile(null);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl("");
+      clearFiles();
 
       onCreated?.(created);
     } catch (e) {
@@ -247,35 +311,117 @@ export default function AddHomeworkForm({
                 </span>
               </label>
 
-              <div className="relative">
+              {/* ✅ Drop zone */}
+              <div
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragOver(true);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragOver(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragOver(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDragOver(false);
+                  const dropped = Array.from(e.dataTransfer.files || []);
+                  applyPickedFiles(dropped, "append"); // ✅ drop => add more
+                }}
+                className={cn(
+                  "relative border px-4 py-8 text-sm transition-colors",
+                  dragOver
+                    ? "border-neutral-900 bg-neutral-50"
+                    : "border-neutral-300 bg-white hover:border-neutral-400 hover:bg-neutral-50",
+                )}
+              >
                 <input
+                  ref={fileInputRef}
                   type="file"
+                  multiple
                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                  onChange={(e) =>
-                    validateAndSetFile(e.target.files?.[0] ?? null)
-                  }
+                  onChange={(e) => onPickFromInput(e.target.files, "replace")}
                   className="peer sr-only"
                   id="file-upload"
                 />
+
                 <label
                   htmlFor="file-upload"
-                  className="flex cursor-pointer items-center justify-center border border-neutral-300 bg-white px-4 py-8 text-sm text-neutral-600 transition-colors hover:border-neutral-400 hover:bg-neutral-50"
+                  className="flex cursor-pointer items-center justify-center"
                 >
-                  {file ? (
-                    <span className="text-neutral-900">{file.name}</span>
+                  {files.length ? (
+                    <span className="text-neutral-900">
+                      {files.length} зураг сонгосон
+                    </span>
                   ) : (
                     <span>Click to upload or drag and drop</span>
                   )}
                 </label>
+
+                {/* ✅ Add more button */}
+                <div className="mt-3 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border border-neutral-300 bg-white px-4 py-2 text-xs font-medium text-neutral-900 hover:bg-neutral-50"
+                    disabled={loading}
+                  >
+                    Add / Replace
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // open picker but append
+                      // we can't set different handler for same input easily -> use hidden second input
+                      // so we just trigger a second input below
+                      document.getElementById("file-upload-append")?.click();
+                    }}
+                    className="ml-2 border border-neutral-300 bg-white px-4 py-2 text-xs font-medium text-neutral-900 hover:bg-neutral-50"
+                    disabled={loading}
+                  >
+                    Add more
+                  </button>
+                </div>
+
+                {/* hidden append input */}
+                <input
+                  id="file-upload-append"
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => onPickFromInput(e.target.files, "append")}
+                />
               </div>
 
-              {previewUrl ? (
-                <div className="mt-3 border border-neutral-200">
-                  <img
-                    src={previewUrl}
-                    alt="preview"
-                    className="h-64 w-full object-contain bg-neutral-50"
-                  />
+              {/* ✅ previews + remove */}
+              {previewUrls.length ? (
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {previewUrls.map((u, idx) => (
+                    <div key={u} className="relative border border-neutral-200">
+                      <img
+                        src={u}
+                        alt={`preview-${idx + 1}`}
+                        className="h-40 w-full object-contain bg-neutral-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeOne(idx)}
+                        className="absolute right-2 top-2 border border-neutral-300 bg-white px-2 py-1 text-xs hover:bg-neutral-50"
+                        disabled={loading}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
                 </div>
               ) : null}
             </div>
@@ -289,9 +435,7 @@ export default function AddHomeworkForm({
                   setTitle("");
                   setSubject(defaultSubjects[0] ?? "");
                   setDateYmd(todayYmd);
-                  setFile(null);
-                  if (previewUrl) URL.revokeObjectURL(previewUrl);
-                  setPreviewUrl("");
+                  clearFiles();
                 }}
                 className="border border-neutral-300 bg-white px-5 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 disabled={loading}

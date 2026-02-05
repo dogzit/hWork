@@ -7,8 +7,11 @@ type HworkItem = {
   id: string;
   title: string;
   subject: string;
-  image: string | null;
   date: string;
+
+  // ✅ support both old + new
+  image: string | null;
+  images?: string[] | null;
 };
 
 function cn(...cls: Array<string | false | null | undefined>) {
@@ -80,6 +83,228 @@ function getSubjectColor(subject: string) {
   return subjectColors[subject] || subjectColors.default;
 }
 
+// ✅ normalize: use images[] first, fallback to image
+function getImages(x: HworkItem): string[] {
+  const arr = Array.isArray(x.images) ? x.images.filter(Boolean) : [];
+  const one =
+    typeof x.image === "string" && x.image.trim() ? [x.image.trim()] : [];
+  return Array.from(new Set([...arr, ...one]));
+}
+
+function CardCarousel({
+  images,
+  onOpen,
+}: {
+  images: string[];
+  onOpen: (index: number) => void;
+}) {
+  const [i, setI] = useState(0);
+
+  useEffect(() => {
+    setI(0);
+  }, [images.join("|")]);
+
+  if (images.length === 0) return null;
+
+  const prev = () => setI((p) => (p - 1 + images.length) % images.length);
+  const next = () => setI((p) => (p + 1) % images.length);
+
+  return (
+    <div className="relative overflow-hidden bg-slate-100">
+      <div className="cursor-pointer" onClick={() => onOpen(i)}>
+        <img
+          src={images[i]}
+          alt="homework"
+          className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      </div>
+
+      {images.length > 1 ? (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 shadow-lg transition hover:scale-105"
+            aria-label="Previous image"
+          >
+            ←
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 shadow-lg transition hover:scale-105"
+            aria-label="Next image"
+          >
+            →
+          </button>
+
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
+            {i + 1}/{images.length}
+          </div>
+
+          <div className="absolute top-4 right-4 rounded-full bg-white/90 p-2 shadow-lg">
+            🔍
+          </div>
+        </>
+      ) : (
+        <div className="absolute top-4 right-4 rounded-full bg-white/90 p-2 shadow-lg">
+          🔍
+        </div>
+      )}
+
+      {images.length > 1 ? (
+        <div className="flex gap-2 overflow-x-auto bg-white/70 p-3 backdrop-blur-sm">
+          {images.map((src, idx) => (
+            <button
+              key={`${src}-${idx}`}
+              type="button"
+              onClick={() => setI(idx)}
+              className={cn(
+                "h-14 w-20 flex-none overflow-hidden rounded-xl border-2 transition",
+                idx === i
+                  ? "border-slate-900"
+                  : "border-slate-200 hover:border-slate-300",
+              )}
+              aria-label={`Thumbnail ${idx + 1}`}
+            >
+              <img
+                src={src}
+                alt="thumb"
+                className="h-full w-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ImageModal({
+  images,
+  startIndex,
+  onClose,
+}: {
+  images: string[];
+  startIndex: number;
+  onClose: () => void;
+}) {
+  const [i, setI] = useState(startIndex);
+
+  useEffect(() => {
+    setI(startIndex);
+  }, [startIndex]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (images.length <= 1) return;
+      if (e.key === "ArrowLeft")
+        setI((p) => (p - 1 + images.length) % images.length);
+      if (e.key === "ArrowRight") setI((p) => (p + 1) % images.length);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [images.length, onClose]);
+
+  if (images.length === 0) return null;
+
+  const prev = () => setI((p) => (p - 1 + images.length) % images.length);
+  const next = () => setI((p) => (p + 1) % images.length);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 animate-fadeIn"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:scale-110"
+        aria-label="Close"
+      >
+        ✕
+      </button>
+
+      {images.length > 1 ? (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              prev();
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 px-4 py-3 text-white backdrop-blur-sm transition hover:bg-white/20"
+            aria-label="Previous"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              next();
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 px-4 py-3 text-white backdrop-blur-sm transition hover:bg-white/20"
+            aria-label="Next"
+          >
+            →
+          </button>
+        </>
+      ) : null}
+
+      <div
+        className="relative max-h-[90vh] max-w-[95vw] animate-scaleIn"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={images[i]}
+          alt="Enlarged homework"
+          className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl object-contain"
+        />
+
+        {images.length > 1 ? (
+          <>
+            <div className="mt-3 flex justify-center gap-2 overflow-x-auto">
+              {images.map((src, idx) => (
+                <button
+                  key={`${src}-${idx}`}
+                  type="button"
+                  onClick={() => setI(idx)}
+                  className={cn(
+                    "h-14 w-20 flex-none overflow-hidden rounded-xl border-2 transition",
+                    idx === i
+                      ? "border-white"
+                      : "border-white/30 hover:border-white/60",
+                  )}
+                >
+                  <img
+                    src={src}
+                    alt="thumb"
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
+              {i + 1}/{images.length}
+            </div>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default function HomeworkPage() {
   const router = useRouter();
 
@@ -87,7 +312,11 @@ export default function HomeworkPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [subject, setSubject] = useState<string>("ALL");
-  const [modalImage, setModalImage] = useState<string | null>(null);
+
+  const [modal, setModal] = useState<{
+    images: string[];
+    index: number;
+  } | null>(null);
 
   const subjects = useMemo(() => {
     const set = new Set<string>();
@@ -148,15 +377,12 @@ export default function HomeworkPage() {
   }, []);
 
   useEffect(() => {
-    if (modalImage) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    if (modal) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [modalImage]);
+  }, [modal]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
@@ -284,6 +510,8 @@ export default function HomeworkPage() {
                 <div className="grid gap-6">
                   {items.map((x, index) => {
                     const colors = getSubjectColor(x.subject);
+                    const imgs = getImages(x);
+
                     return (
                       <div
                         key={x.id}
@@ -292,12 +520,7 @@ export default function HomeworkPage() {
                           animation: `fadeInUp 0.5s ease-out ${index * 0.06}s both`,
                         }}
                       >
-                        <div
-                          className={cn(
-                            "border-b-2 p-6 transition-colors duration-300",
-                            colors.border,
-                          )}
-                        >
+                        <div className={cn("border-b-2 p-6", colors.border)}>
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
                               <div className="mb-3">
@@ -312,41 +535,20 @@ export default function HomeworkPage() {
                                 </span>
                               </div>
 
-                              <h3 className="whitespace-pre-line text-lg font-semibold leading-relaxed text-slate-800 transition-colors duration-300 group-hover:text-slate-900">
+                              <h3 className="whitespace-pre-line text-lg font-semibold leading-relaxed text-slate-800">
                                 {x.title}
                               </h3>
                             </div>
                           </div>
                         </div>
 
-                        {x.image ? (
-                          <div
-                            className="relative overflow-hidden bg-slate-100 cursor-pointer"
-                            onClick={() => setModalImage(x.image)}
-                          >
-                            <img
-                              src={x.image}
-                              alt="homework"
-                              className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                            <div className="absolute top-4 right-4 rounded-full bg-white/90 p-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 shadow-lg">
-                              <svg
-                                className="w-5 h-5 text-slate-700"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                                />
-                              </svg>
-                            </div>
-                          </div>
+                        {imgs.length ? (
+                          <CardCarousel
+                            images={imgs}
+                            onOpen={(idx) =>
+                              setModal({ images: imgs, index: idx })
+                            }
+                          />
                         ) : null}
                       </div>
                     );
@@ -358,43 +560,13 @@ export default function HomeworkPage() {
         )}
       </div>
 
-      {/* Image Modal */}
-      {modalImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 animate-fadeIn"
-          onClick={() => setModalImage(null)}
-        >
-          <button
-            onClick={() => setModalImage(null)}
-            className="absolute top-4 right-4 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:scale-110"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          <div
-            className="relative max-h-[90vh] max-w-[95vw] animate-scaleIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={modalImage}
-              alt="Enlarged homework"
-              className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl object-contain"
-            />
-          </div>
-        </div>
-      )}
+      {modal ? (
+        <ImageModal
+          images={modal.images}
+          startIndex={modal.index}
+          onClose={() => setModal(null)}
+        />
+      ) : null}
 
       <style jsx>{`
         @keyframes fadeInUp {
@@ -444,11 +616,9 @@ export default function HomeworkPage() {
         .animate-shake {
           animation: shake 0.5s ease-in-out;
         }
-
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
         }
-
         .animate-scaleIn {
           animation: scaleIn 0.3s ease-out;
         }

@@ -12,11 +12,14 @@ model User {
 }
 
 model Hwork {
-  id      String   @id @default(nanoid())
-  title   String
-  image   String?
+  id      String   @id @default(cuid())
   subject String
+  title   String
   date    DateTime
+
+  images String[] @default([])
+
+  image String?
 }
 
 model Timetable {
