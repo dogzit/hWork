@@ -185,9 +185,6 @@ export default function AdminDutyPage() {
           }
         },
       },
-      cancel: {
-        label: "Цуцлах",
-      },
     });
   }
 
