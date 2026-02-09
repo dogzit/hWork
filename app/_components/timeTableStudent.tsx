@@ -15,8 +15,14 @@ type TimetableItem = {
 
 type Props = {
   endpoint?: string;
-  maxLessons?: number;
   title?: string;
+  showBackButton?: boolean;
+
+  /**
+   * Хэрвээ edit page-рүү үсрэх зам өөр бол энд өгч болно.
+   * Default: /timetable/edit?day=MONDAY&lesson=1
+   */
+  editHrefBuilder?: (day: Day, lessonNumber: number) => string;
 };
 
 const DAYS_ORDER: Day[] = [
@@ -35,30 +41,6 @@ const DAY_LABELS: Record<Day, string> = {
   FRIDAY: "Баасан",
 };
 
-const DAY_COLORS: Record<Day, string> = {
-  MONDAY: "from-blue-500 to-blue-600",
-  TUESDAY: "from-purple-500 to-purple-600",
-  WEDNESDAY: "from-pink-500 to-pink-600",
-  THURSDAY: "from-orange-500 to-orange-600",
-  FRIDAY: "from-green-500 to-green-600",
-};
-
-const DAY_LIGHT_BG: Record<Day, string> = {
-  MONDAY: "bg-blue-50 border-blue-200",
-  TUESDAY: "bg-purple-50 border-purple-200",
-  WEDNESDAY: "bg-pink-50 border-pink-200",
-  THURSDAY: "bg-orange-50 border-orange-200",
-  FRIDAY: "bg-green-50 border-green-200",
-};
-
-const DAY_HOVER: Record<Day, string> = {
-  MONDAY: "hover:border-blue-400 hover:bg-blue-100",
-  TUESDAY: "hover:border-purple-400 hover:bg-purple-100",
-  WEDNESDAY: "hover:border-pink-400 hover:bg-pink-100",
-  THURSDAY: "hover:border-orange-400 hover:bg-orange-100",
-  FRIDAY: "hover:border-green-400 hover:bg-green-100",
-};
-
 function cn(...cls: Array<string | false | null | undefined>) {
   return cls.filter(Boolean).join(" ");
 }
@@ -69,32 +51,70 @@ function getTodayDay(): Day {
   if (d === 2) return "TUESDAY";
   if (d === 3) return "WEDNESDAY";
   if (d === 4) return "THURSDAY";
-  return "FRIDAY";
+  if (d === 5) return "FRIDAY";
+  return "MONDAY";
 }
 
-export default function TimetableStudentView({
+type Slot = {
+  start: number; // minutes
+  end: number; // minutes
+  label: string; // "07:40 - 08:20"
+};
+
+const TIME_SLOTS: Slot[] = [
+  { start: 7 * 60 + 40, end: 8 * 60 + 20, label: "07:40 - 08:20" }, // 1
+  { start: 8 * 60 + 20, end: 9 * 60 + 0, label: "08:20 - 09:00" }, // 2
+  { start: 9 * 60 + 5, end: 9 * 60 + 45, label: "09:05 - 09:45" }, // 3
+  { start: 9 * 60 + 45, end: 10 * 60 + 25, label: "09:45 - 10:25" }, // 4
+  { start: 10 * 60 + 40, end: 11 * 60 + 20, label: "10:40 - 11:20" }, // 5
+  { start: 11 * 60 + 20, end: 12 * 60 + 0, label: "11:20 - 12:00" }, // 6
+  { start: 12 * 60 + 0, end: 12 * 60 + 40, label: "12:00 - 12:40" }, // 7
+];
+
+function toHHMM(mins: number) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function getCurrentLesson(): number | null {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  for (let i = 0; i < TIME_SLOTS.length; i++) {
+    const s = TIME_SLOTS[i];
+    if (currentMinutes >= s.start && currentMinutes <= s.end) return i + 1;
+  }
+  return null;
+}
+
+export default function TimetableReadOnly({
   endpoint = "/api/timetable",
-  maxLessons,
-  title = "Миний хичээлийн хуваарь",
+  title = "Хичээлийн хуваарь",
+  showBackButton = true,
+  editHrefBuilder = (day, lesson) =>
+    `/timetable/edit?day=${day}&lesson=${lesson}`,
 }: Props) {
+  const router = useRouter();
   const [data, setData] = useState<TimetableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const today = useMemo(() => getTodayDay(), []);
   const [activeDay, setActiveDay] = useState<Day>(today);
+  const [currentLesson, setCurrentLesson] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentLesson(getCurrentLesson());
+    const t = setInterval(() => setCurrentLesson(getCurrentLesson()), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   const grid = useMemo(() => {
     const m = new Map<string, TimetableItem>();
     for (const it of data) m.set(`${it.day}-${it.lessonNumber}`, it);
     return m;
   }, [data]);
-
-  const maxLessonComputed = useMemo(() => {
-    if (typeof maxLessons === "number" && maxLessons > 0) return maxLessons;
-    const m = data.reduce((acc, x) => Math.max(acc, x.lessonNumber), 0);
-    return Math.max(m, 7);
-  }, [data, maxLessons]);
 
   const fetchAll = async () => {
     try {
@@ -111,289 +131,298 @@ export default function TimetableStudentView({
       setLoading(false);
     }
   };
-  const { push } = useRouter();
+
   useEffect(() => {
     fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint]);
 
-  const dayRows = useMemo(() => {
-    return Array.from({ length: maxLessonComputed }, (_, i) => i + 1).map(
-      (lessonNumber) => ({
-        lessonNumber,
-        subject: grid.get(`${activeDay}-${lessonNumber}`)?.subject ?? "",
-      }),
-    );
-  }, [activeDay, grid, maxLessonComputed]);
+  const isToday = activeDay === today;
+  const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
 
-  const currentTime = new Date();
-  const currentHour = currentTime.getHours();
-  const isSchoolTime = currentHour >= 8 && currentHour < 16;
-  const currentLesson = isSchoolTime
-    ? Math.min(Math.floor((currentHour - 8) / 1) + 1, maxLessonComputed)
-    : null;
+  /**
+   * Lesson + break-үүдийг ээлжлүүлж list болгож гаргана
+   */
+  const timelineRows = useMemo(() => {
+    const rows: Array<
+      | {
+          type: "lesson";
+          lessonNumber: number;
+          subject: string | null;
+          timeLabel: string;
+        }
+      | { type: "break"; from: number; to: number; minutes: number }
+    > = [];
+
+    for (let i = 0; i < TIME_SLOTS.length; i++) {
+      const lessonNumber = i + 1;
+      const subject = grid.get(`${activeDay}-${lessonNumber}`)?.subject ?? null;
+
+      rows.push({
+        type: "lesson",
+        lessonNumber,
+        subject,
+        timeLabel: TIME_SLOTS[i].label,
+      });
+
+      const cur = TIME_SLOTS[i];
+      const next = TIME_SLOTS[i + 1];
+      if (next && next.start > cur.end) {
+        rows.push({
+          type: "break",
+          from: cur.end,
+          to: next.start,
+          minutes: next.start - cur.end,
+        });
+      }
+    }
+
+    return rows;
+  }, [activeDay, grid]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 p-6">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <span
-              className="cursor-pointer flex items-center gap-2 text-sm text-gray-500 hover:text-black transition w-fit"
-              onClick={() => push("/")}
+    <div className="min-h-screen bg-slate-50">
+      {/* Header (screenshot шиг) */}
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600">
+        <div className="mx-auto max-w-4xl px-4 py-6">
+          {showBackButton && (
+            <button
+              onClick={() => router.push("/")}
+              className="mb-3 inline-flex items-center gap-2 text-white/90 hover:text-white"
             >
-              ← Back
-            </span>
-            <h1 className="mb-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-4xl font-bold text-transparent">
-              {title}
-            </h1>
-            <p className="flex items-center gap-2 text-slate-600">
-              <svg
-                className="h-5 w-5 text-indigo-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Өнөөдрийн өдөр автоматаар сонгогдоно
-            </p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-6 animate-shake rounded-xl border-l-4 border-red-500 bg-red-50 p-4 shadow-lg">
-            <div className="flex items-start gap-3">
-              <svg
-                className="h-6 w-6 flex-shrink-0 text-red-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="font-medium text-red-800">{error}</p>
-            </div>
-          </div>
-        )}
-
-        <div className="mb-6 flex flex-wrap gap-3">
-          {DAYS_ORDER.map((d) => {
-            const active = d === activeDay;
-            const isToday = d === today;
-            return (
-              <button
-                key={d}
-                onClick={() => setActiveDay(d)}
-                className={cn(
-                  "group relative cursor-pointer overflow-hidden rounded-2xl px-6 py-3 font-semibold shadow-lg transition-all duration-300",
-                  active
-                    ? `bg-gradient-to-r ${DAY_COLORS[d]} text-white scale-110 shadow-xl`
-                    : "bg-white text-slate-700 hover:scale-105 hover:shadow-xl",
-                )}
-              >
-                <span className="relative z-10 flex items-center gap-2">
-                  {DAY_LABELS[d]}
-                  {isToday && (
-                    <span className="animate-pulse rounded-full bg-white/30 px-2 py-0.5 text-xs">
-                      Өнөөдөр
-                    </span>
-                  )}
-                </span>
-                {!active && (
-                  <div
-                    className={cn(
-                      "absolute inset-0 bg-gradient-to-r opacity-0 transition-opacity group-hover:opacity-10",
-                      DAY_COLORS[d],
-                    )}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="overflow-hidden rounded-3xl bg-white shadow-2xl">
-          <div
-            className={cn(
-              "flex items-center justify-between bg-gradient-to-r px-8 py-6",
-              DAY_COLORS[activeDay],
-            )}
-          >
-            <div>
-              <div className="mb-1 text-sm font-medium text-white/80">
-                Сонгосон өдөр
-              </div>
-              <div className="flex items-center gap-3 text-3xl font-bold text-white">
-                {DAY_LABELS[activeDay]}
-                {activeDay === today && (
-                  <span className="animate-pulse rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur-sm">
-                    Өнөөдөр
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center p-16">
-              <div className="mb-4 h-16 w-16 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
-              <p className="text-lg font-medium text-slate-600">
-                Ачааллаж байна...
-              </p>
-            </div>
-          ) : (
-            <div className="p-8">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {dayRows.map((r) => {
-                  const isCurrentLesson =
-                    activeDay === today && currentLesson === r.lessonNumber;
-                  const hasSubject = !!r.subject;
-
-                  return (
-                    <div
-                      key={r.lessonNumber}
-                      className={cn(
-                        "group relative overflow-hidden rounded-2xl border-2 p-5 transition-all duration-300",
-                        isCurrentLesson
-                          ? "scale-105 border-yellow-400 bg-gradient-to-br from-yellow-50 to-amber-50 shadow-xl shadow-yellow-200 ring-4 ring-yellow-300/50"
-                          : hasSubject
-                            ? cn(
-                                "cursor-default shadow-md",
-                                DAY_LIGHT_BG[activeDay],
-                                DAY_HOVER[activeDay],
-                              )
-                            : "cursor-default border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-slate-100 shadow-sm",
-                      )}
-                    >
-                      {isCurrentLesson && (
-                        <div className="absolute right-3 top-3">
-                          <div className="flex items-center gap-1 rounded-full bg-yellow-400 px-3 py-1 text-xs font-bold text-yellow-900 shadow-lg">
-                            <span className="relative flex h-2 w-2">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-600 opacity-75"></span>
-                              <span className="relative inline-flex h-2 w-2 rounded-full bg-yellow-600"></span>
-                            </span>
-                            Одоо
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex items-start gap-4">
-                        <div
-                          className={cn(
-                            "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl text-lg font-bold shadow-lg transition-transform group-hover:scale-110",
-                            isCurrentLesson
-                              ? "bg-gradient-to-br from-yellow-400 to-amber-500 text-white"
-                              : hasSubject
-                                ? cn(
-                                    "bg-gradient-to-br text-white",
-                                    DAY_COLORS[activeDay],
-                                  )
-                                : "bg-slate-200 text-slate-600",
-                          )}
-                        >
-                          {r.lessonNumber}
-                        </div>
-                        <div className="flex-1">
-                          <div
-                            className={cn(
-                              "mb-1 text-base font-bold transition-colors",
-                              isCurrentLesson
-                                ? "text-yellow-900"
-                                : hasSubject
-                                  ? "text-slate-800"
-                                  : "text-slate-400",
-                            )}
-                          >
-                            {r.subject || "Тэмдэглээгүй"}
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {isCurrentLesson
-                              ? "Одоогийн хичээл"
-                              : hasSubject
-                                ? "Хичээл"
-                                : "-"}
-                          </div>
-                        </div>
-                      </div>
-
-                      {hasSubject && !isCurrentLesson && (
-                        <div className="mt-3 flex items-center justify-between border-t border-current/10 pt-3">
-                          <span
-                            className={cn(
-                              "rounded-full px-3 py-1 text-xs font-semibold",
-                              `bg-gradient-to-r ${DAY_COLORS[activeDay]} text-white`,
-                            )}
-                          >
-                            {r.lessonNumber}-р цаг
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {activeDay === today && currentLesson && (
-                <div className="mt-6 rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-50 p-6 shadow-lg">
-                  <div className="flex items-center gap-3">
-                    <svg
-                      className="h-6 w-6 text-indigo-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <div>
-                      <div className="font-semibold text-indigo-900">
-                        Одоо {currentLesson}-р цагийн хичээл явж байна
-                      </div>
-                      <div className="text-sm text-indigo-700">
-                        {dayRows[currentLesson - 1]?.subject ||
-                          "Хичээл тэмдэглээгүй байна"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+              <span className="text-lg">‹</span>
+              <span>Буцах</span>
+            </button>
           )}
+
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
+              <svg
+                className="h-6 w-6 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <div className="text-2xl font-extrabold text-white">{title}</div>
+              <div className="text-sm text-white/85">
+                Нүд дээр дарж засах • Enter хадгалах • Esc болих
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          10%,
-          30%,
-          50%,
-          70%,
-          90% {
-            transform: translateX(-4px);
-          }
-          20%,
-          40%,
-          60%,
-          80% {
-            transform: translateX(4px);
-          }
-        }
-        .animate-shake {
-          animation: shake 0.5s;
-        }
-      `}</style>
+      <div className="mx-auto max-w-4xl px-4 py-6">
+        {/* Day tabs + refresh */}
+        <div className="mb-5 rounded-2xl bg-white border border-slate-200 shadow-sm p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="text-sm font-semibold text-slate-800">
+              Өдөр сонгох
+            </div>
+            <button
+              onClick={fetchAll}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 4v6h6M20 20v-6h-6"
+                />
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M20 9a8 8 0 00-14.9-3M4 15a8 8 0 0014.9 3"
+                />
+              </svg>
+              Шинэчлэх
+            </button>
+          </div>
+
+          <div className="grid grid-cols-5 gap-2">
+            {DAYS_ORDER.map((d) => {
+              const active = d === activeDay;
+              return (
+                <button
+                  key={d}
+                  onClick={() => setActiveDay(d)}
+                  className={cn(
+                    "rounded-xl px-3 py-2 text-sm font-bold border transition",
+                    active
+                      ? "bg-blue-600 text-white border-blue-600 shadow"
+                      : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50",
+                  )}
+                >
+                  {DAY_LABELS[d]}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-3 text-xs text-slate-500">
+            {isToday && !isWeekend && currentLesson
+              ? `Одоо ${currentLesson}-р цаг явж байна`
+              : "Долоо хоногийн хуваарь"}
+          </div>
+
+          {error && (
+            <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* List */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="mb-3 h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600" />
+            <div className="text-sm font-semibold text-slate-600">
+              Ачааллаж байна...
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {timelineRows.map((row, idx) => {
+              if (row.type === "break") {
+                // Завсарлага card
+                return (
+                  <div
+                    key={`break-${idx}`}
+                    className="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-xl bg-amber-200/70 flex items-center justify-center">
+                          <svg
+                            className="h-5 w-5 text-amber-800"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 8v4l3 3"
+                            />
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="text-sm font-extrabold text-amber-900">
+                            Завсарлага
+                          </div>
+                          <div className="text-xs font-semibold text-amber-800">
+                            {toHHMM(row.from)} – {toHHMM(row.to)} •{" "}
+                            {row.minutes} минут
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-xs font-bold text-amber-900/80 rounded-full bg-amber-200/50 px-3 py-1">
+                        Амрах цаг 🙂
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              const isCurrent =
+                isToday && !isWeekend && currentLesson === row.lessonNumber;
+
+              return (
+                <button
+                  key={`lesson-${row.lessonNumber}`}
+                  // onClick={() =>
+                  //   router.push(editHrefBuilder(activeDay, row.lessonNumber))
+                  // }
+                  className={cn(
+                    "w-full text-left rounded-2xl border px-4 py-4 shadow-sm transition",
+                    isCurrent
+                      ? "border-yellow-300 bg-yellow-50 hover:bg-yellow-50 ring-2 ring-yellow-200"
+                      : "border-slate-200 bg-blue-50/40 hover:bg-blue-50/70",
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-4">
+                      {/* number badge */}
+                      <div
+                        className={cn(
+                          "h-11 w-11 rounded-2xl flex items-center justify-center font-extrabold shadow",
+                          isCurrent
+                            ? "bg-yellow-400 text-yellow-950"
+                            : "bg-blue-600 text-white",
+                        )}
+                      >
+                        {row.lessonNumber}
+                      </div>
+
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900">
+                          {row.subject ?? "Тэмдэглээгүй"}
+                        </div>
+                        <div className="mt-1 text-xs font-semibold text-slate-600">
+                          {row.timeLabel}
+                          {isCurrent ? " • ОДОО" : ""}
+                        </div>
+
+                        {/* <div className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-600">
+                          <svg
+                            className="h-4 w-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M12 20h9"
+                            />
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z"
+                            />
+                          </svg>
+                          Дарж засах
+                        </div> */}
+                      </div>
+                    </div>
+
+                    {/* right hint */}
+                    <div className="hidden sm:block text-xs font-bold text-slate-500">
+                      {DAY_LABELS[activeDay]}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
