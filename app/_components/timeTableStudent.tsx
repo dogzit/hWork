@@ -191,7 +191,7 @@ export default function TimetableReadOnly({
               className="mb-3 inline-flex items-center gap-2 text-white/90 hover:text-white"
             >
               <span className="text-lg">‹</span>
-              <span>Буцах</span>
+              <span className="hover:cursor-pointer">Буцах</span>
             </button>
           )}
 
@@ -213,9 +213,6 @@ export default function TimetableReadOnly({
             </div>
             <div>
               <div className="text-2xl font-extrabold text-white">{title}</div>
-              <div className="text-sm text-white/85">
-                Нүд дээр дарж засах • Enter хадгалах • Esc болих
-              </div>
             </div>
           </div>
         </div>

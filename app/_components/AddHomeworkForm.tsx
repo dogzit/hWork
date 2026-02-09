@@ -233,7 +233,7 @@ export default function AddHomeworkForm({
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
             <button
               onClick={() => router.push("/admin")}
-              className="mb-3 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              className="mb-3 flex hover:cursor-pointer items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
             >
               <svg
                 className="w-4 h-4"

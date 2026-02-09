@@ -135,7 +135,7 @@ export default function HomeworkTimelinePage() {
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-8">
             <button
               onClick={() => router.push("/")}
-              className="mb-4 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              className="mb-4 hover:cursor-pointer flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
             >
               <svg
                 className="w-4 h-4"

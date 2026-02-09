@@ -25,7 +25,6 @@ export default function HomeworkAddPage() {
         <div className="absolute w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-float-reverse bottom-10 right-1/3"></div>
       </div>
 
-      {/* Subtle grid overlay */}
       <div
         className="absolute inset-0 opacity-5"
         style={{
@@ -37,28 +36,85 @@ export default function HomeworkAddPage() {
         }}
       ></div>
 
-      <div className="relative z-10 flex flex-col gap-8 items-center p-8">
-        <h1 className="text-6xl font-black text-white mb-4 text-center tracking-tight drop-shadow-2xl animate-fade-in">
+      <div className="relative z-10 flex flex-col items-center gap-8 p-8">
+        <h1 className="text-center text-5xl sm:text-6xl font-black tracking-tight text-white drop-shadow-2xl animate-bounce">
           Welcome 11д
         </h1>
 
-        <div className="flex gap-6 flex-wrap justify-center">
+        <div className="grid w-full max-w-4xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <button
+            type="button"
             onClick={() => router.push("/timeTable")}
-            className="group relative px-8 py-4 text-lg hover:cursor-pointer font-bold text-white overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-slide-up"
+            className="group relative overflow-hidden hover:cursor-pointer animate-fade-in rounded-3xl p-6 text-left text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-500 group-hover:to-purple-500 transition-all"></div>
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-cyan-400 to-blue-500 blur-xl transition-opacity"></div>
-            <span className="relative z-10">⏰ Хичээлийн хуваарь харах</span>
+            <span className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 transition-all group-hover:brightness-110" />
+            <span className="absolute -inset-24 rounded-full bg-white/20 blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <span className="relative z-10 flex items-start justify-between gap-4">
+              <span>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                  ⏰
+                </span>
+                <span className="mt-4 block text-xl font-extrabold">
+                  Хичээлийн хуваарь
+                </span>
+                <span className="mt-1 block text-sm text-white/85">
+                  Өнөөдрийн цагуудыг харах
+                </span>
+              </span>
+              <span className="mt-1 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold ring-1 ring-white/25 transition group-hover:bg-white/20">
+                Нээх
+              </span>
+            </span>
           </button>
 
           <button
+            type="button"
             onClick={() => router.push("/homeWork")}
-            className="group relative px-8 py-4 hover:cursor-pointer text-lg font-bold text-white overflow-hidden rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl animate-slide-up animation-delay-100"
+            className="group relative overflow-hidden hover:cursor-pointer animate-fade-in rounded-3xl p-6 text-left text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-600 to-orange-600 group-hover:from-pink-500 group-hover:to-orange-500 transition-all"></div>
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-pink-400 to-orange-400 blur-xl transition-opacity"></div>
-            <span className="relative z-10">📚 Даалгавар харах</span>
+            <span className="absolute inset-0 bg-gradient-to-br from-pink-600 via-rose-600 to-orange-500 transition-all group-hover:brightness-110" />
+            <span className="absolute -inset-24 rounded-full bg-white/20 blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <span className="relative z-10 flex items-start justify-between gap-4">
+              <span>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                  📚
+                </span>
+                <span className="mt-4 block text-xl font-extrabold">
+                  Даалгавар
+                </span>
+                <span className="mt-1 block text-sm text-white/85">
+                  Шинэ даалгавраа шалгах
+                </span>
+              </span>
+              <span className="mt-1 rounded-2xl bg-white/15 px-3 py-2 text-sm font-semibold ring-1 ring-white/25 transition group-hover:bg-white/20">
+                Нээх
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => router.push("/duty")}
+            className="group relative overflow-hidden hover:cursor-pointer animate-fade-in rounded-3xl p-6 text-left text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl"
+          >
+            <span className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 transition-all group-hover:brightness-110" />
+            <span className="absolute -inset-24 rounded-full bg-white/20 blur-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <span className="relative z-10 flex items-start justify-between gap-4">
+              <span>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                  🧹
+                </span>
+                <span className="mt-4 block text-xl font-extrabold">
+                  ЖИЖҮҮР
+                </span>
+                <span className="mt-1 block text-sm text-white/85">
+                  Ээлжийн хуваарь харах
+                </span>
+              </span>
+              <span className="mt-1 rounded-2xl  bg-white/15 px-3 py-2 text-sm font-semibold ring-1 ring-white/25 transition group-hover:bg-white/20">
+                Нээх
+              </span>
+            </span>
           </button>
         </div>
       </div>

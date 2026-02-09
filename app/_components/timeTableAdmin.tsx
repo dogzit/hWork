@@ -154,7 +154,7 @@ export default function TimetableAdminBoard({
           <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-8 py-6">
             <button
               onClick={() => router.push("/admin")}
-              className="mb-3 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              className="mb-3  hover:cursor-pointer flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
             >
               <svg
                 className="w-4 h-4"

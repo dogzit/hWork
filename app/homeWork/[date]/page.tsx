@@ -382,7 +382,7 @@ export default function HomeworkDatePage() {
         <div className="mb-8 rounded-3xl bg-white/80 p-8 shadow-xl backdrop-blur-sm border border-slate-200">
           <button
             onClick={() => router.push("/homeWork")}
-            className="mb-4 flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            className="mb-4 hover:cursor-pointer flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
           >
             <svg
               className="w-4 h-4"
