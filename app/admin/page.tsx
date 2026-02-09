@@ -50,6 +50,29 @@ export default function HomeworkAddPage() {
       route: "/admin/homework/add",
     },
     {
+      title: "Жижүүр удирдах",
+      description: "Жижүүрийн хуваарь харах ",
+      icon: (
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-3 3m0 0l-3-3m3 3V4M5 20h14a2 2 0 002-2v-5M5 20a2 2 0 01-2-2V7a2 2 0 012-2h8"
+          />
+        </svg>
+      ),
+      color: "from-emerald-500 to-cyan-500",
+      hoverColor: "hover:shadow-emerald-500/50",
+      route: "/admin/duty",
+    },
+
+    {
       title: "Даалгавар удирдах",
       description: "Даалгавар өөрчлөх, засах, устгах",
       icon: (
@@ -158,7 +181,7 @@ export default function HomeworkAddPage() {
           ))}
         </div>
 
-        {/* Статистик хэсэг (optional) */}
+        {/* Статистик хэсэг (optional)
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 text-center">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-100 rounded-xl mb-4">
@@ -219,7 +242,7 @@ export default function HomeworkAddPage() {
             <p className="text-sm text-slate-600 mb-1">Даалгавар</p>
             <p className="text-2xl font-bold text-slate-900">Засах</p>
           </div>
-        </div>
+        </div> */}
 
         {/* Footer мэдээлэл */}
         <div className="mt-12 text-center">

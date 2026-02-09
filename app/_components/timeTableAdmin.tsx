@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 type Day = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
 
@@ -74,9 +75,15 @@ export default function TimetableAdminBoard({
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
       const json = (await res.json()) as TimetableItem[];
       setData(json);
+
+      toast.success("Хичээлийн хуваарь шинэчлэгдлээ 🔄");
     } catch (e) {
       console.error(e);
-      setError(e instanceof Error ? e.message : "Fetch error");
+      const msg = e instanceof Error ? e.message : "Fetch error";
+      setError(msg);
+      toast.error("Хуваарь ачааллахад алдаа гарлаа ❌", {
+        description: msg,
+      });
     } finally {
       setLoading(false);
     }
@@ -91,10 +98,10 @@ export default function TimetableAdminBoard({
     setEditKey(key);
     setEditValue(grid.get(key)?.subject ?? "");
   };
-
   const cancelEdit = () => {
     setEditKey(null);
     setEditValue("");
+    toast.info("Засвар цуцлагдлаа");
   };
 
   const saveCell = async (day: Day, lessonNumber: number) => {
@@ -129,9 +136,17 @@ export default function TimetableAdminBoard({
       });
 
       cancelEdit();
+
+      toast.success("Хичээл амжилттай хадгалагдлаа ✅", {
+        description: `${DAY_LABELS[day]} • ${lessonNumber}-р цаг`,
+      });
     } catch (e) {
       console.error(e);
-      setError(e instanceof Error ? e.message : "Save error");
+      const msg = e instanceof Error ? e.message : "Save error";
+      setError(msg);
+      toast.error("Хадгалах үед алдаа гарлаа ❌", {
+        description: msg,
+      });
     } finally {
       setSaving(false);
     }

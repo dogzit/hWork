@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { toast } from "sonner";
 
 // Даалгаврын төрөл
 type HworkItem = {
@@ -119,14 +120,16 @@ export default function HomeworkDatePage() {
   const fetchAll = async () => {
     try {
       setLoading(true);
-      setErr("");
       const res = await fetch("/api/hwork", { cache: "no-store" });
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
       const json = (await res.json()) as HworkItem[];
       setData(json);
+
+      toast.success("Даалгавар шинэчлэгдлээ 🔄");
     } catch (e) {
       console.error(e);
-      setErr(e instanceof Error ? e.message : "Fetch error");
+      const msg = e instanceof Error ? e.message : "Fetch error";
+      toast.error("Унших үед алдаа гарлаа ❌", { description: msg });
     } finally {
       setLoading(false);
     }
@@ -190,15 +193,16 @@ export default function HomeworkDatePage() {
 
   // Сонгосон файлуудыг нэмэх
   const applyPickedFiles = (picked: File[], mode: "replace" | "append") => {
-    setErr("");
-
     if (picked.length === 0) {
       if (mode === "replace") clearPickedFiles();
       return;
     }
 
     const v = validateFiles(picked);
-    if (v) return setErr(v);
+    if (v) {
+      toast.error("Зураг сонгох боломжгүй ❌", { description: v });
+      return;
+    }
 
     const next =
       mode === "replace"
@@ -214,6 +218,10 @@ export default function HomeworkDatePage() {
     setPreviewUrls(next.map((f) => URL.createObjectURL(f)));
 
     if (fileInputRef.current) fileInputRef.current.value = "";
+
+    toast.success("Зураг сонгогдлоо ✅", {
+      description: `${next.length} зураг`,
+    });
   };
 
   // Сонгосон файл устгах
@@ -229,10 +237,13 @@ export default function HomeworkDatePage() {
 
   // Файлуудыг Blob руу upload хийх
   const uploadPicked = async () => {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      toast.info("Upload хийх зураг алга байна");
+      return;
+    }
 
+    const loadingId = toast.loading("Зургууд upload хийж байна...");
     setUploading(true);
-    setErr("");
 
     try {
       const urls: string[] = [];
@@ -241,11 +252,7 @@ export default function HomeworkDatePage() {
         const fd = new FormData();
         fd.append("file", file);
 
-        const res = await fetch(uploadEndpoint, {
-          method: "POST",
-          body: fd,
-        });
-
+        const res = await fetch(uploadEndpoint, { method: "POST", body: fd });
         if (!res.ok) {
           const t = await res.text().catch(() => "");
           throw new Error(t || `Upload failed: ${res.status}`);
@@ -265,10 +272,18 @@ export default function HomeworkDatePage() {
 
       setImageUrls((prev) => Array.from(new Set([...prev, ...urls])));
       clearPickedFiles();
+
+      toast.dismiss(loadingId);
+      toast.success("Upload амжилттай ✅", {
+        description: `${urls.length} зураг нэмэгдлээ`,
+      });
     } catch (e) {
       console.error(e);
-      setErr(e instanceof Error ? e.message : "Upload error");
+      const msg = e instanceof Error ? e.message : "Upload error";
+      toast.dismiss(loadingId);
+      toast.error("Upload үед алдаа гарлаа ❌", { description: msg });
     } finally {
+      setUploading(false);
       setUploading(false);
     }
   };
@@ -277,9 +292,9 @@ export default function HomeworkDatePage() {
   const saveEdit = async () => {
     if (!editing) return;
 
+    const loadingId = toast.loading("Хадгалж байна...");
     try {
       setSaving(true);
-      setErr("");
 
       const res = await fetch(`/api/hwork/${editing.id}`, {
         method: "PATCH",
@@ -300,26 +315,38 @@ export default function HomeworkDatePage() {
       const updated = (await res.json()) as HworkItem;
       setData((p) => p.map((x) => (x.id === updated.id ? updated : x)));
       setEditing(null);
+
+      toast.dismiss(loadingId);
+      toast.success("Амжилттай хадгаллаа ✅", {
+        description: `${updated.subject} • ${ymd(updated.date)}`,
+      });
     } catch (e) {
       console.error(e);
-      setErr(e instanceof Error ? e.message : "Update error");
+      const msg = e instanceof Error ? e.message : "Update error";
+      toast.dismiss(loadingId);
+      toast.error("Хадгалах үед алдаа ❌", { description: msg });
     } finally {
       setSaving(false);
     }
   };
-
-  // Даалгавар устгах
   const doDelete = async (id: string) => {
+    const loadingId = toast.loading("Устгаж байна...");
     try {
       setBusyId(id);
-      setErr("");
+
       const res = await fetch(`/api/hwork/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+
       setData((p) => p.filter((x) => x.id !== id));
       setDeleting(null);
+
+      toast.dismiss(loadingId);
+      toast.success("Устгалаа ✅");
     } catch (e) {
       console.error(e);
-      setErr(e instanceof Error ? e.message : "Delete error");
+      const msg = e instanceof Error ? e.message : "Delete error";
+      toast.dismiss(loadingId);
+      toast.error("Устгах үед алдаа ❌", { description: msg });
     } finally {
       setBusyId(null);
     }

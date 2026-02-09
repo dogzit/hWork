@@ -1,25 +1,78 @@
-// app/duty/page.tsx
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
-export default function DutyPage() {
-  const [progress, setProgress] = useState(12);
+type DutySchedule = {
+  id: string;
+  date: string; // ISO string
+  names: string[];
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function toInputDateLocal(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function isoToInputDateUTC(iso: string) {
+  // DB-д date-г UTC midnight гэж хадгалсан учраас UTC-аар YYYY-MM-DD гаргана
+  const d = new Date(iso);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function prettyFromInputDate(input: string) {
+  const [y, m, d] = input.split("-");
+  return `${y}.${m}.${d}`;
+}
+
+export default function DutyUserPage() {
+  const [items, setItems] = useState<DutySchedule[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [err, setErr] = useState<string | null>(null);
+
+
+  const today = useMemo(() => toInputDateLocal(new Date()), []);
+
+  async function load() {
+    setIsLoading(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/duty", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to load");
+      setItems(data as DutySchedule[]);
+    } catch (e: any) {
+      setErr(e?.message || "Failed to load");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setProgress((p) => (p >= 92 ? 92 : p + 1));
-    }, 120);
-    return () => clearInterval(t);
+    load();
   }, []);
 
-  const statusText = useMemo(() => {
-    if (progress < 30) return "Төлөвлөлт & UI дизайн";
-    if (progress < 60) return "Өгөгдлийн бүтэц & логик";
-    if (progress < 85) return "Тестлэлт & засвар";
-    return "Сүүлчийн өнгөлгөө";
-  }, [progress]);
+  const sorted = useMemo(() => {
+    return [...items].sort((a, b) => a.date.localeCompare(b.date));
+  }, [items]);
+
+  const todaysEntry = useMemo(() => {
+    // item.date нь UTC шөнө 00:00 гэж хадгалагдсан -> UTC-р YYYY-MM-DD болгож today(локал)-той харьцуулна
+    return sorted.find((x) => isoToInputDateUTC(x.date) === today) || null;
+  }, [sorted, today]);
+
+  const nextUpcoming = useMemo(() => {
+    // өнөөдөр байхгүй бол хамгийн ойрын ирээдүйн өдөр
+    return sorted.find((x) => isoToInputDateUTC(x.date) > today) || null;
+  }, [sorted, today]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white">
@@ -39,134 +92,203 @@ export default function DutyPage() {
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15">
             ←
           </span>
-          <span className="font-semibold hover:cursor-pointer">Буцах</span>
+          <span className="font-semibold">Буцах</span>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-2 ring-1 ring-white/10 backdrop-blur">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15">
-            🧹
-          </span>
-          <span className="font-semibold">ЖИЖҮҮР</span>
-        </div>
+        <button
+          type="button"
+          onClick={load}
+          className="rounded-2xl bg-white/5 px-4 py-2 font-semibold ring-1 ring-white/10 backdrop-blur transition hover:bg-white/10"
+        >
+          ↻ Шинэчлэх
+        </button>
       </header>
 
-      {/* Content */}
-      <main className="relative z-10 mx-auto flex max-w-6xl flex-col items-center px-6 pb-16 pt-6">
-        {/* Hero card */}
-        <div className="w-full max-w-3xl overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl backdrop-blur">
-          <div className="relative p-8 sm:p-10">
-            {/* Gradient overlay */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-cyan-500/10" />
-
-            <div className="relative">
-              <div className="flex flex-col items-center text-center">
-                <div className="mb-5 grid h-16 w-16 place-items-center rounded-3xl bg-white/10 ring-1 ring-white/15 shadow-lg">
-                  🧹
-                </div>
-
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
-                  ЖИЖҮҮР-ийн хуваарь
-                </h1>
-                <p className="mt-3 max-w-xl text-white/80">
-                  Энэ хуудас одоогоор{" "}
-                  <span className="font-semibold">хөгжүүлэлт шатандаа</span> явж
-                  байна. Удахгүй ангийн жижүүрийн ээлж, нэрс, огноо зэрэг
-                  функцууд нэмэгдэнэ.
-                </p>
-
-                {/* Progress */}
-                <div className="mt-8 w-full">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-white/90">Явц</span>
-                    <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/15">
-                      {progress}%
-                    </span>
-                  </div>
-
-                  <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-white/10">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between text-xs text-white/70">
-                    <span>Статус: {statusText}</span>
-                    <span>Coming soon</span>
-                  </div>
-                </div>
-
-                {/* Feature cards */}
-                <div className="mt-9 grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
-                  <FeatureCard
-                    title="Ээлжийн хүснэгт"
-                    desc="Өдөр/7 хоногоор автоматаар гарна"
-                    icon="📅"
-                  />
-
-                  <FeatureCard
-                    title="Хариуцлага"
-                    desc="Хийсэн/хийгээгүй тэмдэглэл"
-                    icon="✅"
-                  />
-                </div>
-
-                {/* Actions */}
-                <div className="mt-10 flex flex-col sm:flex-row gap-3 w-full justify-center">
-                  <Link
-                    href="/"
-                    className="hover:cursor-pointer inline-flex justify-center rounded-2xl bg-white/10 px-5 py-3 font-semibold ring-1 ring-white/15 transition hover:bg-white/15"
-                  >
-                    Нүүр хуудас руу буцах
-                  </Link>
-
-                  <Link
-                    href="/timeTable"
-                    className="inline-flex justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-3 font-semibold shadow-lg transition hover:brightness-110"
-                  >
-                    ⏰ Хичээлийн хуваарь
-                  </Link>
-
-                  <Link
-                    href="/homeWork"
-                    className="inline-flex justify-center rounded-2xl bg-gradient-to-r from-pink-600 to-orange-600 px-5 py-3 font-semibold shadow-lg transition hover:brightness-110"
-                  >
-                    📚 Даалгавар
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+      <main className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-16">
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight">
+            🧹 Өнөөдрийн жижүүр
+          </h1>
+          <p className="mt-2 text-white/70">
+            Өнөөдөр:{" "}
+            <span className="font-semibold text-white">
+              {prettyFromInputDate(today)}
+            </span>
+          </p>
         </div>
 
-        {/* Footer note */}
-        <p className="mt-8 text-center text-sm text-white/55">
-          ✨ Энэ нь түр page. Хөгжүүлэлт дуусмагц жижүүрийн хүснэгт + edit +
-          автоматаар эргэх логик нэмэгдэнэ.
-        </p>
+        {err && (
+          <div className="mb-6 rounded-3xl border border-rose-200/30 bg-rose-500/10 px-5 py-4 text-rose-200">
+            <div className="font-bold">Алдаа:</div>
+            <div className="mt-1 text-sm">{err}</div>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-white/70 backdrop-blur">
+            Уншиж байна...
+          </div>
+        ) : (
+          <>
+            {/* Today card */}
+            {todaysEntry ? (
+              <DutyCard
+                title="Өнөөдрийн жижүүрүүд"
+                badge="TODAY"
+                dateLabel={prettyFromInputDate(today)}
+                names={todaysEntry.names}
+                notes={todaysEntry.notes}
+                accent="from-emerald-500 via-teal-500 to-cyan-600"
+              />
+            ) : (
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur">
+                <div className="text-xl font-extrabold">
+                  Өнөөдөр жижүүр бүртгэгдээгүй байна 😅
+                </div>
+                <p className="mt-2 text-white/70">
+                  Админ дээр өнөөдрийн бүртгэл нэмэгдээгүй эсвэл огноо нь өөр
+                  байна.
+                </p>
+
+                {nextUpcoming ? (
+                  <div className="mt-6">
+                    <DutyCard
+                      title="Дараагийн хамгийн ойрын жижүүр"
+                      badge="NEXT"
+                      dateLabel={prettyFromInputDate(
+                        isoToInputDateUTC(nextUpcoming.date),
+                      )}
+                      names={nextUpcoming.names}
+                      notes={nextUpcoming.notes}
+                      accent="from-blue-600 via-indigo-600 to-purple-600"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-4 text-white/70">
+                    Одоогоор ирээдүйн бүртгэл ч алга байна.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Optional: show all */}
+            <div className="mt-10">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-extrabold text-white/90">
+                  Бүх өдрүүд
+                </h2>
+                <span className="rounded-full bg-white/5 px-3 py-1 text-sm ring-1 ring-white/10">
+                  {sorted.length} бүртгэл
+                </span>
+              </div>
+
+              {sorted.length === 0 ? (
+                <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-8 text-white/70 backdrop-blur">
+                  Одоогоор бүртгэл алга байна.
+                </div>
+              ) : (
+                <div className="mt-4 grid grid-cols-1 gap-5">
+                  {sorted.map((x) => (
+                    <div
+                      key={x.id}
+                      className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 ring-1 ring-white/10">
+                            <span className="font-extrabold">
+                              📅{" "}
+                              {prettyFromInputDate(isoToInputDateUTC(x.date))}
+                            </span>
+                          </div>
+
+                          {x.notes && (
+                            <div className="mt-3 rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80 ring-1 ring-white/10">
+                              <span className="font-semibold">Тайлбар:</span>{" "}
+                              {x.notes}
+                            </div>
+                          )}
+
+                          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+                            {x.names.map((n, i) => (
+                              <div
+                                key={i}
+                                className="rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10"
+                              >
+                                <div className="text-xs text-white/60">
+                                  #{i + 1}
+                                </div>
+                                <div className="font-bold truncate">{n}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="text-sm text-white/60">
+                          {isoToInputDateUTC(x.date) === today
+                            ? "✅ Өнөөдөр"
+                            : ""}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
 }
 
-function FeatureCard({
+function DutyCard({
   title,
-  desc,
-  icon,
+  badge,
+  dateLabel,
+  names,
+  notes,
+  accent,
 }: {
   title: string;
-  desc: string;
-  icon: string;
+  badge: string;
+  dateLabel: string;
+  names: string[];
+  notes: string | null;
+  accent: string;
 }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 ring-1 ring-white/5 backdrop-blur transition hover:bg-white/10">
-      <div className="flex items-start gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
-          {icon}
+    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur">
+      <div className={`bg-gradient-to-r ${accent} p-6`}>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm text-white/90">{title}</div>
+            <div className="mt-1 text-2xl font-extrabold">{dateLabel}</div>
+          </div>
+
+          <span className="rounded-full bg-white/15 px-4 py-1.5 text-sm font-bold ring-1 ring-white/20">
+            {badge}
+          </span>
         </div>
-        <div className="min-w-0">
-          <div className="font-extrabold">{title}</div>
-          <div className="mt-1 text-sm text-white/70">{desc}</div>
+      </div>
+
+      <div className="p-6">
+        {notes && (
+          <div className="mb-4 rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80 ring-1 ring-white/10">
+            <span className="font-semibold">Тайлбар:</span> {notes}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {names.map((n, i) => (
+            <div
+              key={i}
+              className="rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10"
+            >
+              <div className="text-xs text-white/60">#{i + 1}</div>
+              <div className="font-bold truncate">{n}</div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

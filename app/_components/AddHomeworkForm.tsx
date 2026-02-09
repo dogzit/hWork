@@ -1,7 +1,8 @@
 "use client";
 
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 
 type HworkItem = {
   id: string;
@@ -25,8 +26,11 @@ function cn(...cls: Array<string | false | null | undefined>) {
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-function ymdToISOStart(ymd: string) {
-  return new Date(`${ymd}T00:00:00.000Z`).toISOString();
+// ✅ YYYY-MM-DD -> ISO (local start of day)
+function inputDateToISOStartLocal(ymd: string) {
+  const [y, m, d] = ymd.split("-").map(Number);
+  const dt = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+  return dt.toISOString();
 }
 
 function fileKey(f: File) {
@@ -75,13 +79,11 @@ export default function AddHomeworkForm({
   const [dragOver, setDragOver] = useState(false);
 
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [ok, setOk] = useState("");
 
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const canSubmit = subject.trim() && title.trim() && dateYmd.trim();
+  const canSubmit = Boolean(subject.trim() && title.trim() && dateYmd.trim());
 
   const clearPreviews = () => {
     previewUrls.forEach((u) => URL.revokeObjectURL(u));
@@ -92,6 +94,13 @@ export default function AddHomeworkForm({
     clearPreviews();
     setFiles([]);
   };
+
+  // ✅ component unmount үед revoke
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [previewUrls]);
 
   const validateFiles = (picked: File[]) => {
     const maxBytes = maxFileMB * 1024 * 1024;
@@ -107,9 +116,6 @@ export default function AddHomeworkForm({
   };
 
   const applyPickedFiles = (picked: File[], mode: "replace" | "append") => {
-    setErr("");
-    setOk("");
-
     if (picked.length === 0) {
       if (mode === "replace") clearFiles();
       return;
@@ -117,7 +123,7 @@ export default function AddHomeworkForm({
 
     const validationErr = validateFiles(picked);
     if (validationErr) {
-      setErr(validationErr);
+      toast.error("Зураг сонгох боломжгүй ❌", { description: validationErr });
       return;
     }
 
@@ -132,8 +138,13 @@ export default function AddHomeworkForm({
 
     setFiles(nextFiles);
 
+    // old previews revoke
     clearPreviews();
     setPreviewUrls(nextFiles.map((f) => URL.createObjectURL(f)));
+
+    toast.success("Зураг сонгогдлоо ✅", {
+      description: `${nextFiles.length} зураг`,
+    });
   };
 
   const onPickFromInput = (
@@ -142,13 +153,20 @@ export default function AddHomeworkForm({
   ) => {
     if (!list || list.length === 0) return;
     applyPickedFiles(Array.from(list), mode);
-
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeOne = (idx: number) => {
+    // ✅ устгах үед toast битгий “сонгогдлоо” гэж гарахгүйн тул өөр логик
     const next = files.filter((_, i) => i !== idx);
-    applyPickedFiles(next, "replace");
+    setFiles(next);
+
+    clearPreviews();
+    setPreviewUrls(next.map((f) => URL.createObjectURL(f)));
+
+    toast.message("Зураг хасагдлаа", {
+      description: `${next.length} зураг үлдлээ`,
+    });
   };
 
   const uploadImagesIfAny = async (): Promise<string[]> => {
@@ -160,10 +178,7 @@ export default function AddHomeworkForm({
       const fd = new FormData();
       fd.append("file", file);
 
-      const res = await fetch(uploadEndpoint, {
-        method: "POST",
-        body: fd,
-      });
+      const res = await fetch(uploadEndpoint, { method: "POST", body: fd });
 
       if (!res.ok) {
         const t = await res.text().catch(() => "");
@@ -180,17 +195,22 @@ export default function AddHomeworkForm({
         null;
 
       if (!url) throw new Error("Upload response missing url");
-      urls.push(url);
+      urls.push(String(url));
     }
 
     return urls;
   };
 
   const submit = async () => {
+    if (!canSubmit) {
+      toast.warning("Мэдээллээ бүрэн бөглөөрэй ⚠️");
+      return;
+    }
+
+    const loadingId = toast.loading("Нэмж байна...");
+
     try {
       setLoading(true);
-      setErr("");
-      setOk("");
 
       const urls = await uploadImagesIfAny();
 
@@ -200,7 +220,7 @@ export default function AddHomeworkForm({
         body: JSON.stringify({
           subject: subject.trim(),
           title: title.trim(),
-          date: ymdToISOStart(dateYmd),
+          date: inputDateToISOStartLocal(dateYmd), // ✅ UTC биш
           images: urls,
         }),
       });
@@ -212,14 +232,18 @@ export default function AddHomeworkForm({
 
       const created = (await res.json()) as HworkItem;
 
-      setOk("Амжилттай нэмлээ ✅");
+      toast.dismiss(loadingId);
+      toast.success("Амжилттай нэмлээ ✅", {
+        description: `${subject} • ${dateYmd}`,
+      });
+
       setTitle("");
       clearFiles();
-
       onCreated?.(created);
     } catch (e) {
-      console.error(e);
-      setErr(e instanceof Error ? e.message : "Error");
+      const msg = e instanceof Error ? e.message : "Error";
+      toast.dismiss(loadingId);
+      toast.error("Нэмэх үед алдаа гарлаа ❌", { description: msg });
     } finally {
       setLoading(false);
     }
@@ -231,25 +255,6 @@ export default function AddHomeworkForm({
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
           {/* Толгой хэсэг */}
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-6">
-            <button
-              onClick={() => router.push("/admin")}
-              className="mb-3 flex hover:cursor-pointer items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Буцах
-            </button>
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                 <svg
@@ -276,42 +281,6 @@ export default function AddHomeworkForm({
           </div>
 
           <div className="p-8">
-            {/* Алдааны мессеж */}
-            {err && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                <svg
-                  className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm text-red-700 flex-1">{err}</span>
-              </div>
-            )}
-
-            {/* Амжилтын мессеж */}
-            {ok && (
-              <div className="mb-6 bg-green-50 border border-green-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                <svg
-                  className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm text-green-700 flex-1">{ok}</span>
-              </div>
-            )}
-
             <div className="space-y-6">
               {/* Хичээл ба огноо */}
               <div className="grid gap-6 sm:grid-cols-2">
@@ -465,9 +434,9 @@ export default function AddHomeworkForm({
 
                     <button
                       type="button"
-                      onClick={() => {
-                        document.getElementById("file-upload-append")?.click();
-                      }}
+                      onClick={() =>
+                        document.getElementById("file-upload-append")?.click()
+                      }
                       disabled={loading}
                       className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                     >
@@ -475,7 +444,6 @@ export default function AddHomeworkForm({
                     </button>
                   </div>
 
-                  {/* Hidden append input */}
                   <input
                     id="file-upload-append"
                     type="file"
@@ -486,7 +454,6 @@ export default function AddHomeworkForm({
                   />
                 </div>
 
-                {/* Preview зургууд */}
                 {previewUrls.length > 0 && (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {previewUrls.map((u, idx) => (
@@ -527,12 +494,11 @@ export default function AddHomeworkForm({
                 <button
                   type="button"
                   onClick={() => {
-                    setErr("");
-                    setOk("");
                     setTitle("");
                     setSubject(defaultSubjects[0] ?? "");
                     setDateYmd(todayYmd);
                     clearFiles();
+                    toast.info("Form цэвэрлэгдлээ");
                   }}
                   disabled={loading}
                   className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
@@ -569,6 +535,17 @@ export default function AddHomeworkForm({
                       Нэмэх
                     </>
                   )}
+                </button>
+              </div>
+
+              {/* (optional) back button */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => router.back()}
+                  className="text-sm font-semibold text-slate-500 hover:text-slate-800"
+                >
+                  ← Буцах
                 </button>
               </div>
             </div>

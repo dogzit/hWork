@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner"; // ✅ ЭНЭ НЭМНЭ
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,15 +20,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+
+        <Toaster position="top-right" richColors closeButton duration={3000} />
+
         <h6 className="fixed bottom-3 right-3 text-xs font-semibold text-gray-400 tracking-tight drop-shadow-lg">
           Made by: zolo
         </h6>

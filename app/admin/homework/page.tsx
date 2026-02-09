@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // Даалгаврын төрөл
 type HworkItem = {
@@ -61,7 +62,6 @@ export default function AdminHomeworkPage() {
   // Үндсэн өгөгдөл
   const [data, setData] = useState<HworkItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
 
   // Хайлт болон шүүлт
   const [q, setQ] = useState("");
@@ -109,19 +109,26 @@ export default function AdminHomeworkPage() {
 
     return sorted;
   }, [filtered]);
-
-  // Бүх даалгаврыг унших
   const fetchAll = async () => {
+    const loadingId = toast.loading("Даалгавар уншиж байна...");
     try {
       setLoading(true);
-      setErr("");
+
       const res = await fetch("/api/hwork", { cache: "no-store" });
       if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+
       const json = (await res.json()) as HworkItem[];
       setData(json);
+
+      toast.dismiss(loadingId);
+      toast.success("Амжилттай шинэчлэгдлээ 🔄", {
+        description: `Нийт: ${json.length} даалгавар`,
+      });
     } catch (e) {
       console.error(e);
-      setErr(e instanceof Error ? e.message : "Fetch error");
+      const msg = e instanceof Error ? e.message : "Fetch error";
+      toast.dismiss(loadingId);
+      toast.error("Унших үед алдаа гарлаа ❌", { description: msg });
     } finally {
       setLoading(false);
     }
@@ -173,7 +180,7 @@ export default function AdminHomeworkPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={fetchAll}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-white/20"
+                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg
                     className="w-4 h-4"
@@ -215,7 +222,7 @@ export default function AdminHomeworkPage() {
 
           {/* Хайлт болон шүүлт */}
           <div className="p-6 border-b border-slate-200">
-            {err && (
+            {/* {err && (
               <div className="mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
                 <svg
                   className="w-5 h-5 text-red-500 mt-0.5"
@@ -230,7 +237,7 @@ export default function AdminHomeworkPage() {
                 </svg>
                 <span className="text-sm text-red-700 flex-1">{err}</span>
               </div>
-            )}
+            )} */}
 
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="relative">

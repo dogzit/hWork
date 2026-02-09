@@ -22,6 +22,21 @@ model Hwork {
   image String?
 }
 
+model DutySchedule {
+  id String @id @default(nanoid())
+
+  date DateTime @unique
+
+  names String[] @default([])
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
 model Timetable {
   id           String @id @default(nanoid())
   day          Day
