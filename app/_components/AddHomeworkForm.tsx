@@ -48,6 +48,7 @@ export default function AddHomeworkForm({
     () =>
       subjects ?? [
         "Монгол хэл",
+        "Уран зохиол",
         "Математик",
         "Биологи",
         "Англи хэл",
