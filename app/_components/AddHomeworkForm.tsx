@@ -26,7 +26,6 @@ function cn(...cls: Array<string | false | null | undefined>) {
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-// ✅ YYYY-MM-DD -> ISO (local start of day)
 function inputDateToISOStartLocal(ymd: string) {
   const [y, m, d] = ymd.split("-").map(Number);
   const dt = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
@@ -62,6 +61,9 @@ export default function AddHomeworkForm({
         "Мэдээлэл зүй",
         "Дизайн технологи",
         "Тамир",
+        "Үндэсний бичиг",
+        "Англи хэл сонгон",
+        "Физик сонгон",
       ],
     [subjects],
   );
