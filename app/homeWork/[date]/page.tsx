@@ -2,6 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { toast } from "sonner";
+import {
+  ArrowLeft,
+  BookOpen,
+  ImageIcon,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ZoomIn,
+  Loader2,
+} from "lucide-react";
 
 type HworkItem = {
   id: string;
@@ -12,11 +23,6 @@ type HworkItem = {
   images?: string[] | null;
 };
 
-function cn(...cls: Array<string | false | null | undefined>) {
-  return cls.filter(Boolean).join(" ");
-}
-
-// Огноо форматлах
 function formatDate(ymdStr: string) {
   const [year, month, day] = ymdStr.split("-");
   const months = [
@@ -36,65 +42,13 @@ function formatDate(ymdStr: string) {
   return `${year} оны ${months[parseInt(month) - 1]} ${parseInt(day)}`;
 }
 
-// Долоо хоногийн өдөр
 function getDayOfWeek(ymdStr: string) {
   const d = new Date(ymdStr + "T00:00:00");
-  const days = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
-  return days[d.getDay()];
+  return ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"][
+    d.getDay()
+  ];
 }
 
-// Хичээлийн өнгө
-const subjectColors: Record<
-  string,
-  { bg: string; text: string; border: string }
-> = {
-  Математик: {
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-200",
-  },
-  Физик: {
-    bg: "bg-purple-50",
-    text: "text-purple-700",
-    border: "border-purple-200",
-  },
-  Хими: {
-    bg: "bg-green-50",
-    text: "text-green-700",
-    border: "border-green-200",
-  },
-  Биологи: {
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
-  },
-  "Англи хэл": {
-    bg: "bg-red-50",
-    text: "text-red-700",
-    border: "border-red-200",
-  },
-  "Монгол хэл": {
-    bg: "bg-orange-50",
-    text: "text-orange-700",
-    border: "border-orange-200",
-  },
-  Түүх: {
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-amber-200",
-  },
-  default: {
-    bg: "bg-gray-50",
-    text: "text-gray-700",
-    border: "border-gray-200",
-  },
-};
-
-function getSubjectColor(subject: string) {
-  return subjectColors[subject] || subjectColors.default;
-}
-
-// Зургуудыг авах
 function getImages(x: HworkItem): string[] {
   const arr = Array.isArray(x.images) ? x.images.filter(Boolean) : [];
   const one =
@@ -102,106 +56,131 @@ function getImages(x: HworkItem): string[] {
   return Array.from(new Set([...arr, ...one]));
 }
 
-// Зургийн carousel
+const SUBJECT_COLORS: Record<
+  string,
+  { gradient: string; text: string; bg: string; border: string }
+> = {
+  Математик: {
+    gradient: "from-blue-500 to-cyan-500",
+    text: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+  Физик: {
+    gradient: "from-violet-500 to-purple-500",
+    text: "text-violet-400",
+    bg: "bg-violet-500/10",
+    border: "border-violet-500/20",
+  },
+  Хими: {
+    gradient: "from-emerald-500 to-teal-500",
+    text: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+  },
+  Биологи: {
+    gradient: "from-green-500 to-lime-500",
+    text: "text-green-400",
+    bg: "bg-green-500/10",
+    border: "border-green-500/20",
+  },
+  "Англи хэл": {
+    gradient: "from-rose-500 to-pink-500",
+    text: "text-rose-400",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
+  },
+  "Монгол хэл": {
+    gradient: "from-orange-500 to-amber-500",
+    text: "text-orange-400",
+    bg: "bg-orange-500/10",
+    border: "border-orange-500/20",
+  },
+  Түүх: {
+    gradient: "from-amber-500 to-yellow-500",
+    text: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+  },
+  default: {
+    gradient: "from-gray-500 to-slate-500",
+    text: "text-gray-400",
+    bg: "bg-gray-500/10",
+    border: "border-gray-500/20",
+  },
+};
+function sc(s: string) {
+  return SUBJECT_COLORS[s] || SUBJECT_COLORS.default;
+}
+
 function CardCarousel({
   images,
   onOpen,
 }: {
   images: string[];
-  onOpen: (index: number) => void;
+  onOpen: (i: number) => void;
 }) {
   const [i, setI] = useState(0);
-
-  useEffect(() => {
-    setI(0);
-  }, [images.join("|")]);
-
-  if (images.length === 0) return null;
-
-  const prev = () => setI((p) => (p - 1 + images.length) % images.length);
-  const next = () => setI((p) => (p + 1) % images.length);
-
+  if (!images.length) return null;
+  const safe = Math.min(i, images.length - 1);
   return (
-    <div className="relative overflow-hidden bg-slate-100 rounded-2xl">
-      <div className="cursor-pointer" onClick={() => onOpen(i)}>
+    <div className="mt-4 rounded-2xl overflow-hidden border border-white/10">
+      <div
+        className="relative group/img cursor-pointer"
+        onClick={() => onOpen(safe)}
+      >
         <img
-          src={images[i]}
+          src={images[safe]}
           alt="homework"
-          className="h-80 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-72 object-cover transition-transform duration-500 group-hover/img:scale-[1.02]"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-      </div>
-
-      {images.length > 1 ? (
-        <>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              prev();
-            }}
-            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 shadow-lg transition hover:scale-105"
-            aria-label="Previous image"
-          >
-            ←
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              next();
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 px-3 py-2 shadow-lg transition hover:scale-105"
-            aria-label="Next image"
-          >
-            →
-          </button>
-
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
-            {i + 1}/{images.length}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-black/50 backdrop-blur flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+          <ZoomIn size={14} className="text-white" />
+        </div>
+        {images.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1 text-xs text-white font-semibold">
+            {safe + 1}/{images.length}
           </div>
-
-          <div className="absolute top-4 right-4 rounded-full bg-white/90 p-2 shadow-lg">
-            🔍
+        )}
+      </div>
+      {images.length > 1 && (
+        <>
+          <div className="flex gap-2 p-3 bg-white/[0.03] overflow-x-auto">
+            {images.map((src, idx) => (
+              <button
+                key={idx}
+                onClick={() => setI(idx)}
+                className={`w-16 h-12 flex-none rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105
+                  ${idx === safe ? "border-white/60" : "border-white/10 hover:border-white/30"}`}
+              >
+                <img src={src} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2 px-3 pb-3">
+            <button
+              onClick={() =>
+                setI((p) => (p - 1 + images.length) % images.length)
+              }
+              className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1"
+            >
+              <ChevronLeft size={14} /> Өмнөх
+            </button>
+            <button
+              onClick={() => setI((p) => (p + 1) % images.length)}
+              className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1"
+            >
+              Дараах <ChevronRight size={14} />
+            </button>
           </div>
         </>
-      ) : (
-        <div className="absolute top-4 right-4 rounded-full bg-white/90 p-2 shadow-lg">
-          🔍
-        </div>
       )}
-
-      {images.length > 1 ? (
-        <div className="flex gap-2 overflow-x-auto bg-white/70 p-3 backdrop-blur-sm rounded-b-2xl">
-          {images.map((src, idx) => (
-            <button
-              key={`${src}-${idx}`}
-              type="button"
-              onClick={() => setI(idx)}
-              className={cn(
-                "h-14 w-20 flex-none overflow-hidden rounded-xl border-2 transition",
-                idx === i
-                  ? "border-slate-900"
-                  : "border-slate-200 hover:border-slate-300",
-              )}
-              aria-label={`Thumbnail ${idx + 1}`}
-            >
-              <img
-                src={src}
-                alt="thumb"
-                className="h-full w-full object-cover"
-              />
-            </button>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
 
-// Зургийг томруулж харах modal
 function ImageModal({
   images,
   startIndex,
@@ -212,107 +191,78 @@ function ImageModal({
   onClose: () => void;
 }) {
   const [i, setI] = useState(startIndex);
-
+  useEffect(() => setI(startIndex), [startIndex]);
   useEffect(() => {
-    setI(startIndex);
-  }, [startIndex]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    const fn = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      if (images.length <= 1) return;
       if (e.key === "ArrowLeft")
         setI((p) => (p - 1 + images.length) % images.length);
       if (e.key === "ArrowRight") setI((p) => (p + 1) % images.length);
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
   }, [images.length, onClose]);
-
-  if (images.length === 0) return null;
-
-  const prev = () => setI((p) => (p - 1 + images.length) % images.length);
-  const next = () => setI((p) => (p + 1) % images.length);
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
       onClick={onClose}
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:scale-110"
-        aria-label="Close"
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all"
       >
-        ✕
+        <X size={18} />
       </button>
-
-      {images.length > 1 ? (
+      {images.length > 1 && (
         <>
           <button
-            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              prev();
+              setI((p) => (p - 1 + images.length) % images.length);
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 px-4 py-3 text-white backdrop-blur-sm transition hover:bg-white/20"
-            aria-label="Previous"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all"
           >
-            ←
+            <ChevronLeft size={20} />
           </button>
           <button
-            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              next();
+              setI((p) => (p + 1) % images.length);
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 px-4 py-3 text-white backdrop-blur-sm transition hover:bg-white/20"
-            aria-label="Next"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all"
           >
-            →
+            <ChevronRight size={20} />
           </button>
         </>
-      ) : null}
-
+      )}
       <div
-        className="relative max-h-[90vh] max-w-[95vw] animate-scaleIn"
+        className="max-h-[90vh] max-w-[95vw]"
         onClick={(e) => e.stopPropagation()}
       >
         <img
           src={images[i]}
-          alt="Enlarged homework"
-          className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl object-contain"
+          alt=""
+          className="max-h-[80vh] max-w-full rounded-2xl shadow-2xl object-contain"
         />
-
-        {images.length > 1 ? (
-          <>
-            <div className="mt-3 flex justify-center gap-2 overflow-x-auto">
-              {images.map((src, idx) => (
-                <button
-                  key={`${src}-${idx}`}
-                  type="button"
-                  onClick={() => setI(idx)}
-                  className={cn(
-                    "h-14 w-20 flex-none overflow-hidden rounded-xl border-2 transition",
-                    idx === i
-                      ? "border-white"
-                      : "border-white/30 hover:border-white/60",
-                  )}
-                >
-                  <img
-                    src={src}
-                    alt="thumb"
-                    className="h-full w-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs text-white">
-              {i + 1}/{images.length}
-            </div>
-          </>
-        ) : null}
+        {images.length > 1 && (
+          <div className="mt-3 flex justify-center gap-2 overflow-x-auto">
+            {images.map((src, idx) => (
+              <button
+                key={idx}
+                onClick={() => setI(idx)}
+                className={`w-16 h-12 flex-none rounded-xl overflow-hidden border-2 transition-all hover:scale-105
+                  ${idx === i ? "border-white" : "border-white/30 hover:border-white/60"}`}
+              >
+                <img src={src} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+        {images.length > 1 && (
+          <p className="text-center text-xs text-gray-500 mt-2">
+            {i + 1}/{images.length}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -325,39 +275,37 @@ export default function HomeworkDatePage() {
 
   const [allData, setAllData] = useState<HworkItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
   const [modal, setModal] = useState<{
     images: string[];
     index: number;
   } | null>(null);
 
-  // Тухайн өдрийн даалгаврууд
   const dayHomework = useMemo(() => {
     if (!dateParam) return [];
-
     return allData
       .filter((item) => {
         const d = new Date(item.date);
-        const pad = (n: number) => String(n).padStart(2, "0");
-        const itemDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-        return itemDate === dateParam;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        return key === dateParam;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [allData, dateParam]);
 
-  // Даалгавар унших
+  const daySubjects = useMemo(() => {
+    const s = new Set<string>();
+    for (const x of dayHomework)
+      if ((x.subject || "").trim()) s.add(x.subject.trim());
+    return Array.from(s).sort((a, b) => a.localeCompare(b));
+  }, [dayHomework]);
+
   const fetchHomework = async () => {
     try {
       setLoading(true);
-      setError("");
       const res = await fetch("/api/hwork", { cache: "no-store" });
-      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-      const json = (await res.json()) as HworkItem[];
-      setAllData(json);
-    } catch (e) {
-      console.error(e);
-      setError(e instanceof Error ? e.message : "Fetch error");
+      if (!res.ok) throw new Error();
+      setAllData(await res.json());
+    } catch {
+      toast.error("Даалгаварыг ачаалахад алдаа гарлаа");
     } finally {
       setLoading(false);
     }
@@ -366,7 +314,6 @@ export default function HomeworkDatePage() {
   useEffect(() => {
     fetchHomework();
   }, []);
-
   useEffect(() => {
     if (modal) document.body.style.overflow = "hidden";
     else document.body.style.overflow = "unset";
@@ -376,156 +323,124 @@ export default function HomeworkDatePage() {
   }, [modal]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
-      <div className="mx-auto max-w-5xl p-6">
-        {/* Толгой хэсэг */}
-        <div className="mb-8 rounded-3xl bg-white/80 p-8 shadow-xl backdrop-blur-sm border border-slate-200">
+    <div className="min-h-screen bg-black text-white p-6 font-sans">
+      {/* Orbs */}
+      <div className="fixed inset-0 overflow-hidden -z-10">
+        <div className="absolute top-0 -left-4 w-80 h-80 bg-pink-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
+        <div
+          className="absolute bottom-0 -right-4 w-80 h-80 bg-orange-500 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse"
+          style={{ animationDelay: "1.5s" }}
+        />
+        <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-violet-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-10" />
+      </div>
+
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
           <button
-            onClick={() => router.push("/homeWork")}
-            className="mb-4 hover:cursor-pointer flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            onClick={() => router.back()}
+            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Буцах
+            <ArrowLeft
+              size={24}
+              className="group-hover:text-pink-400 transition-colors"
+            />
           </button>
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 px-4 py-1.5 rounded-full text-sm font-medium text-blue-700 mb-3">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+          <div className="text-right">
+            <div className="flex items-center justify-end gap-2 mb-1">
+              <span className="text-xs font-bold text-pink-400/80 uppercase tracking-wider bg-pink-500/10 border border-pink-500/20 px-2.5 py-1 rounded-full">
                 {dateParam && getDayOfWeek(dateParam)}
-              </div>
-              <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold tracking-tight text-transparent">
-                {dateParam && formatDate(dateParam)}
-              </h1>
-              <p className="mt-2 text-slate-600">
-                Өдрийн даалгаврын дэлгэрэнгүй
-              </p>
+              </span>
             </div>
-
-            <div className="flex items-center gap-2 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-2xl px-6 py-4">
-              <svg
-                className="w-6 h-6 text-blue-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <div>
-                <span className="text-xs text-slate-500 block">Нийт</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  {dayHomework.length}
-                </span>
-              </div>
-            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-orange-400 bg-clip-text text-transparent">
+              {dateParam && formatDate(dateParam)}
+            </h1>
+            <p className="text-gray-500 text-xs mt-1">
+              {dayHomework.length} даалгавар • {daySubjects.length} хичээл
+            </p>
           </div>
         </div>
 
-        {/* Алдааны мэдээлэл */}
-        {error && (
-          <div className="mb-6 animate-shake rounded-2xl border-2 border-red-200 bg-red-50 p-4 shadow-md">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">⚠️</span>
-              <span className="text-sm font-medium text-red-700">{error}</span>
+        {/* Subject pills summary */}
+        {!loading && daySubjects.length > 0 && (
+          <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
+            <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-3">
+              Өнөөдрийн хичээлүүд
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {daySubjects.map((s) => {
+                const c = sc(s);
+                return (
+                  <span
+                    key={s}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold border ${c.bg} ${c.text} ${c.border}`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${c.gradient}`}
+                    />
+                    {s}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Даалгаврын жагсаалт */}
+        {/* List */}
         {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="animate-pulse rounded-3xl bg-white/80 p-6 shadow-md"
-              >
-                <div className="mb-3 h-6 w-1/3 rounded-lg bg-slate-200" />
-                <div className="h-4 w-2/3 rounded-lg bg-slate-200" />
-                <div className="mt-4 h-48 w-full rounded-xl bg-slate-200" />
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <Loader2 className="animate-spin text-pink-500" size={32} />
+            <p className="text-gray-400">Ачаалж байна...</p>
           </div>
         ) : dayHomework.length === 0 ? (
-          <div className="rounded-3xl bg-white/80 p-12 text-center shadow-xl border-2 border-dashed border-slate-200">
-            <div className="text-6xl mb-4">📝</div>
-            <p className="text-lg font-medium text-slate-600">
-              Энэ өдөр даалгавар байхгүй байна
-            </p>
-            <p className="mt-2 text-sm text-slate-500">
-              Өөр өдөр сонгож үзнэ үү
-            </p>
+          <div className="text-center py-20 bg-white/[0.03] border border-white/10 rounded-3xl">
+            <div className="text-5xl mb-4 opacity-30">📝</div>
+            <p className="text-gray-500">Энэ өдөр даалгавар байхгүй байна</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {dayHomework.map((item, index) => {
-              const colors = getSubjectColor(item.subject);
+              const c = sc(item.subject);
               const imgs = getImages(item);
-
               return (
                 <div
                   key={item.id}
-                  className="group overflow-hidden rounded-3xl bg-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border border-slate-200"
-                  style={{
-                    animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`,
-                  }}
+                  className="group rounded-2xl border border-white/8 bg-white/[0.03] overflow-hidden
+                    hover:border-white/15 hover:bg-white/[0.05] transition-all duration-200"
+                  style={{ animationDelay: `${index * 60}ms` }}
                 >
-                  <div className={cn("border-b-2 p-6", colors.border)}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="mb-3">
-                          <span
-                            className={cn(
-                              "rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm transition-transform duration-300 group-hover:scale-[1.02]",
-                              colors.bg,
-                              colors.text,
-                            )}
-                          >
-                            {item.subject}
-                          </span>
-                        </div>
-
-                        <h3 className="whitespace-pre-line text-lg font-semibold leading-relaxed text-slate-800">
-                          {item.title}
-                        </h3>
+                  <div className="p-5">
+                    {/* Subject badge */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <div
+                        className={`w-8 h-8 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center flex-shrink-0 shadow-lg`}
+                      >
+                        <BookOpen size={14} className="text-white" />
                       </div>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${c.bg} ${c.text} ${c.border}`}
+                      >
+                        {item.subject}
+                      </span>
+                      {imgs.length > 0 && (
+                        <span className="ml-auto flex items-center gap-1 text-xs text-gray-600">
+                          <ImageIcon size={12} />
+                          {imgs.length}
+                        </span>
+                      )}
                     </div>
+                    {/* Title */}
+                    <p className="text-gray-100 font-semibold leading-relaxed whitespace-pre-line group-hover:text-white transition-colors">
+                      {item.title}
+                    </p>
+                    {/* Images */}
+                    {imgs.length > 0 && (
+                      <CardCarousel
+                        images={imgs}
+                        onOpen={(idx) => setModal({ images: imgs, index: idx })}
+                      />
+                    )}
                   </div>
-
-                  {imgs.length ? (
-                    <CardCarousel
-                      images={imgs}
-                      onOpen={(idx) => setModal({ images: imgs, index: idx })}
-                    />
-                  ) : null}
                 </div>
               );
             })}
@@ -533,70 +448,13 @@ export default function HomeworkDatePage() {
         )}
       </div>
 
-      {/* Зургийн modal */}
-      {modal ? (
+      {modal && (
         <ImageModal
           images={modal.images}
           startIndex={modal.index}
           onClose={() => setModal(null)}
         />
-      ) : null}
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes shake {
-          0%,
-          100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          75% {
-            transform: translateX(5px);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.9);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        .animate-scaleIn {
-          animation: scaleIn 0.3s ease-out;
-        }
-      `}</style>
+      )}
     </div>
   );
 }

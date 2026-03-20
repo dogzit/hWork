@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "11d angiin web app",
-  description: "Made by huurhun zoloo ",
+  title: "11D Angiin Web App",
+  description: "Made by huurhun zoloo",
 };
 
 export default function RootLayout({
@@ -26,15 +26,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
         {children}
 
+        {/* Мэдэгдэл гаргагч (Toaster) */}
         <Toaster position="top-right" richColors closeButton duration={3000} />
 
-        <h6 className="fixed bottom-3 right-3 text-xs font-semibold text-gray-400 tracking-tight drop-shadow-lg">
-          Made by: zolo
-        </h6>
+        {/* Footer Text - Илүү гоё харагдуулсан */}
+        <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
+            Design by <span className="text-purple-500/50">Zolo</span>
+          </p>
+        </div>
       </body>
     </html>
   );

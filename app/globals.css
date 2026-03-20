@@ -1,1 +1,6 @@
 @import "tailwindcss";
+button:hover {
+  /* This works regardless of whether the button is red, blue, or green */
+  filter: contrast(1.2) brightness(0.9);
+  cursor: pointer;
+}

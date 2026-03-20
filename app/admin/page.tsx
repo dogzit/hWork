@@ -3,7 +3,10 @@ import { useRouter } from "next/navigation";
 
 export default function HomeworkAddPage() {
   const router = useRouter();
-
+  const handleLogout = () => {
+    localStorage.removeItem("name");
+    window.location.href = "/auth/login";
+  };
   const menuItems = [
     {
       title: "Хуваарь өөрчлөх",
@@ -71,7 +74,6 @@ export default function HomeworkAddPage() {
       hoverColor: "hover:shadow-emerald-500/50",
       route: "/admin/duty",
     },
-
     {
       title: "Даалгавар удирдах",
       description: "Даалгавар өөрчлөх, засах, устгах",
@@ -142,7 +144,6 @@ export default function HomeworkAddPage() {
                 hover:shadow-2xl hover:-translate-y-2 ${item.hoverColor}
               `}
             >
-              {/* Gradient толгой */}
               <div className={`bg-gradient-to-br ${item.color} p-6`}>
                 <div className="text-white mb-4 transform group-hover:scale-110 transition-transform duration-300">
                   {item.icon}
@@ -151,12 +152,8 @@ export default function HomeworkAddPage() {
                   {item.title}
                 </h3>
               </div>
-
-              {/* Агуулга */}
               <div className="p-6">
                 <p className="text-slate-600 mb-4">{item.description}</p>
-
-                {/* Товч */}
                 <div className="flex items-center text-indigo-600 font-medium group-hover:text-indigo-700 group-hover:gap-3 transition-all">
                   <span>Нээх</span>
                   <svg
@@ -174,75 +171,20 @@ export default function HomeworkAddPage() {
                   </svg>
                 </div>
               </div>
-
-              {/* Hover эффект */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-500" />
             </div>
           ))}
         </div>
 
-        {/* Статистик хэсэг (optional)
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-100 rounded-xl mb-4">
-              <svg
-                className="w-7 h-7 text-blue-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-slate-600 mb-1">Хуваарь</p>
-            <p className="text-2xl font-bold text-slate-900">Удирдах</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 rounded-xl mb-4">
-              <svg
-                className="w-7 h-7 text-green-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-slate-600 mb-1">Даалгавар</p>
-            <p className="text-2xl font-bold text-slate-900">Нэмэх</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 bg-purple-100 rounded-xl mb-4">
-              <svg
-                className="w-7 h-7 text-purple-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-slate-600 mb-1">Даалгавар</p>
-            <p className="text-2xl font-bold text-slate-900">Засах</p>
-          </div>
-        </div> */}
+        {/* Logout товч */}
+        <div className="mt-8">
+          <button
+            onClick={handleLogout}
+            className="px-5 py-2 rounded-lg border border-slate-200 bg-white text-slate-500 text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200"
+          >
+            Гарах
+          </button>
+        </div>
 
         {/* Footer мэдээлэл */}
         <div className="mt-12 text-center">

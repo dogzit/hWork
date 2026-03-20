@@ -6,9 +6,44 @@ datasource db {
   provider = "postgresql"
 }
 
+// --- Authentication & User ---
 model User {
   id   String @id @default(nanoid())
-  name String
+  name String @unique
+
+  // Security fields for your hashPin function
+  pinSalt String
+  pinHash String @unique
+
+  createdAt DateTime  @default(now())
+  sessions  Session[]
+  todos     Todo[]
+}
+
+// Keep your Session and Todo models as they were...
+
+model Session {
+  token     String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId, expiresAt])
+}
+
+// --- Features ---
+
+model Todo {
+  id        Int     @id @default(autoincrement())
+  task      String
+  completed Boolean @default(false)
+
+  // Foreign Key linking to User.name
+  userName String
+  user     User   @relation(fields: [userName], references: [name], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model Hwork {
@@ -16,21 +51,15 @@ model Hwork {
   subject String
   title   String
   date    DateTime
-
-  images String[] @default([])
-
-  image String?
+  images  String[] @default([])
+  image   String?
 }
 
 model DutySchedule {
-  id String @id @default(nanoid())
-
-  date DateTime @unique
-
-  names String[] @default([])
-
-  notes String?
-
+  id        String   @id @default(nanoid())
+  date      DateTime @unique
+  names     String[] @default([])
+  notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -38,12 +67,11 @@ model DutySchedule {
 }
 
 model Timetable {
-  id           String @id @default(nanoid())
+  id           String   @id @default(nanoid())
   day          Day
   lessonNumber Int
   subject      String
-
-  createdAt DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   @@unique([day, lessonNumber])
 }
