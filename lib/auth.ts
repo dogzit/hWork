@@ -48,7 +48,7 @@ export async function createAuthToken(user: { id: string; name: string }) {
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
-    .setExpirationTime("30d")
+    .setExpirationTime("5d")
     .sign(enc.encode(secret));
 }
 
