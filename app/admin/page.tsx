@@ -1,200 +1,158 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {
+  LogOut,
+  Calendar,
+  Plus,
+  BookOpen,
+  Edit3,
+  ArrowRight,
+  Settings,
+} from "lucide-react";
 
-export default function HomeworkAddPage() {
+export default function AdminHomePage() {
   const router = useRouter();
+
   const handleLogout = () => {
-    localStorage.removeItem("name");
-    window.location.href = "/auth/login";
+    toast.info("Гарч байна...", { duration: 1200 });
+    setTimeout(() => {
+      localStorage.removeItem("name");
+      window.location.href = "/auth/login";
+    }, 800);
   };
-  const menuItems = [
+
+  const cards = [
     {
+      icon: <Calendar size={20} className="text-white" />,
+      gradient: "from-blue-600 to-cyan-500",
+      glow: "bg-blue-500",
       title: "Хуваарь өөрчлөх",
-      description: "Хичээлийн хуваарь засах, шинэчлэх",
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-      ),
-      color: "from-blue-500 to-cyan-500",
-      hoverColor: "hover:shadow-blue-500/50",
-      route: "/admin/timeTable",
+      desc: "Хичээлийн хуваарь засах, шинэчлэх",
+      href: "/admin/timeTable",
     },
     {
+      icon: <Plus size={20} className="text-white" />,
+      gradient: "from-emerald-600 to-teal-500",
+      glow: "bg-emerald-500",
       title: "Даалгавар нэмэх",
-      description: "Шинэ даалгавар үүсгэх",
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-      ),
-      color: "from-green-500 to-emerald-500",
-      hoverColor: "hover:shadow-green-500/50",
-      route: "/admin/homework/add",
+      desc: "Шинэ даалгавар үүсгэх",
+      href: "/admin/homework/add",
     },
     {
-      title: "Жижүүр удирдах",
-      description: "Жижүүрийн хуваарь харах ",
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 7l-3 3m0 0l-3-3m3 3V4M5 20h14a2 2 0 002-2v-5M5 20a2 2 0 01-2-2V7a2 2 0 012-2h8"
-          />
-        </svg>
-      ),
-      color: "from-emerald-500 to-cyan-500",
-      hoverColor: "hover:shadow-emerald-500/50",
-      route: "/admin/duty",
-    },
-    {
+      icon: <Edit3 size={20} className="text-white" />,
+      gradient: "from-violet-600 to-purple-500",
+      glow: "bg-violet-500",
       title: "Даалгавар удирдах",
-      description: "Даалгавар өөрчлөх, засах, устгах",
-      icon: (
-        <svg
-          className="w-8 h-8"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-          />
-        </svg>
-      ),
-      color: "from-purple-500 to-pink-500",
-      hoverColor: "hover:shadow-purple-500/50",
-      route: "/admin/homework",
+      desc: "Даалгавар өөрчлөх, засах, устгах",
+      href: "/admin/homework",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Толгой хэсэг */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-xl mb-6">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
+      {/* Orbs — muted for admin */}
+      <div className="fixed inset-0 overflow-hidden -z-10">
+        <div className="absolute top-0 -left-4 w-96 h-96 bg-slate-700 rounded-full mix-blend-multiply filter blur-[160px] opacity-30 animate-pulse" />
+        <div
+          className="absolute bottom-0 -right-4 w-96 h-96 bg-slate-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-20 animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
+      </div>
+
+      <div className="w-full max-w-sm">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/10 mb-5 shadow-xl">
+            <Settings size={24} className="text-gray-400" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
+          <h1 className="text-2xl font-bold text-white tracking-tight mb-1">
             Админ удирдлага
           </h1>
-          <p className="text-slate-600 text-lg">
+          <p className="text-gray-600 text-sm">
             Хичээлийн хуваарь болон даалгаврын удирдлага
           </p>
         </div>
 
-        {/* Цэс картууд */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {menuItems.map((item, index) => (
-            <div
-              key={index}
-              onClick={() => router.push(item.route)}
-              className={`
-                group relative bg-white rounded-2xl shadow-lg border border-slate-200
-                transition-all duration-300 cursor-pointer overflow-hidden
-                hover:shadow-2xl hover:-translate-y-2 ${item.hoverColor}
-              `}
+        {/* Nav Cards */}
+        <div className="grid grid-cols-1 gap-3 mb-3">
+          {cards.map((card) => (
+            <button
+              key={card.href}
+              type="button"
+              onClick={() => {
+                toast.info(`${card.title}...`, { duration: 900 });
+                setTimeout(() => router.push(card.href), 300);
+              }}
+              className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]
+                px-5 py-4 text-left
+                hover:bg-white/[0.06] hover:border-white/15 hover:scale-[1.01] hover:shadow-lg
+                active:scale-[0.99] transition-all duration-200"
             >
-              <div className={`bg-gradient-to-br ${item.color} p-6`}>
-                <div className="text-white mb-4 transform group-hover:scale-110 transition-transform duration-300">
-                  {item.icon}
+              {/* Left accent */}
+              <div
+                className={`absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-gradient-to-b ${card.gradient} opacity-50 group-hover:opacity-100 transition-opacity`}
+              />
+              {/* Hover glow */}
+              <div
+                className={`absolute -inset-10 ${card.glow} rounded-full blur-3xl opacity-0 group-hover:opacity-[0.04] transition-opacity duration-300`}
+              />
+
+              <div className="relative flex items-center gap-3.5">
+                <div
+                  className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-200`}
+                >
+                  {card.icon}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {item.title}
-                </h3>
-              </div>
-              <div className="p-6">
-                <p className="text-slate-600 mb-4">{item.description}</p>
-                <div className="flex items-center text-indigo-600 font-medium group-hover:text-indigo-700 group-hover:gap-3 transition-all">
-                  <span>Нээх</span>
-                  <svg
-                    className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-100 text-sm group-hover:text-white transition-colors">
+                    {card.title}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-0.5 group-hover:text-gray-500 transition-colors">
+                    {card.desc}
+                  </p>
                 </div>
+                <ArrowRight
+                  size={15}
+                  className="text-gray-700 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0"
+                />
               </div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl transform translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-500" />
-            </div>
+            </button>
           ))}
         </div>
 
-        {/* Logout товч */}
-        <div className="mt-8">
-          <button
-            onClick={handleLogout}
-            className="px-5 py-2 rounded-lg border border-slate-200 bg-white text-slate-500 text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200"
-          >
-            Гарах
-          </button>
+        {/* Status pill */}
+        <div className="flex items-center justify-center gap-2 py-3 mb-3">
+          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="text-xs text-gray-600">
+            Систем хэвийн ажиллаж байна
+          </span>
         </div>
 
-        {/* Footer мэдээлэл */}
-        <div className="mt-12 text-center">
-          <div className="inline-flex items-center gap-2 bg-white rounded-full shadow-lg border border-slate-200 px-6 py-3">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-sm text-slate-600">
-              Систем хэвийн ажиллаж байна
-            </span>
-          </div>
-        </div>
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="group w-full flex items-center justify-center gap-2
+            px-5 py-3 rounded-2xl
+            bg-white/[0.02] border border-white/8 text-gray-600
+            hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
+            hover:scale-[1.01] active:scale-[0.99]
+            transition-all duration-200 text-sm font-semibold"
+        >
+          <LogOut
+            size={14}
+            className="group-hover:rotate-12 transition-transform duration-200"
+          />
+          Системээс гарах
+        </button>
       </div>
     </div>
   );

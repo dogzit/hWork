@@ -3,8 +3,19 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
+import {
+  ArrowLeft,
+  RefreshCw,
+  Pencil,
+  Trash2,
+  X,
+  Loader2,
+  Upload,
+  ZoomIn,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
-// Даалгаврын төрөл
 type HworkItem = {
   id: string;
   subject: string;
@@ -14,27 +25,13 @@ type HworkItem = {
   images?: string[] | null;
 };
 
-// CSS классуудыг нэгтгэх функц
-function cn(...cls: Array<string | false | null | undefined>) {
-  return cls.filter(Boolean).join(" ");
-}
-
-// Зөвшөөрөгдсөн зургийн форматууд
-const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
-
-// ISO огноог YYYY-MM-DD форматруу хөрвүүлэх
 function ymd(iso: string) {
   const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-
-// YYYY-MM-DD форматыг ISO болгох
-function ymdToISOStart(ymdStr: string) {
-  return new Date(`${ymdStr}T00:00:00.000Z`).toISOString();
+function ymdToISO(y: string) {
+  return new Date(`${y}T00:00:00.000Z`).toISOString();
 }
-
-// Огноог текстээр харуулах
 function formatDateDisplay(ymdStr: string) {
   const [year, month, day] = ymdStr.split("-");
   const months = [
@@ -53,300 +50,293 @@ function formatDateDisplay(ymdStr: string) {
   ];
   return `${year} оны ${months[parseInt(month) - 1]} ${parseInt(day)}`;
 }
-
-// Долоо хоногийн өдөр
 function getDayOfWeek(ymdStr: string) {
-  const d = new Date(ymdStr + "T00:00:00");
-  const days = ["Ням", "Дав", "Мяг", "Лха", "Пүр", "Баа", "Бям"];
-  return days[d.getDay()];
+  return ["Ням", "Дав", "Мяг", "Лха", "Пүр", "Баа", "Бям"][
+    new Date(ymdStr + "T00:00:00").getDay()
+  ];
 }
-
-// Даалгавраас бүх зургуудыг авах
 function getImages(x: HworkItem): string[] {
   const arr = Array.isArray(x.images) ? x.images.filter(Boolean) : [];
   const one =
     typeof x.image === "string" && x.image.trim() ? [x.image.trim()] : [];
   return Array.from(new Set([...arr, ...one]));
 }
-
-// Файлын unique түлхүүр үүсгэх
 function fileKey(f: File) {
   return `${f.name}__${f.size}__${f.lastModified}`;
 }
+const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-export default function HomeworkDatePage() {
+const SUBJECT_COLORS: Record<
+  string,
+  { gradient: string; text: string; bg: string; border: string }
+> = {
+  Математик: {
+    gradient: "from-blue-500 to-cyan-500",
+    text: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+  Физик: {
+    gradient: "from-violet-500 to-purple-500",
+    text: "text-violet-400",
+    bg: "bg-violet-500/10",
+    border: "border-violet-500/20",
+  },
+  Хими: {
+    gradient: "from-emerald-500 to-teal-500",
+    text: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+  },
+  Биологи: {
+    gradient: "from-green-500 to-lime-500",
+    text: "text-green-400",
+    bg: "bg-green-500/10",
+    border: "border-green-500/20",
+  },
+  "Англи хэл": {
+    gradient: "from-rose-500 to-pink-500",
+    text: "text-rose-400",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
+  },
+  "Монгол хэл": {
+    gradient: "from-orange-500 to-amber-500",
+    text: "text-orange-400",
+    bg: "bg-orange-500/10",
+    border: "border-orange-500/20",
+  },
+  Түүх: {
+    gradient: "from-amber-500 to-yellow-500",
+    text: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+  },
+  default: {
+    gradient: "from-slate-500 to-gray-500",
+    text: "text-gray-400",
+    bg: "bg-gray-500/10",
+    border: "border-gray-500/20",
+  },
+};
+const sc = (s: string) => SUBJECT_COLORS[s] || SUBJECT_COLORS.default;
+
+function ImageModal({
+  images,
+  startIndex,
+  onClose,
+}: {
+  images: string[];
+  startIndex: number;
+  onClose: () => void;
+}) {
+  const [i, setI] = useState(startIndex);
+  useEffect(() => setI(startIndex), [startIndex]);
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft")
+        setI((p) => (p - 1 + images.length) % images.length);
+      if (e.key === "ArrowRight") setI((p) => (p + 1) % images.length);
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [images.length, onClose]);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+      >
+        <X size={16} />
+      </button>
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setI((p) => (p - 1 + images.length) % images.length);
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setI((p) => (p + 1) % images.length);
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </>
+      )}
+      <img
+        src={images[i]}
+        alt=""
+        className="max-h-[88vh] max-w-[94vw] rounded-2xl object-contain shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      />
+      {images.length > 1 && (
+        <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-600">
+          {i + 1}/{images.length}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function AdminHomeworkDatePage() {
   const router = useRouter();
   const params = useParams();
   const dateKey = params?.date as string;
-  const uploadEndpoint = "/api/upload";
 
-  // Зургийн харагч
+  const [data, setData] = useState<HworkItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [viewer, setViewer] = useState<{
     images: string[];
     index: number;
   } | null>(null);
-
-  // Үндсэн өгөгдөл
-  const [data, setData] = useState<HworkItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
-
-  // Засах болон устгах модалууд
   const [editing, setEditing] = useState<HworkItem | null>(null);
   const [deleting, setDeleting] = useState<HworkItem | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  // Засах форм талбарууд
   const [eSubject, setESubject] = useState("");
   const [eTitle, setETitle] = useState("");
   const [eDateYmd, setEDateYmd] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-
-  // Файл сонгох болон upload хийх
   const [files, setFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [dragOver, setDragOver] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const dayHomeworks = useMemo(
+    () => data.filter((x) => ymd(x.date) === dateKey),
+    [data, dateKey],
+  );
 
-  // Тухайн өдрийн даалгаврууд
-  const dayHomeworks = useMemo(() => {
-    return data.filter((x) => ymd(x.date) === dateKey);
-  }, [data, dateKey]);
-
-  // Бүх даалгаврыг унших
   const fetchAll = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
       const res = await fetch("/api/hwork", { cache: "no-store" });
-      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-      const json = (await res.json()) as HworkItem[];
-      setData(json);
-
-      toast.success("Даалгавар шинэчлэгдлээ 🔄");
-    } catch (e) {
-      console.error(e);
-      const msg = e instanceof Error ? e.message : "Fetch error";
-      toast.error("Унших үед алдаа гарлаа ❌", { description: msg });
+      if (!res.ok) throw new Error();
+      setData(await res.json());
+    } catch {
+      toast.error("Ачааллахад алдаа гарлаа");
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchAll();
   }, []);
 
-  // Модал нээлттэй үед scroll-ыг түгжих
   useEffect(() => {
-    const open = Boolean(editing || deleting);
-    document.body.style.overflow = open ? "hidden" : "unset";
+    document.body.style.overflow =
+      editing || deleting || viewer ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [editing, deleting]);
+  }, [editing, deleting, viewer]);
 
-  // Preview зургуудыг цэвэрлэх
-  const clearPreviews = () => {
-    previewUrls.forEach((u) => URL.revokeObjectURL(u));
-    setPreviewUrls([]);
-  };
-
-  const clearPickedFiles = () => {
-    clearPreviews();
-    setFiles([]);
-  };
-
-  // Засах модал нээгдэхэд өгөгдөл ачаалах
   useEffect(() => {
     if (!editing) return;
-
-    setErr("");
     setESubject(editing.subject || "");
     setETitle(editing.title || "");
     setEDateYmd(ymd(editing.date));
     setImageUrls(getImages(editing));
-    clearPickedFiles();
+    setFiles([]);
+    previewUrls.forEach((u) => URL.revokeObjectURL(u));
+    setPreviewUrls([]);
   }, [editing?.id]);
 
-  useEffect(() => {
-    return () => {
-      clearPreviews();
-    };
-  }, []);
-
-  // Файлуудыг шалгах
-  const validateFiles = (picked: File[]) => {
-    const maxMB = 5;
-    const maxBytes = maxMB * 1024 * 1024;
-
+  const applyFiles = (picked: File[]) => {
     for (const f of picked) {
-      if (!ALLOWED_MIME.has(f.type))
-        return "Зөвхөн JPG / PNG / WEBP зураг зөвшөөрнө.";
-      if (f.size > maxBytes)
-        return `"${f.name}" зураг ${maxMB}MB-аас их байна.`;
+      if (!ALLOWED.has(f.type)) {
+        toast.error("Зөвхөн JPG/PNG/WEBP");
+        return;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        toast.error("5MB-аас бага байх ёстой");
+        return;
+      }
     }
-    return "";
-  };
-
-  // Сонгосон файлуудыг нэмэх
-  const applyPickedFiles = (picked: File[], mode: "replace" | "append") => {
-    if (picked.length === 0) {
-      if (mode === "replace") clearPickedFiles();
-      return;
-    }
-
-    const v = validateFiles(picked);
-    if (v) {
-      toast.error("Зураг сонгох боломжгүй ❌", { description: v });
-      return;
-    }
-
-    const next =
-      mode === "replace"
-        ? picked
-        : (() => {
-            const existing = new Map(files.map((f) => [fileKey(f), f]));
-            for (const f of picked) existing.set(fileKey(f), f);
-            return Array.from(existing.values());
-          })();
-
+    const existing = new Map(files.map((f) => [fileKey(f), f]));
+    for (const f of picked) existing.set(fileKey(f), f);
+    const next = Array.from(existing.values());
     setFiles(next);
-    clearPreviews();
+    previewUrls.forEach((u) => URL.revokeObjectURL(u));
     setPreviewUrls(next.map((f) => URL.createObjectURL(f)));
-
-    if (fileInputRef.current) fileInputRef.current.value = "";
-
-    toast.success("Зураг сонгогдлоо ✅", {
-      description: `${next.length} зураг`,
-    });
+    if (fileRef.current) fileRef.current.value = "";
   };
 
-  // Сонгосон файл устгах
-  const removePickedOne = (idx: number) => {
-    const next = files.filter((_, i) => i !== idx);
-    applyPickedFiles(next, "replace");
-  };
-
-  // DB-ийн зураг устгах
-  const removeUrlOne = (idx: number) => {
-    setImageUrls((p) => p.filter((_, i) => i !== idx));
-  };
-
-  // Файлуудыг Blob руу upload хийх
   const uploadPicked = async () => {
-    if (files.length === 0) {
-      toast.info("Upload хийх зураг алга байна");
-      return;
-    }
-
-    const loadingId = toast.loading("Зургууд upload хийж байна...");
+    if (!files.length) return;
     setUploading(true);
-
     try {
       const urls: string[] = [];
-
       for (const file of files) {
         const fd = new FormData();
         fd.append("file", file);
-
-        const res = await fetch(uploadEndpoint, { method: "POST", body: fd });
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
-          throw new Error(t || `Upload failed: ${res.status}`);
-        }
-
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) throw new Error();
         const json = (await res.json()) as any;
-        const url =
-          json?.url ??
-          json?.blob?.url ??
-          json?.data?.url ??
-          json?.result?.url ??
-          null;
-
-        if (!url) throw new Error("Upload response missing url");
-        urls.push(String(url));
+        const url = json?.url ?? json?.blob?.url ?? null;
+        if (!url) throw new Error("URL олдсонгүй");
+        urls.push(url);
       }
-
       setImageUrls((prev) => Array.from(new Set([...prev, ...urls])));
-      clearPickedFiles();
-
-      toast.dismiss(loadingId);
-      toast.success("Upload амжилттай ✅", {
-        description: `${urls.length} зураг нэмэгдлээ`,
-      });
-    } catch (e) {
-      console.error(e);
-      const msg = e instanceof Error ? e.message : "Upload error";
-      toast.dismiss(loadingId);
-      toast.error("Upload үед алдаа гарлаа ❌", { description: msg });
+      setFiles([]);
+      previewUrls.forEach((u) => URL.revokeObjectURL(u));
+      setPreviewUrls([]);
+      toast.success(`${urls.length} зураг нэмэгдлээ ✅`, { duration: 2000 });
+    } catch {
+      toast.error("Upload алдаа гарлаа");
     } finally {
-      setUploading(false);
       setUploading(false);
     }
   };
 
-  // Засварыг хадгалах
   const saveEdit = async () => {
     if (!editing) return;
-
-    const loadingId = toast.loading("Хадгалж байна...");
+    setSaving(true);
     try {
-      setSaving(true);
-
       const res = await fetch(`/api/hwork/${editing.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           subject: eSubject.trim(),
           title: eTitle.trim(),
-          date: ymdToISOStart(eDateYmd),
+          date: ymdToISO(eDateYmd),
           images: imageUrls,
         }),
       });
-
-      if (!res.ok) {
-        const t = await res.text().catch(() => "");
-        throw new Error(t || `Update failed: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error();
       const updated = (await res.json()) as HworkItem;
       setData((p) => p.map((x) => (x.id === updated.id ? updated : x)));
       setEditing(null);
-
-      toast.dismiss(loadingId);
-      toast.success("Амжилттай хадгаллаа ✅", {
-        description: `${updated.subject} • ${ymd(updated.date)}`,
-      });
-    } catch (e) {
-      console.error(e);
-      const msg = e instanceof Error ? e.message : "Update error";
-      toast.dismiss(loadingId);
-      toast.error("Хадгалах үед алдаа ❌", { description: msg });
+      toast.success("Амжилттай хадгалагдлаа ✅", { duration: 2000 });
+    } catch {
+      toast.error("Хадгалахад алдаа гарлаа");
     } finally {
       setSaving(false);
     }
   };
+
   const doDelete = async (id: string) => {
-    const loadingId = toast.loading("Устгаж байна...");
+    setBusyId(id);
     try {
-      setBusyId(id);
-
       const res = await fetch(`/api/hwork/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
-
+      if (!res.ok) throw new Error();
       setData((p) => p.filter((x) => x.id !== id));
       setDeleting(null);
-
-      toast.dismiss(loadingId);
-      toast.success("Устгалаа ✅");
-    } catch (e) {
-      console.error(e);
-      const msg = e instanceof Error ? e.message : "Delete error";
-      toast.dismiss(loadingId);
-      toast.error("Устгах үед алдаа ❌", { description: msg });
+      toast.info("Устгагдлаа 🗑️", { duration: 2000 });
+    } catch {
+      toast.error("Устгахад алдаа гарлаа");
     } finally {
       setBusyId(null);
     }
@@ -360,223 +350,126 @@ export default function HomeworkDatePage() {
     !uploading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
-      <div className="w-full max-w-6xl mx-auto">
-        {/* Толгой хэсэг */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-            <button
-              onClick={() => router.push("/admin/homework")}
-              className="mb-3 hover:cursor-pointer flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Буцах
-            </button>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium text-white mb-3">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  {getDayOfWeek(dateKey)}
-                </div>
-                <h1 className="text-3xl font-bold text-white">
-                  {formatDateDisplay(dateKey)}
-                </h1>
-                <p className="mt-2 text-indigo-100">
-                  {dayHomeworks.length} даалгавар
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={fetchAll}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-white/20"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                  Шинэчлэх
-                </button>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-black text-white p-6 font-sans">
+      <div className="fixed inset-0 overflow-hidden -z-10">
+        <div className="absolute top-0 -left-4 w-80 h-80 bg-violet-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-25 animate-pulse" />
+        <div
+          className="absolute bottom-0 -right-4 w-80 h-80 bg-indigo-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-20 animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
+      </div>
 
-          {err && (
-            <div className="mx-8 mt-6 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
-              <svg
-                className="w-5 h-5 text-red-500 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-sm text-red-700 flex-1">{err}</span>
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
+          <button
+            onClick={() => router.push("/admin/homework")}
+            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+          >
+            <ArrowLeft
+              size={22}
+              className="group-hover:text-violet-400 transition-colors"
+            />
+          </button>
+          <div className="text-right">
+            <div className="flex items-center justify-end gap-2 mb-1">
+              <span className="text-[10px] font-bold text-violet-400/80 uppercase tracking-wider bg-violet-500/10 border border-violet-500/20 px-2.5 py-0.5 rounded-full">
+                {getDayOfWeek(dateKey)}
+              </span>
             </div>
-          )}
-        </div>
-
-        {/* Даалгаврын жагсаалт */}
-        {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600"></div>
-            <p className="mt-6 text-slate-500 text-lg">Уншиж байна...</p>
-          </div>
-        ) : dayHomeworks.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-lg border-2 border-dashed border-slate-200">
-            <svg
-              className="mx-auto h-20 w-20 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <p className="mt-6 text-slate-500 text-lg font-medium">
-              Энэ өдөр даалгавар байхгүй
+            <h1 className="text-xl font-bold text-white">
+              {formatDateDisplay(dateKey)}
+            </h1>
+            <p className="text-gray-600 text-xs mt-0.5">
+              {dayHomeworks.length} даалгавар
             </p>
           </div>
+        </div>
+
+        {/* List */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="animate-spin text-violet-500" size={28} />
+            <p className="text-gray-600 text-sm">Ачаалж байна...</p>
+          </div>
+        ) : dayHomeworks.length === 0 ? (
+          <div className="text-center py-16 bg-white/[0.02] border border-white/8 rounded-2xl">
+            <div className="text-4xl mb-3 opacity-30">📝</div>
+            <p className="text-gray-600 text-sm">Энэ өдөр даалгавар байхгүй</p>
+          </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {dayHomeworks.map((x, idx) => {
               const imgs = getImages(x);
+              const c = sc(x.subject);
               return (
                 <div
                   key={x.id}
-                  className="bg-white border border-slate-200 rounded-xl shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden"
+                  className="group rounded-2xl border border-white/8 bg-white/[0.03] hover:border-white/12 hover:bg-white/[0.05] transition-all duration-200 overflow-hidden"
                 >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between gap-6">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
-                            {idx + 1}
-                          </div>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700">
-                            {x.subject}
-                          </span>
-                        </div>
-                        <p className="text-slate-900 font-medium whitespace-pre-line text-lg leading-relaxed">
+                  <div className="p-5">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div
+                        className={`w-8 h-8 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center font-bold text-white text-xs flex-shrink-0 shadow-md`}
+                      >
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border mb-2 ${c.bg} ${c.text} ${c.border}`}
+                        >
+                          {x.subject}
+                        </span>
+                        <p className="text-sm text-gray-200 whitespace-pre-line leading-relaxed group-hover:text-white transition-colors">
                           {x.title}
                         </p>
-
-                        {imgs.length > 0 && (
-                          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                            {imgs.map((img, imgIdx) => (
-                              <div
-                                key={imgIdx}
-                                className="relative group cursor-zoom-in"
-                                onClick={() =>
-                                  setViewer({ images: imgs, index: imgIdx })
-                                }
-                              >
-                                <img
-                                  src={img}
-                                  alt={`${x.subject}-${imgIdx + 1}`}
-                                  className="w-full h-40 object-cover rounded-lg border-2 border-slate-200 group-hover:border-indigo-300 transition-all group-hover:shadow-lg"
-                                />
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-lg transition-colors flex items-center justify-center">
-                                  <svg
-                                    className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                                    />
-                                  </svg>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
-
-                      <div className="flex shrink-0 items-center gap-2">
+                      <div className="flex items-center gap-1.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setEditing(x)}
-                          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm"
+                          className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 hover:bg-violet-500/20 hover:scale-110 active:scale-95 transition-all"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
-                          Засах
+                          <Pencil size={12} />
                         </button>
                         <button
                           onClick={() => setDeleting(x)}
-                          className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm"
+                          className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:scale-110 active:scale-95 transition-all"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          Устгах
+                          <Trash2 size={12} />
                         </button>
                       </div>
                     </div>
+                    {imgs.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2 mt-3">
+                        {imgs.map((img, i) => (
+                          <div
+                            key={i}
+                            className="relative group/img cursor-zoom-in"
+                            onClick={() =>
+                              setViewer({ images: imgs, index: i })
+                            }
+                          >
+                            <img
+                              src={img}
+                              alt=""
+                              className="h-24 w-full object-cover rounded-xl border border-white/10 group-hover/img:border-white/20 transition-colors"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                              <div className="w-8 h-8 rounded-xl bg-black/50 backdrop-blur flex items-center justify-center">
+                                <ZoomIn size={14} className="text-white" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -585,405 +478,217 @@ export default function HomeworkDatePage() {
         )}
       </div>
 
-      {/* Засах модал - өмнөх кодтой адилхан */}
+      {/* Edit Modal */}
       {editing && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center"
           onClick={() => setEditing(null)}
         >
           <div
-            className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl my-8"
+            className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 flex items-center justify-between border-b border-white/20 rounded-t-2xl">
-              <div>
-                <h3 className="text-2xl font-bold text-white">
-                  Даалгавар засах
-                </h3>
-                <p className="mt-1 text-sm text-indigo-100">ID: {editing.id}</p>
-              </div>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/8">
+              <p className="font-bold text-white">Даалгавар засах</p>
               <button
                 onClick={() => setEditing(null)}
-                className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-colors"
+                className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:bg-white/10 hover:text-white transition-all"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <X size={14} />
               </button>
             </div>
-
-            <div className="p-8 max-h-[calc(90vh-100px)] overflow-y-auto">
-              {err && (
-                <div className="mb-6 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-red-500 mt-0.5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-sm text-red-700 flex-1">{err}</span>
-                </div>
-              )}
-
-              <div className="space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Хичээл
-                    </label>
-                    <input
-                      value={eSubject}
-                      onChange={(e) => setESubject(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Жишээ: Математик"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Огноо
-                    </label>
-                    <input
-                      type="date"
-                      value={eDateYmd}
-                      onChange={(e) => setEDateYmd(e.target.value)}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Даалгаврын мессеж
+                  <label className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-1.5 block">
+                    Хичээл
                   </label>
-                  <textarea
-                    value={eTitle}
-                    onChange={(e) => setETitle(e.target.value)}
-                    rows={6}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
-                    placeholder="Даалгаврын дэлгэрэнгүй мэдээлэл..."
+                  <input
+                    value={eSubject}
+                    onChange={(e) => setESubject(e.target.value)}
+                    placeholder="Математик"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all"
                   />
                 </div>
-
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="block text-sm font-semibold text-slate-700">
-                      Одоо байгаа зургууд
-                    </label>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                      {imageUrls.length} зураг
-                    </span>
+                  <label className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-1.5 block">
+                    Огноо
+                  </label>
+                  <input
+                    type="date"
+                    value={eDateYmd}
+                    onChange={(e) => setEDateYmd(e.target.value)}
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all [color-scheme:dark]"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-1.5 block">
+                  Даалгавар
+                </label>
+                <textarea
+                  value={eTitle}
+                  onChange={(e) => setETitle(e.target.value)}
+                  rows={4}
+                  placeholder="Дэлгэрэнгүй..."
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all resize-none"
+                />
+              </div>
+              {imageUrls.length > 0 && (
+                <div>
+                  <label className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-2 block">
+                    Зургууд ({imageUrls.length})
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {imageUrls.map((u, i) => (
+                      <div key={i} className="relative group/img">
+                        <img
+                          src={u}
+                          alt=""
+                          onClick={() =>
+                            setViewer({ images: imageUrls, index: i })
+                          }
+                          className="h-20 w-full object-cover rounded-xl border border-white/10 cursor-zoom-in hover:border-white/20 transition-colors"
+                        />
+                        <button
+                          onClick={() =>
+                            setImageUrls((p) => p.filter((_, idx) => idx !== i))
+                          }
+                          className="absolute top-1 right-1 w-5 h-5 rounded-lg bg-red-500/80 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity"
+                        >
+                          <X size={9} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-
-                  {imageUrls.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {imageUrls.map((u, idx) => (
-                        <div key={`${u}-${idx}`} className="relative group">
-                          <img
-                            src={u}
-                            alt={`db-${idx + 1}`}
-                            onClick={() =>
-                              setViewer({ images: imageUrls, index: idx })
-                            }
-                            className="h-48 w-full object-cover rounded-lg cursor-zoom-in border-2 border-slate-200 group-hover:border-indigo-300 transition-colors"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeUrlOne(idx)}
-                            disabled={saving || uploading}
-                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
+                </div>
+              )}
+              <div>
+                <label className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-2 block">
+                  Шинэ зураг
+                </label>
+                <div className="border border-dashed border-white/10 rounded-xl p-4 text-center hover:border-white/20 transition-colors">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    multiple
+                    accept=".jpg,.jpeg,.png,.webp"
+                    onChange={(e) =>
+                      applyFiles(Array.from(e.target.files || []))
+                    }
+                    className="hidden"
+                    id="date-edit-upload"
+                  />
+                  <label
+                    htmlFor="date-edit-upload"
+                    className="cursor-pointer text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                  >
+                    {files.length > 0
+                      ? `${files.length} зураг сонгогдсон`
+                      : "Зураг сонгох эсвэл чирж оруулах"}
+                  </label>
+                  {previewUrls.length > 0 && (
+                    <div className="mt-2 grid grid-cols-3 gap-2">
+                      {previewUrls.map((u, i) => (
+                        <img
+                          key={i}
+                          src={u}
+                          alt=""
+                          className="h-14 w-full object-cover rounded-lg border border-white/10"
+                        />
                       ))}
                     </div>
-                  ) : (
-                    <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg px-4 py-8 text-center">
-                      <p className="text-sm text-slate-500">Зураг байхгүй</p>
-                    </div>
                   )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Шинэ зураг нэмэх
-                    <span className="ml-2 text-xs font-normal text-slate-500">
-                      (JPG, PNG, WEBP • max 5MB)
-                    </span>
-                  </label>
-
-                  <div
-                    onDragEnter={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDragOver(true);
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDragOver(true);
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDragOver(false);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDragOver(false);
-                      const dropped = Array.from(e.dataTransfer.files || []);
-                      applyPickedFiles(dropped, "append");
-                    }}
-                    className={cn(
-                      "relative border-2 border-dashed rounded-lg px-6 py-8 text-center transition-all",
-                      dragOver
-                        ? "border-indigo-500 bg-indigo-50"
-                        : "border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50",
-                    )}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-                      onChange={(e) =>
-                        applyPickedFiles(
-                          Array.from(e.target.files || []),
-                          "append",
-                        )
-                      }
-                      className="sr-only"
-                      id="edit-file-upload"
-                    />
-
-                    <label
-                      htmlFor="edit-file-upload"
-                      className="cursor-pointer"
+                  {files.length > 0 && (
+                    <button
+                      onClick={uploadPicked}
+                      disabled={uploading}
+                      className="mt-2 px-4 py-1.5 rounded-xl bg-violet-600/20 border border-violet-500/20 text-violet-400 text-xs font-bold hover:bg-violet-600/30 active:scale-95 transition-all disabled:opacity-40 flex items-center gap-1.5 mx-auto"
                     >
-                      <svg
-                        className="mx-auto h-12 w-12 text-slate-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                        />
-                      </svg>
-                      {files.length > 0 ? (
-                        <p className="mt-2 text-sm font-medium text-indigo-600">
-                          {files.length} зураг сонгогдсон
-                        </p>
+                      {uploading ? (
+                        <>
+                          <Loader2 size={11} className="animate-spin" />
+                          Upload хийж байна...
+                        </>
                       ) : (
                         <>
-                          <p className="mt-2 text-sm font-medium text-slate-700">
-                            Энд дарж зураг сонгох
-                          </p>
-                          <p className="mt-1 text-xs text-slate-500">
-                            эсвэл чирж оруулах
-                          </p>
+                          <Upload size={11} />
+                          Upload хийх
                         </>
                       )}
-                    </label>
-
-                    <div className="mt-4 flex justify-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={saving || uploading}
-                        className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                      >
-                        Нэмэх
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={uploadPicked}
-                        disabled={files.length === 0 || uploading || saving}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                      >
-                        {uploading ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            Uploading...
-                          </>
-                        ) : (
-                          "Upload хийх"
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={clearPickedFiles}
-                        disabled={saving || uploading}
-                        className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
-                      >
-                        Цэвэрлэх
-                      </button>
-                    </div>
-                  </div>
-
-                  {previewUrls.length > 0 && (
-                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {previewUrls.map((u, idx) => (
-                        <div key={u} className="relative group">
-                          <img
-                            src={u}
-                            alt={`preview-${idx + 1}`}
-                            onClick={() =>
-                              setViewer({ images: previewUrls, index: idx })
-                            }
-                            className="h-48 w-full object-cover rounded-lg cursor-zoom-in border-2 border-slate-200 group-hover:border-indigo-300 transition-colors"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removePickedOne(idx)}
-                            disabled={saving || uploading}
-                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                    </button>
                   )}
                 </div>
-
-                <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(null)}
-                    disabled={saving || uploading}
-                    className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
-                  >
-                    Болих
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={saveEdit}
-                    disabled={!canSave}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {saving ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Хадгалж байна...
-                      </>
-                    ) : (
-                      "Хадгалах"
-                    )}
-                  </button>
-                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => setEditing(null)}
+                  disabled={saving || uploading}
+                  className="flex-1 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-40"
+                >
+                  Болих
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={!canSave}
+                  className="flex-1 py-2.5 rounded-xl bg-violet-600/30 border border-violet-500/30 text-sm font-bold text-violet-300 hover:bg-violet-600/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" />
+                      Хадгалж байна...
+                    </>
+                  ) : (
+                    "Хадгалах"
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Устгах модал */}
+      {/* Delete Modal */}
       {deleting && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setDeleting(null)}
         >
           <div
-            className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8"
+            className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-3xl shadow-2xl p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900">Устгах уу?</h3>
-                <p className="text-sm text-slate-500 mt-1">
-                  Энэ үйлдлийг буцаах боломжгүй
-                </p>
-              </div>
+            <div className="w-11 h-11 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+              <Trash2 size={18} className="text-red-400" />
             </div>
-
-            <div className="bg-slate-50 rounded-lg p-4 mb-6">
-              <div className="text-xs text-slate-500 mb-1">
+            <p className="font-bold text-white mb-1">Устгах уу?</p>
+            <p className="text-xs text-gray-600 mb-4">
+              Энэ үйлдлийг буцаах боломжгүй
+            </p>
+            <div className="bg-white/[0.03] border border-white/8 rounded-xl px-4 py-3 mb-4">
+              <p className="text-[10px] text-gray-600 mb-1">
                 {deleting.subject}
-              </div>
-              <p className="text-sm text-slate-900 whitespace-pre-line">
+              </p>
+              <p className="text-sm text-gray-300 line-clamp-2">
                 {deleting.title}
               </p>
             </div>
-
-            <div className="flex justify-end gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={() => setDeleting(null)}
-                disabled={busyId === deleting.id}
-                className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50"
+                disabled={!!busyId}
+                className="flex-1 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-gray-400 hover:bg-white/[0.06] transition-all disabled:opacity-40"
               >
                 Болих
               </button>
               <button
                 onClick={() => doDelete(deleting.id)}
-                disabled={busyId === deleting.id}
-                className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                disabled={!!busyId}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/20 border border-red-500/30 text-sm font-bold text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
-                {busyId === deleting.id ? (
+                {busyId ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <Loader2 size={13} className="animate-spin" />
                     Устгаж байна...
                   </>
                 ) : (
@@ -995,102 +700,12 @@ export default function HomeworkDatePage() {
         </div>
       )}
 
-      {/* Зургийн харагч */}
       {viewer && (
-        <div
-          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
-          onClick={() => setViewer(null)}
-        >
-          <button
-            onClick={() => setViewer(null)}
-            className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          {viewer.images.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setViewer((v) =>
-                    v
-                      ? {
-                          ...v,
-                          index:
-                            (v.index - 1 + v.images.length) % v.images.length,
-                        }
-                      : v,
-                  );
-                }}
-                className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full backdrop-blur-sm transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setViewer((v) =>
-                    v ? { ...v, index: (v.index + 1) % v.images.length } : v,
-                  );
-                }}
-                className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-full backdrop-blur-sm transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </>
-          )}
-
-          <img
-            src={viewer.images[viewer.index]}
-            alt="fullscreen"
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[95vw] rounded-2xl object-contain shadow-2xl"
-          />
-
-          {viewer.images.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-sm text-white">
-              {viewer.index + 1} / {viewer.images.length}
-            </div>
-          )}
-        </div>
+        <ImageModal
+          images={viewer.images}
+          startIndex={viewer.index}
+          onClose={() => setViewer(null)}
+        />
       )}
     </div>
   );

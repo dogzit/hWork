@@ -3,8 +3,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import {
+  ArrowLeft,
+  RefreshCw,
+  Search,
+  Plus,
+  ChevronRight,
+  Loader2,
+  BookOpen,
+} from "lucide-react";
 
-// Даалгаврын төрөл
 type HworkItem = {
   id: string;
   subject: string;
@@ -14,14 +22,10 @@ type HworkItem = {
   images?: string[] | null;
 };
 
-// ISO огноог YYYY-MM-DD форматруу хөрвүүлэх
 function ymd(iso: string) {
   const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-
-// Огноог текстээр харуулах (жишээ: 2026-02-05)
 function formatDateDisplay(ymdStr: string) {
   const [year, month, day] = ymdStr.split("-");
   const months = [
@@ -40,15 +44,11 @@ function formatDateDisplay(ymdStr: string) {
   ];
   return `${year} оны ${months[parseInt(month) - 1]} ${parseInt(day)}`;
 }
-
-// Долоо хоногийн өдөр
 function getDayOfWeek(ymdStr: string) {
-  const d = new Date(ymdStr + "T00:00:00");
-  const days = ["Ням", "Дав", "Мяг", "Лха", "Пүр", "Баа", "Бям"];
-  return days[d.getDay()];
+  return ["Ням", "Дав", "Мяг", "Лха", "Пүр", "Баа", "Бям"][
+    new Date(ymdStr + "T00:00:00").getDay()
+  ];
 }
-
-// Даалгавраас бүх зургуудыг авах
 function getImages(x: HworkItem): string[] {
   const arr = Array.isArray(x.images) ? x.images.filter(Boolean) : [];
   const one =
@@ -56,18 +56,69 @@ function getImages(x: HworkItem): string[] {
   return Array.from(new Set([...arr, ...one]));
 }
 
-export default function AdminHomeworkPage() {
-  const router = useRouter();
+const SUBJECT_COLORS: Record<
+  string,
+  { gradient: string; text: string; bg: string; border: string }
+> = {
+  Математик: {
+    gradient: "from-blue-500 to-cyan-500",
+    text: "text-blue-400",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/20",
+  },
+  Физик: {
+    gradient: "from-violet-500 to-purple-500",
+    text: "text-violet-400",
+    bg: "bg-violet-500/10",
+    border: "border-violet-500/20",
+  },
+  Хими: {
+    gradient: "from-emerald-500 to-teal-500",
+    text: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
+  },
+  Биологи: {
+    gradient: "from-green-500 to-lime-500",
+    text: "text-green-400",
+    bg: "bg-green-500/10",
+    border: "border-green-500/20",
+  },
+  "Англи хэл": {
+    gradient: "from-rose-500 to-pink-500",
+    text: "text-rose-400",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
+  },
+  "Монгол хэл": {
+    gradient: "from-orange-500 to-amber-500",
+    text: "text-orange-400",
+    bg: "bg-orange-500/10",
+    border: "border-orange-500/20",
+  },
+  Түүх: {
+    gradient: "from-amber-500 to-yellow-500",
+    text: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
+  },
+  default: {
+    gradient: "from-slate-500 to-gray-500",
+    text: "text-gray-400",
+    bg: "bg-gray-500/10",
+    border: "border-gray-500/20",
+  },
+};
+const sc = (s: string) => SUBJECT_COLORS[s] || SUBJECT_COLORS.default;
 
-  // Үндсэн өгөгдөл
+export default function AdminHomeworkListPage() {
+  const router = useRouter();
   const [data, setData] = useState<HworkItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Хайлт болон шүүлт
+  const [refreshing, setRefreshing] = useState(false);
   const [q, setQ] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("ALL");
 
-  // Хичээлүүдийн жагсаалт
   const subjects = useMemo(() => {
     const s = new Set<string>();
     for (const x of data) s.add((x.subject || "").trim());
@@ -79,58 +130,43 @@ export default function AdminHomeworkPage() {
     ];
   }, [data]);
 
-  // Шүүсэн өгөгдөл
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return data.filter((x) => {
-      const subjOk =
-        subjectFilter === "ALL" ? true : x.subject === subjectFilter;
-      if (!subjOk) return false;
+      const ok = subjectFilter === "ALL" || x.subject === subjectFilter;
+      if (!ok) return false;
       if (!qq) return true;
-      const hay = `${x.subject} ${x.title}`.toLowerCase();
-      return hay.includes(qq);
+      return `${x.subject} ${x.title}`.toLowerCase().includes(qq);
     });
   }, [data, q, subjectFilter]);
 
-  // Өдрөөр бүлэглэсэн даалгаврууд
   const groupedByDate = useMemo(() => {
     const groups: Record<string, HworkItem[]> = {};
-
     for (const item of filtered) {
-      const dateKey = ymd(item.date);
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(item);
+      const key = ymd(item.date);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
     }
-
-    // Огноогоор эрэмбэлэх (шинээс хуучин)
-    const sorted = Object.entries(groups).sort((a, b) =>
-      b[0].localeCompare(a[0]),
-    );
-
-    return sorted;
+    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
   }, [filtered]);
-  const fetchAll = async () => {
-    const loadingId = toast.loading("Даалгавар уншиж байна...");
+
+  const fetchAll = async (silent = false) => {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
     try {
-      setLoading(true);
-
       const res = await fetch("/api/hwork", { cache: "no-store" });
-      if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-
+      if (!res.ok) throw new Error();
       const json = (await res.json()) as HworkItem[];
       setData(json);
-
-      toast.dismiss(loadingId);
-      toast.success("Амжилттай шинэчлэгдлээ 🔄", {
-        description: `Нийт: ${json.length} даалгавар`,
-      });
-    } catch (e) {
-      console.error(e);
-      const msg = e instanceof Error ? e.message : "Fetch error";
-      toast.dismiss(loadingId);
-      toast.error("Унших үед алдаа гарлаа ❌", { description: msg });
+      if (silent)
+        toast.success(`Шинэчлэгдлээ • ${json.length} даалгавар`, {
+          duration: 2000,
+        });
+    } catch {
+      toast.error("Ачааллахад алдаа гарлаа");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -138,319 +174,217 @@ export default function AdminHomeworkPage() {
     fetchAll();
   }, []);
 
-  // Тухайн өдрийн даалгаврын хуудас руу шилжих
-  const navigateToDate = (dateKey: string) => {
-    router.push(`/admin/homework/${dateKey}`);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8 px-4">
-      <div className="w-full max-w-7xl mx-auto">
-        {/* Толгой хэсэг */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-            <button
-              onClick={() => router.push("/admin")}
-              className="mb-3 hover:cursor-pointer flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Буцах
-            </button>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-white">
-                  Даалгаврын хуваарь
-                </h1>
-                <p className="mt-2 text-indigo-100">
-                  Өдрөөр бүлэглэсэн даалгаврууд
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={fetchAll}
-                  className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 border border-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                  Шинэчлэх
-                </button>
-                <button
-                  onClick={() => router.push("/admin/homework/add")}
-                  className="bg-white hover:bg-slate-50 text-indigo-600 px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Шинэ нэмэх
-                </button>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-black text-white p-6 font-sans">
+      <div className="fixed inset-0 overflow-hidden -z-10">
+        <div className="absolute top-0 -left-4 w-80 h-80 bg-violet-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-25 animate-pulse" />
+        <div
+          className="absolute bottom-0 -right-4 w-80 h-80 bg-indigo-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-20 animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
+      </div>
 
-          {/* Хайлт болон шүүлт */}
-          <div className="p-6 border-b border-slate-200">
-            {/* {err && (
-              <div className="mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                <svg
-                  className="w-5 h-5 text-red-500 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm text-red-700 flex-1">{err}</span>
-              </div>
-            )} */}
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="relative">
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Хайх..."
-                  className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                />
-              </div>
-
-              <select
-                value={subjectFilter}
-                onChange={(e) => setSubjectFilter(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all bg-white"
-              >
-                {subjects.map((s) => (
-                  <option key={s} value={s}>
-                    {s === "ALL" ? "Бүх хичээл" : s}
-                  </option>
-                ))}
-              </select>
-
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-lg px-4 py-3 flex items-center justify-center">
-                <span className="text-sm text-slate-600">
-                  Нийт өдөр:{" "}
-                  <span className="font-bold text-indigo-600 text-lg">
-                    {groupedByDate.length}
-                  </span>
-                </span>
-              </div>
-            </div>
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
+          <button
+            onClick={() => router.push("/admin")}
+            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+          >
+            <ArrowLeft
+              size={22}
+              className="group-hover:text-violet-400 transition-colors"
+            />
+          </button>
+          <div className="text-right">
+            <h1 className="text-xl font-bold text-white">Даалгаврын хуваарь</h1>
+            <p className="text-gray-600 text-xs mt-0.5">Өдрөөр бүлэглэсэн</p>
           </div>
         </div>
 
-        {/* Өдрөөр бүлэглэсэн timeline */}
+        {/* Toolbar */}
+        <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-4 mb-5 space-y-3">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search
+                size={13}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"
+              />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Хайх..."
+                className="w-full pl-8 pr-4 py-2.5 bg-white/[0.03] border border-white/8 rounded-xl text-sm text-white placeholder:text-gray-700
+                  outline-none focus:ring-1 focus:ring-white/20 hover:border-white/15 transition-all"
+              />
+            </div>
+            <button
+              onClick={() => fetchAll(true)}
+              disabled={refreshing}
+              className="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300 hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
+            >
+              <RefreshCw
+                size={13}
+                className={refreshing ? "animate-spin" : ""}
+              />
+            </button>
+            <button
+              onClick={() => {
+                toast.info("Даалгавар нэмэх...", { duration: 800 });
+                setTimeout(() => router.push("/admin/homework/add"), 300);
+              }}
+              className="px-3 py-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-600/30 hover:scale-105 active:scale-95 transition-all"
+            >
+              <Plus size={13} />
+            </button>
+          </div>
+          {/* Subject filter pills */}
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+            {subjects.map((s) => {
+              const active = subjectFilter === s;
+              const c = sc(s);
+              return (
+                <button
+                  key={s}
+                  onClick={() => setSubjectFilter(s)}
+                  className={`whitespace-nowrap rounded-xl px-3 py-1.5 text-[10px] font-bold border transition-all duration-150 flex-shrink-0 hover:scale-105 active:scale-95
+                    ${
+                      active
+                        ? `bg-gradient-to-r ${c.gradient} text-white border-transparent shadow-md`
+                        : "bg-white/[0.03] border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300"
+                    }`}
+                >
+                  {s === "ALL" ? "Бүгд" : s}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-gray-600">
+            {groupedByDate.length} өдөр • {filtered.length} даалгавар
+          </p>
+        </div>
+
+        {/* List */}
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600"></div>
-            <p className="mt-6 text-slate-500 text-lg">Уншиж байна...</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="animate-spin text-violet-500" size={28} />
+            <p className="text-gray-600 text-sm">Ачаалж байна...</p>
           </div>
         ) : groupedByDate.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-lg border-2 border-dashed border-slate-200">
-            <svg
-              className="mx-auto h-20 w-20 text-slate-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <p className="mt-6 text-slate-500 text-lg font-medium">
-              Даалгавар олдсонгүй
-            </p>
-            <p className="mt-2 text-slate-400 text-sm">
-              Хайлтын үр дүн хоосон байна
-            </p>
+          <div className="text-center py-16 bg-white/[0.02] border border-white/8 rounded-2xl">
+            <div className="text-4xl mb-3 opacity-30">📭</div>
+            <p className="text-gray-600 text-sm">Даалгавар олдсонгүй</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-2">
             {groupedByDate.map(([dateKey, items]) => {
-              const firstImg = items.find((x) => getImages(x).length > 0);
-              const previewImage = firstImg ? getImages(firstImg)[0] : null;
+              const preview = items.find((x) => getImages(x).length > 0);
+              const previewImg = preview ? getImages(preview)[0] : null;
+              const subjectSet = Array.from(
+                new Set(items.map((x) => x.subject).filter(Boolean)),
+              );
 
               return (
-                <div
+                <button
                   key={dateKey}
-                  onClick={() => navigateToDate(dateKey)}
-                  className="group bg-white rounded-2xl shadow-md hover:shadow-2xl border border-slate-200 hover:border-indigo-300 transition-all duration-300 cursor-pointer overflow-hidden"
+                  type="button"
+                  onClick={() => {
+                    toast.info(`${formatDateDisplay(dateKey)}...`, {
+                      duration: 800,
+                    });
+                    setTimeout(
+                      () => router.push(`/admin/homework/${dateKey}`),
+                      300,
+                    );
+                  }}
+                  className="w-full text-left group rounded-2xl border border-white/8 bg-white/[0.03]
+                    hover:bg-white/[0.06] hover:border-white/15 hover:scale-[1.005]
+                    active:scale-[0.998] transition-all duration-200 overflow-hidden"
                 >
-                  <div className="flex flex-col sm:flex-row">
-                    {/* Зүүн тал: Огноо ба статистик */}
-                    <div className="sm:w-72 bg-gradient-to-br from-indigo-600 to-purple-600 p-8 flex flex-col justify-between">
-                      <div>
-                        <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-white mb-4">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                          {getDayOfWeek(dateKey)}
-                        </div>
-
-                        <div className="text-5xl font-bold text-white mb-2">
-                          {dateKey.split("-")[2]}
-                        </div>
-
-                        <div className="text-indigo-100 text-sm">
-                          {formatDateDisplay(dateKey)}
-                        </div>
-                      </div>
-
-                      <div className="mt-6 pt-6 border-t border-white/20">
-                        <div className="flex items-center justify-between text-white">
-                          <div className="flex items-center gap-2">
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                            <span className="text-sm">Даалгавар</span>
-                          </div>
-                          <span className="text-2xl font-bold">
-                            {items.length}
-                          </span>
-                        </div>
-                      </div>
+                  <div className="flex items-stretch">
+                    {/* Date badge */}
+                    <div className="w-16 flex-shrink-0 bg-gradient-to-b from-violet-600/15 to-indigo-600/15 border-r border-white/5 flex flex-col items-center justify-center py-4 gap-0.5">
+                      <span className="text-2xl font-black text-white leading-none">
+                        {dateKey.split("-")[2]}
+                      </span>
+                      <span className="text-[9px] font-bold text-violet-400/70 uppercase tracking-wide">
+                        {getDayOfWeek(dateKey)}
+                      </span>
+                      <span className="text-[8px] text-gray-700">
+                        {dateKey.split("-")[1]}-р сар
+                      </span>
                     </div>
 
-                    {/* Баруун тал: Даалгаврын мэдээлэл */}
-                    <div className="flex-1 p-8">
-                      <div className="flex items-start gap-6">
-                        {/* Даалгаврын жагсаалт */}
-                        <div className="flex-1 space-y-3">
-                          {items.slice(0, 3).map((item, idx) => (
-                            <div
-                              key={item.id}
-                              className="flex items-start gap-3 group-hover:translate-x-1 transition-transform duration-200"
-                              style={{ transitionDelay: `${idx * 50}ms` }}
+                    {/* Content */}
+                    <div className="flex-1 px-4 py-3 min-w-0">
+                      <p className="text-[10px] text-gray-600 mb-1.5">
+                        {formatDateDisplay(dateKey)}
+                      </p>
+                      {/* Subject pills */}
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {subjectSet.slice(0, 4).map((s) => {
+                          const c = sc(s);
+                          return (
+                            <span
+                              key={s}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border ${c.bg} ${c.text} ${c.border}`}
                             >
-                              <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 font-semibold text-sm group-hover:bg-indigo-200 transition-colors">
-                                {idx + 1}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
-                                    {item.subject}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-slate-700 line-clamp-2">
-                                  {item.title}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-
-                          {items.length > 3 && (
-                            <div className="text-sm text-slate-500 italic pl-11">
-                              +{items.length - 3} өөр даалгавар...
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Preview зураг */}
-                        {previewImage && (
-                          <div className="hidden lg:block flex-shrink-0">
-                            <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-slate-200 group-hover:border-indigo-300 transition-colors shadow-md">
-                              <img
-                                src={previewImage}
-                                alt="preview"
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              <span
+                                className={`w-1 h-1 rounded-full bg-gradient-to-r ${c.gradient}`}
                               />
-                            </div>
-                          </div>
+                              {s}
+                            </span>
+                          );
+                        })}
+                        {subjectSet.length > 4 && (
+                          <span className="text-[9px] text-gray-600">
+                            +{subjectSet.length - 4}
+                          </span>
                         )}
                       </div>
-
-                      {/* Дэлгэрэнгүй харах товч */}
-                      <div className="mt-6 flex items-center justify-end">
-                        <div className="flex items-center gap-2 text-indigo-600 group-hover:text-indigo-700 font-medium text-sm group-hover:gap-3 transition-all">
-                          <span>Дэлгэрэнгүй харах</span>
-                          <svg
-                            className="w-5 h-5 group-hover:translate-x-1 transition-transform"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                      {/* Task preview */}
+                      <div className="space-y-0.5">
+                        {items.slice(0, 2).map((item) => (
+                          <p
+                            key={item.id}
+                            className="text-[11px] text-gray-500 truncate group-hover:text-gray-400 transition-colors"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </div>
+                            {item.title}
+                          </p>
+                        ))}
+                        {items.length > 2 && (
+                          <p className="text-[10px] text-gray-700">
+                            +{items.length - 2} даалгавар...
+                          </p>
+                        )}
                       </div>
                     </div>
+
+                    {/* Preview img + arrow */}
+                    <div className="flex items-center gap-2 pr-3 flex-shrink-0">
+                      {previewImg && (
+                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 group-hover:border-white/20 transition-colors">
+                          <img
+                            src={previewImg}
+                            alt=""
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                        </div>
+                      )}
+                      <ChevronRight
+                        size={14}
+                        className="text-gray-700 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all duration-200"
+                      />
+                    </div>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
