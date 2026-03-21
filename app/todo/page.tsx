@@ -33,7 +33,7 @@ export default function TodoPage() {
 
     const storedName = localStorage.getItem("name");
     if (!storedName) {
-      router.push("/login"); // Adjust this path to your login route
+      router.push("/auth/login"); // Adjust this path to your login route
       return;
     }
     setUserName(storedName);

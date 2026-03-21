@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
+import AuthGuard from "./_components/AuthGuard";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -28,12 +30,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
-        {children}
+        <AuthGuard>{children}</AuthGuard>
 
-        {/* Мэдэгдэл гаргагч (Toaster) */}
         <Toaster position="top-right" richColors closeButton duration={3000} />
 
-        {/* Footer Text - Илүү гоё харагдуулсан */}
         <div className="fixed bottom-4 right-4 z-50 pointer-events-none">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
             Design by <span className="text-purple-500/50">Zolo</span>
