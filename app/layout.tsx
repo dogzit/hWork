@@ -2,14 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
-
 import AuthGuard from "./_components/AuthGuard";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -17,7 +12,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "11D Angiin Web App",
-  description: "Made by huurhun zoloo",
+  description: "Design by Zolo",
 };
 
 export default function RootLayout({
@@ -26,10 +21,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="mn">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
+        {/* Эрх шалгах логикийг тусад нь Client Component дотор хийнэ */}
         <AuthGuard>{children}</AuthGuard>
 
         <Toaster position="top-right" richColors closeButton duration={3000} />
