@@ -1,21 +1,31 @@
 import { getAuthTokenFromCookies, verifyAuthToken } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Analytics } from "@vercel/analytics/react"; // 1. Энийг нэмэхээ мартав аа!
+
+interface ProtectedLayoutProps {
+  children: React.ReactNode;
+}
 
 export default async function ProtectedTimeTableLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: ProtectedLayoutProps) {
   const token = await getAuthTokenFromCookies();
-  if (!token) redirect("/auth/login");
 
-  try {
-    // Throws if invalid/expired
-    await verifyAuthToken(token);
-  } catch {
+  if (!token) {
     redirect("/auth/login");
   }
 
-  return children;
-}
+  try {
+    await verifyAuthToken(token);
+  } catch (error) {
+    console.error("Auth verification failed:", error);
+    redirect("/auth/login");
+  }
 
+  return (
+    <>
+      {children}
+      <Analytics />
+    </>
+  );
+}
