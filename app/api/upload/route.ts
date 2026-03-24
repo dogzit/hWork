@@ -13,6 +13,8 @@ export async function POST(request: NextRequest) {
     const blob = await put(file.name, file, {
       access: "public",
       addRandomSuffix: true,
+      contentType: file.type,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
     });
 
     return NextResponse.json({
@@ -22,7 +24,13 @@ export async function POST(request: NextRequest) {
       type: file.type,
     });
   } catch (error) {
-    console.error("Upload error:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    console.error("Vercel Blob Upload Error:", error);
+    return NextResponse.json(
+      {
+        error: "Upload failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
   }
 }
