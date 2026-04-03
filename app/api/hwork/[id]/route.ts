@@ -1,11 +1,8 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { isNonEmptyString } from "@/lib/validation";
 
 type ApiError = { error: string };
-
-function isNonEmptyString(x: unknown): x is string {
-  return typeof x === "string" && x.trim().length > 0;
-}
 
 function isStringArray(x: unknown): x is string[] {
   return (
@@ -50,13 +47,10 @@ export async function PATCH(
 
     const body = raw as Record<string, unknown>;
 
-    // ✅ Prisma schema-аасаа хамаараад images field байж магадгүй
-    // Хэрвээ schema чинь зөвхөн image: String? бол data.images-г устгаарай.
     const data: {
       title?: string;
       subject?: string;
-      image?: string | null;
-      images?: string[]; // ✅ NEW
+      images?: string[];
       date?: Date;
     } = {};
 
@@ -64,9 +58,7 @@ export async function PATCH(
       if (!isNonEmptyString(body.title)) {
         return NextResponse.json(
           { error: "Invalid title" } satisfies ApiError,
-          {
-            status: 400,
-          },
+          { status: 400 },
         );
       }
       data.title = body.title.trim();
@@ -82,28 +74,14 @@ export async function PATCH(
       data.subject = body.subject.trim();
     }
 
-    // ✅ accept images[]
     if (body.images !== undefined) {
       if (body.images === null) {
-        data.images = []; // null орж ирвэл хоосон болгоё
+        data.images = [];
       } else if (isStringArray(body.images)) {
         data.images = body.images.map((s) => s.trim());
       } else {
         return NextResponse.json(
           { error: "Invalid images" } satisfies ApiError,
-          { status: 400 },
-        );
-      }
-    }
-
-    // ✅ keep old image support
-    if (body.image !== undefined) {
-      if (body.image === null) data.image = null;
-      else if (typeof body.image === "string")
-        data.image = body.image.trim() || null;
-      else {
-        return NextResponse.json(
-          { error: "Invalid image" } satisfies ApiError,
           { status: 400 },
         );
       }

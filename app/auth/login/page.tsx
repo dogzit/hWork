@@ -38,13 +38,6 @@ export default function LoginPage() {
     if (!isValidPin(p)) return setError("PIN 4 эсвэл 6 оронтой байх ёстой.");
     setLoading(true);
 
-    if (n.toLowerCase() === "admin" && p === "6200") {
-      localStorage.setItem("name", "Admin");
-      toast.success("Админ системд тавтай морил! 👑");
-      router.push("/admin");
-      return;
-    }
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -60,7 +53,7 @@ export default function LoginPage() {
       }
       localStorage.setItem("name", data.name);
       toast.success(`Тавтай морил, ${data.name}! ✨`);
-      router.push("/");
+      router.push(data.name.toLowerCase() === "admin" ? "/admin" : "/");
     } catch {
       toast.error("Сервертэй холбогдож чадсангүй.");
       setLoading(false);
@@ -70,44 +63,37 @@ export default function LoginPage() {
   if (checking) return null;
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6 font-sans">
       {/* Orbs */}
-      <div className="fixed inset-0 overflow-hidden -z-10">
+      <div className="fixed inset-0 overflow-hidden -z-10 dark:opacity-100 opacity-50">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-violet-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-20 animate-pulse" />
         <div
           className="absolute bottom-0 -right-4 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-20 animate-pulse"
           style={{ animationDelay: "1.5s" }}
         />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-700 rounded-full mix-blend-multiply filter blur-[200px] opacity-10" />
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
-            backgroundSize: "48px 48px",
-          }}
-        />
       </div>
 
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white/5 border border-white/10 mb-6 shadow-2xl">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-surface-elevated border border-border mb-6 shadow-2xl">
             <span className="text-3xl">🔐</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-white uppercase italic mb-2">
+          <h1 className="text-4xl font-black tracking-tight uppercase italic mb-2">
             Нэвтрэх
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-on-surface-muted text-sm">
             Системд нэвтрэхийн тулд мэдээллээ оруулна уу
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
+        <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
           <form onSubmit={onSubmit} className="space-y-5">
             {/* Name */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
                 Нэр
               </label>
               <input
@@ -115,17 +101,17 @@ export default function LoginPage() {
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
                 placeholder="Нэрээ оруулна уу"
-                className="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white
-                  placeholder:text-gray-700 outline-none
+                className="w-full rounded-2xl bg-surface-elevated border border-border px-5 py-4 text-on-surface
+                  placeholder:text-on-surface-muted/50 outline-none
                   focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/30
-                  hover:bg-white/[0.07] hover:border-white/20
+                  hover:border-border
                   disabled:opacity-50 transition-all duration-200"
               />
             </div>
 
             {/* PIN */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest ml-1">
                 PIN Код
               </label>
               <input
@@ -136,10 +122,10 @@ export default function LoginPage() {
                 disabled={loading}
                 placeholder="••••"
                 maxLength={6}
-                className="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white
-                  placeholder:text-gray-700 outline-none tracking-[0.4em]
+                className="w-full rounded-2xl bg-surface-elevated border border-border px-5 py-4 text-on-surface
+                  placeholder:text-on-surface-muted/50 outline-none tracking-[0.4em]
                   focus:ring-2 focus:ring-violet-500/40 focus:border-violet-500/30
-                  hover:bg-white/[0.07] hover:border-white/20
+                  hover:border-border
                   disabled:opacity-50 transition-all duration-200"
               />
             </div>

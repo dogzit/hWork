@@ -33,18 +33,16 @@ export default function TodoPage() {
 
     const storedName = localStorage.getItem("name");
     if (!storedName) {
-      router.push("/auth/login"); // Adjust this path to your login route
+      router.push("/auth/login");
       return;
     }
     setUserName(storedName);
-    fetchTodos(storedName);
+    fetchTodos();
   }, [router]);
 
-  const fetchTodos = async (name: string) => {
+  const fetchTodos = async () => {
     try {
-      const response = await fetch(
-        `/api/todos?name=${encodeURIComponent(name)}`,
-      );
+      const response = await fetch("/api/todos");
       if (response.ok) {
         const data = await response.json();
         setTodos(data);
@@ -64,7 +62,7 @@ export default function TodoPage() {
       const response = await fetch("/api/todos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ task: newTask, userName }),
+        body: JSON.stringify({ task: newTask }),
       });
 
       if (response.ok) {
@@ -123,7 +121,7 @@ export default function TodoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
@@ -135,7 +133,7 @@ export default function TodoPage() {
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-card-hover rounded-full transition-colors"
           >
             <ArrowLeft size={24} />
           </button>
@@ -148,7 +146,7 @@ export default function TodoPage() {
         </div>
 
         {/* Todo List Card */}
-        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl">
+        <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl">
           {loading ? (
             <div className="flex flex-col items-center justify-center p-20 gap-4">
               <Loader2 className="animate-spin text-emerald-500" size={32} />
@@ -179,7 +177,7 @@ export default function TodoPage() {
                       className={`text-lg transition-all duration-300 ${
                         todo.completed
                           ? "line-through text-gray-500 opacity-60"
-                          : "text-gray-200"
+                          : "text-on-surface"
                       }`}
                     >
                       {todo.task}
@@ -210,7 +208,7 @@ export default function TodoPage() {
             onChange={(e) => setNewTask(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Шинэ ажил нэмэх..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all placeholder:text-gray-600 shadow-inner"
+            className="flex-1 bg-surface-elevated border border-border rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all placeholder:text-gray-600 shadow-inner"
           />
           <button
             onClick={handleAddTask}

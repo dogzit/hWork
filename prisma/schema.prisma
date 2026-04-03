@@ -6,53 +6,32 @@ datasource db {
   provider = "postgresql"
 }
 
-// --- Authentication & User ---
 model User {
-  id   String @id @default(nanoid())
-  name String @unique
-
-  // Security fields for your hashPin function
-  pinSalt String
-  pinHash String @unique
-
+  id        String    @id @default(nanoid())
+  name      String    @unique
+  pinHash   String    @unique
+  pinSalt   String
   createdAt DateTime  @default(now())
-  sessions  Session[]
+  Session   Session[]
   todos     Todo[]
 }
 
-// Keep your Session and Todo models as they were...
-
-model Session {
-  token     String   @id
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  @@index([userId, expiresAt])
-}
-
-// --- Features ---
-
 model Todo {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   task      String
-  completed Boolean @default(false)
-
-  // Foreign Key linking to User.name
-  userName String
-  user     User   @relation(fields: [userName], references: [name], onDelete: Cascade)
-
+  completed Boolean  @default(false)
+  userName  String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userName], references: [name], onDelete: Cascade)
 }
 
 model Hwork {
   id      String   @id @default(cuid())
-  subject String
   title   String
+  image   String?
+  subject String
   date    DateTime
   images  String[] @default([])
-  image   String?
 }
 
 model DutySchedule {
@@ -74,6 +53,16 @@ model Timetable {
   createdAt    DateTime @default(now())
 
   @@unique([day, lessonNumber])
+}
+
+model Session {
+  token     String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
 }
 
 enum Day {

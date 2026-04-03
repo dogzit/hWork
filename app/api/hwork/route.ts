@@ -1,28 +1,22 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { isNonEmptyString } from "@/lib/validation";
 
 type ApiError = { error: string };
-
-function isNonEmptyString(x: unknown): x is string {
-  return typeof x === "string" && x.trim().length > 0;
-}
 
 function normalizeImages(body: Record<string, unknown>): string[] {
   const out: string[] = [];
 
-  // new: images[]
   if (Array.isArray(body.images)) {
     for (const v of body.images) {
       if (typeof v === "string" && v.trim()) out.push(v.trim());
     }
   }
 
-  // old: image
   if (typeof body.image === "string" && body.image.trim()) {
     out.push(body.image.trim());
   }
 
-  // dedupe
   return Array.from(new Set(out));
 }
 
@@ -39,7 +33,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
 
     const subject = searchParams.get("subject");
-    const date = searchParams.get("date"); // YYYY-MM-DD
+    const date = searchParams.get("date");
 
     const where: { subject?: string; date?: { gte: Date; lt: Date } } = {};
 
@@ -110,12 +104,7 @@ export async function POST(req: Request) {
         title: title.trim(),
         subject: subject.trim(),
         date: parsedDate,
-
-        // ✅ store many
         images,
-
-        // (optional) хуучин field-ийг sync хийж болно
-        image: images[0] ?? null,
       },
     });
 

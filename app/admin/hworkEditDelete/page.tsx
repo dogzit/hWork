@@ -127,7 +127,7 @@ function ImageModal({
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-card-hover flex items-center justify-center hover:bg-white/20 transition-all"
       >
         <X size={16} />
       </button>
@@ -138,7 +138,7 @@ function ImageModal({
               e.stopPropagation();
               setI((p) => (p - 1 + images.length) % images.length);
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-card-hover flex items-center justify-center hover:bg-white/20 transition-all"
           >
             <ChevronLeft size={18} />
           </button>
@@ -147,7 +147,7 @@ function ImageModal({
               e.stopPropagation();
               setI((p) => (p + 1) % images.length);
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-card-hover flex items-center justify-center hover:bg-white/20 transition-all"
           >
             <ChevronRight size={18} />
           </button>
@@ -347,7 +347,7 @@ export default function AdminHomeworkPage() {
     !uploading;
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-violet-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-25 animate-pulse" />
         <div
@@ -368,7 +368,7 @@ export default function AdminHomeworkPage() {
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.push("/admin")}
-            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
             <ArrowLeft
               size={22}
@@ -376,7 +376,7 @@ export default function AdminHomeworkPage() {
             />
           </button>
           <div className="text-right">
-            <h1 className="text-xl font-bold text-white">
+            <h1 className="text-xl font-bold text-on-surface">
               Даалгаврын удирдлага
             </h1>
             <p className="text-gray-600 text-xs mt-0.5">
@@ -386,7 +386,7 @@ export default function AdminHomeworkPage() {
         </div>
 
         {/* Search + filter + actions */}
-        <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-4 mb-5 space-y-3">
+        <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 mb-5 space-y-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search
@@ -397,13 +397,13 @@ export default function AdminHomeworkPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Хайх..."
-                className="w-full pl-9 pr-4 py-2.5 bg-white/[0.03] border border-white/8 rounded-xl text-sm text-white placeholder:text-gray-700
+                className="w-full pl-9 pr-4 py-2.5 bg-surface-elevated border border-border-subtle rounded-xl text-sm text-on-surface placeholder:text-on-surface-muted/50
                   outline-none focus:ring-1 focus:ring-white/20 hover:border-white/15 transition-all"
               />
             </div>
             <button
               onClick={() => fetchAll(true)}
-              className="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300 hover:border-white/15 hover:scale-105 active:scale-95 transition-all"
+              className="px-3 py-2.5 rounded-xl bg-surface-elevated border border-border-subtle text-gray-500 hover:bg-card-hover hover:text-on-surface-muted hover:border-white/15 hover:scale-105 active:scale-95 transition-all"
             >
               <RefreshCw size={14} />
             </button>
@@ -429,7 +429,7 @@ export default function AdminHomeworkPage() {
                     ${
                       active
                         ? `bg-gradient-to-r ${c.gradient} text-white border-transparent shadow-md`
-                        : "bg-white/[0.03] border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300"
+                        : "bg-white/[0.03] border-border-subtle text-gray-500 hover:bg-card-hover hover:text-on-surface-muted"
                     }`}
                 >
                   {s === "ALL" ? "Бүгд" : s}
@@ -449,7 +449,7 @@ export default function AdminHomeworkPage() {
             <p className="text-gray-600 text-sm">Ачаалж байна...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 bg-white/[0.02] border border-white/8 rounded-2xl">
+          <div className="text-center py-16 bg-white/[0.02] border border-border-subtle rounded-2xl">
             <div className="text-4xl mb-3 opacity-30">📭</div>
             <p className="text-gray-600 text-sm">Даалгавар олдсонгүй</p>
           </div>
@@ -461,7 +461,7 @@ export default function AdminHomeworkPage() {
               return (
                 <div
                   key={x.id}
-                  className="group rounded-2xl border border-white/8 bg-white/[0.03] hover:border-white/12 hover:bg-white/[0.05] transition-all duration-200 overflow-hidden"
+                  className="group rounded-2xl border border-border-subtle bg-white/[0.03] hover:border-white/12 hover:bg-white/[0.05] transition-all duration-200 overflow-hidden"
                 >
                   <div className="flex items-start gap-3 p-4">
                     <div className="flex-1 min-w-0">
@@ -475,12 +475,12 @@ export default function AdminHomeworkPage() {
                           {ymd(x.date)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-200 whitespace-pre-line leading-relaxed">
+                      <p className="text-sm text-on-surface whitespace-pre-line leading-relaxed">
                         {x.title}
                       </p>
                       {imgs[0] && (
                         <div
-                          className="mt-3 w-24 h-16 rounded-xl overflow-hidden border border-white/10 cursor-zoom-in group/img"
+                          className="mt-3 w-24 h-16 rounded-xl overflow-hidden border border-border cursor-zoom-in group/img"
                           onClick={() => setViewer({ images: imgs, index: 0 })}
                         >
                           <img
@@ -520,19 +520,19 @@ export default function AdminHomeworkPage() {
           onClick={() => setEditing(null)}
         >
           <div
-            className="w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-xl bg-[#0a0a0a] border border-border rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/8">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border-subtle">
               <div>
-                <p className="font-bold text-white">Даалгавар засах</p>
+                <p className="font-bold text-on-surface">Даалгавар засах</p>
                 <p className="text-xs text-gray-600 mt-0.5">
                   ID: {editing.id.slice(0, 8)}...
                 </p>
               </div>
               <button
                 onClick={() => setEditing(null)}
-                className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:bg-white/10 hover:text-white transition-all"
+                className="w-8 h-8 rounded-xl bg-surface-elevated border border-border flex items-center justify-center text-gray-500 hover:bg-card-hover hover:text-on-surface transition-all"
               >
                 <X size={14} />
               </button>
@@ -547,7 +547,7 @@ export default function AdminHomeworkPage() {
                     value={eSubject}
                     onChange={(e) => setESubject(e.target.value)}
                     placeholder="Математик"
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all"
+                    className="w-full bg-surface-elevated border border-border rounded-xl px-3.5 py-2.5 text-sm text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all"
                   />
                 </div>
                 <div>
@@ -558,7 +558,7 @@ export default function AdminHomeworkPage() {
                     type="date"
                     value={eDateYmd}
                     onChange={(e) => setEDateYmd(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all [color-scheme:dark]"
+                    className="w-full bg-surface-elevated border border-border rounded-xl px-3.5 py-2.5 text-sm text-on-surface outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all [color-scheme:dark]"
                   />
                 </div>
               </div>
@@ -571,7 +571,7 @@ export default function AdminHomeworkPage() {
                   onChange={(e) => setETitle(e.target.value)}
                   rows={4}
                   placeholder="Даалгаврын дэлгэрэнгүй..."
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all resize-none"
+                  className="w-full bg-surface-elevated border border-border rounded-xl px-3.5 py-2.5 text-sm text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all resize-none"
                 />
               </div>
               {/* Existing images */}
@@ -589,7 +589,7 @@ export default function AdminHomeworkPage() {
                           onClick={() =>
                             setViewer({ images: imageUrls, index: i })
                           }
-                          className="h-24 w-full object-cover rounded-xl border border-white/10 cursor-zoom-in hover:border-white/20 transition-colors"
+                          className="h-24 w-full object-cover rounded-xl border border-border cursor-zoom-in hover:border-white/20 transition-colors"
                         />
                         <button
                           onClick={() =>
@@ -609,7 +609,7 @@ export default function AdminHomeworkPage() {
                 <label className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-2 block">
                   Шинэ зураг нэмэх
                 </label>
-                <div className="border border-dashed border-white/10 rounded-xl p-4 text-center hover:border-white/20 transition-colors">
+                <div className="border border-dashed border-border rounded-xl p-4 text-center hover:border-white/20 transition-colors">
                   <input
                     ref={fileRef}
                     type="file"
@@ -623,7 +623,7 @@ export default function AdminHomeworkPage() {
                   />
                   <label
                     htmlFor="edit-upload"
-                    className="cursor-pointer text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                    className="cursor-pointer text-xs text-gray-500 hover:text-on-surface-muted transition-colors"
                   >
                     {files.length > 0
                       ? `${files.length} зураг сонгогдсон`
@@ -636,7 +636,7 @@ export default function AdminHomeworkPage() {
                           key={i}
                           src={u}
                           alt=""
-                          className="h-16 w-full object-cover rounded-lg border border-white/10"
+                          className="h-16 w-full object-cover rounded-lg border border-border"
                         />
                       ))}
                     </div>
@@ -663,7 +663,7 @@ export default function AdminHomeworkPage() {
                 <button
                   onClick={() => setEditing(null)}
                   disabled={saving || uploading}
-                  className="flex-1 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-gray-400 hover:bg-white/[0.06] hover:text-white active:scale-98 transition-all disabled:opacity-40"
+                  className="flex-1 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-gray-400 hover:bg-card-hover hover:text-on-surface active:scale-98 transition-all disabled:opacity-40"
                 >
                   Болих
                 </button>
@@ -694,21 +694,21 @@ export default function AdminHomeworkPage() {
           onClick={() => setDeleting(null)}
         >
           <div
-            className="w-full max-w-sm bg-[#0a0a0a] border border-white/10 rounded-3xl shadow-2xl p-6"
+            className="w-full max-w-sm bg-[#0a0a0a] border border-border rounded-3xl shadow-2xl p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
               <Trash2 size={20} className="text-red-400" />
             </div>
-            <p className="font-bold text-white mb-1">Устгах уу?</p>
+            <p className="font-bold text-on-surface mb-1">Устгах уу?</p>
             <p className="text-xs text-gray-600 mb-4">
               Энэ үйлдлийг буцаах боломжгүй
             </p>
-            <div className="bg-white/[0.03] border border-white/8 rounded-xl px-4 py-3 mb-5">
+            <div className="bg-surface-elevated border border-border-subtle rounded-xl px-4 py-3 mb-5">
               <p className="text-[10px] text-gray-600 mb-1">
                 {deleting.subject} • {ymd(deleting.date)}
               </p>
-              <p className="text-sm text-gray-300 whitespace-pre-line line-clamp-2">
+              <p className="text-sm text-on-surface-muted whitespace-pre-line line-clamp-2">
                 {deleting.title}
               </p>
             </div>
@@ -716,7 +716,7 @@ export default function AdminHomeworkPage() {
               <button
                 onClick={() => setDeleting(null)}
                 disabled={!!busyId}
-                className="flex-1 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-gray-400 hover:bg-white/[0.06] transition-all disabled:opacity-40"
+                className="flex-1 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-gray-400 hover:bg-card-hover transition-all disabled:opacity-40"
               >
                 Болих
               </button>

@@ -1,5 +1,14 @@
-import { put } from "@vercel/blob";
 import { type NextRequest, NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,26 +19,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const blob = await put(file.name, file, {
-      access: "public",
-      addRandomSuffix: true,
-      contentType: file.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
+    if (!ALLOWED_TYPES.has(file.type)) {
+      return NextResponse.json(
+        { error: "Only JPG, PNG, WEBP allowed" },
+        { status: 400 },
+      );
+    }
+
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json(
+        { error: "File must be under 5MB" },
+        { status: 400 },
+      );
+    }
+
+    // Convert file to base64 data URI for Cloudinary upload
+    const bytes = await file.arrayBuffer();
+    const base64 = Buffer.from(bytes).toString("base64");
+    const dataUri = `data:${file.type};base64,${base64}`;
+
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "hwork",
+      resource_type: "image",
     });
 
     return NextResponse.json({
-      url: blob.url,
+      url: result.secure_url,
       filename: file.name,
       size: file.size,
       type: file.type,
     });
   } catch (error) {
-    console.error("Vercel Blob Upload Error:", error);
+    console.error("Cloudinary Upload Error:", error);
     return NextResponse.json(
-      {
-        error: "Upload failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
+      { error: "Upload failed" },
       { status: 500 },
     );
   }

@@ -175,7 +175,7 @@ export default function AdminHomeworkListPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-violet-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-25 animate-pulse" />
         <div
@@ -196,7 +196,7 @@ export default function AdminHomeworkListPage() {
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.push("/admin")}
-            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
             <ArrowLeft
               size={22}
@@ -204,13 +204,13 @@ export default function AdminHomeworkListPage() {
             />
           </button>
           <div className="text-right">
-            <h1 className="text-xl font-bold text-white">Даалгаврын хуваарь</h1>
+            <h1 className="text-xl font-bold text-on-surface">Даалгаврын хуваарь</h1>
             <p className="text-gray-600 text-xs mt-0.5">Өдрөөр бүлэглэсэн</p>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-4 mb-5 space-y-3">
+        <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 mb-5 space-y-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search
@@ -221,14 +221,14 @@ export default function AdminHomeworkListPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Хайх..."
-                className="w-full pl-8 pr-4 py-2.5 bg-white/[0.03] border border-white/8 rounded-xl text-sm text-white placeholder:text-gray-700
+                className="w-full pl-8 pr-4 py-2.5 bg-surface-elevated border border-border-subtle rounded-xl text-sm text-on-surface placeholder:text-on-surface-muted/50
                   outline-none focus:ring-1 focus:ring-white/20 hover:border-white/15 transition-all"
               />
             </div>
             <button
               onClick={() => fetchAll(true)}
               disabled={refreshing}
-              className="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300 hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
+              className="px-3 py-2.5 rounded-xl bg-surface-elevated border border-border-subtle text-gray-500 hover:bg-card-hover hover:text-on-surface-muted hover:scale-105 active:scale-95 transition-all disabled:opacity-40"
             >
               <RefreshCw
                 size={13}
@@ -258,7 +258,7 @@ export default function AdminHomeworkListPage() {
                     ${
                       active
                         ? `bg-gradient-to-r ${c.gradient} text-white border-transparent shadow-md`
-                        : "bg-white/[0.03] border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300"
+                        : "bg-white/[0.03] border-border-subtle text-gray-500 hover:bg-card-hover hover:text-on-surface-muted"
                     }`}
                 >
                   {s === "ALL" ? "Бүгд" : s}
@@ -278,7 +278,7 @@ export default function AdminHomeworkListPage() {
             <p className="text-gray-600 text-sm">Ачаалж байна...</p>
           </div>
         ) : groupedByDate.length === 0 ? (
-          <div className="text-center py-16 bg-white/[0.02] border border-white/8 rounded-2xl">
+          <div className="text-center py-16 bg-white/[0.02] border border-border-subtle rounded-2xl">
             <div className="text-4xl mb-3 opacity-30">📭</div>
             <p className="text-gray-600 text-sm">Даалгавар олдсонгүй</p>
           </div>
@@ -304,14 +304,14 @@ export default function AdminHomeworkListPage() {
                       300,
                     );
                   }}
-                  className="w-full text-left group rounded-2xl border border-white/8 bg-white/[0.03]
-                    hover:bg-white/[0.06] hover:border-white/15 hover:scale-[1.005]
+                  className="w-full text-left group rounded-2xl border border-border-subtle bg-white/[0.03]
+                    hover:bg-card-hover hover:border-white/15 hover:scale-[1.005]
                     active:scale-[0.998] transition-all duration-200 overflow-hidden"
                 >
                   <div className="flex items-stretch">
                     {/* Date badge */}
                     <div className="w-16 flex-shrink-0 bg-gradient-to-b from-violet-600/15 to-indigo-600/15 border-r border-white/5 flex flex-col items-center justify-center py-4 gap-0.5">
-                      <span className="text-2xl font-black text-white leading-none">
+                      <span className="text-2xl font-black text-on-surface leading-none">
                         {dateKey.split("-")[2]}
                       </span>
                       <span className="text-[9px] font-bold text-violet-400/70 uppercase tracking-wide">
@@ -370,7 +370,7 @@ export default function AdminHomeworkListPage() {
                     {/* Preview img + arrow */}
                     <div className="flex items-center gap-2 pr-3 flex-shrink-0">
                       {previewImg && (
-                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 group-hover:border-white/20 transition-colors">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-border group-hover:border-white/20 transition-colors">
                           <img
                             src={previewImg}
                             alt=""

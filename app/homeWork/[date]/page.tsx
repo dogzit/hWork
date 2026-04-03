@@ -124,7 +124,7 @@ function CardCarousel({
   if (!images.length) return null;
   const safe = Math.min(i, images.length - 1);
   return (
-    <div className="mt-4 rounded-2xl overflow-hidden border border-white/10">
+    <div className="mt-4 rounded-2xl overflow-hidden border border-border">
       <div
         className="relative group/img cursor-pointer"
         onClick={() => onOpen(safe)}
@@ -153,7 +153,7 @@ function CardCarousel({
                 key={idx}
                 onClick={() => setI(idx)}
                 className={`w-16 h-12 flex-none rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105
-                  ${idx === safe ? "border-white/60" : "border-white/10 hover:border-white/30"}`}
+                  ${idx === safe ? "border-white/60" : "border-border hover:border-white/30"}`}
               >
                 <img src={src} alt="" className="w-full h-full object-cover" />
               </button>
@@ -164,13 +164,13 @@ function CardCarousel({
               onClick={() =>
                 setI((p) => (p - 1 + images.length) % images.length)
               }
-              className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1"
+              className="flex-1 py-2 rounded-xl bg-surface-elevated border border-border text-gray-400 hover:bg-card-hover hover:text-on-surface hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1"
             >
               <ChevronLeft size={14} /> Өмнөх
             </button>
             <button
               onClick={() => setI((p) => (p + 1) % images.length)}
-              className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1"
+              className="flex-1 py-2 rounded-xl bg-surface-elevated border border-border text-gray-400 hover:bg-card-hover hover:text-on-surface hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-1"
             >
               Дараах <ChevronRight size={14} />
             </button>
@@ -209,7 +209,7 @@ function ImageModal({
     >
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all"
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-card-hover flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all"
       >
         <X size={18} />
       </button>
@@ -220,7 +220,7 @@ function ImageModal({
               e.stopPropagation();
               setI((p) => (p - 1 + images.length) % images.length);
             }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card-hover flex items-center justify-center text-white hover:bg-white/20 transition-all"
           >
             <ChevronLeft size={20} />
           </button>
@@ -229,7 +229,7 @@ function ImageModal({
               e.stopPropagation();
               setI((p) => (p + 1) % images.length);
             }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-card-hover flex items-center justify-center text-white hover:bg-white/20 transition-all"
           >
             <ChevronRight size={20} />
           </button>
@@ -323,7 +323,7 @@ export default function HomeworkDatePage() {
   }, [modal]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       {/* Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-pink-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
@@ -339,7 +339,7 @@ export default function HomeworkDatePage() {
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
             <ArrowLeft
               size={24}
@@ -363,7 +363,7 @@ export default function HomeworkDatePage() {
 
         {/* Subject pills summary */}
         {!loading && daySubjects.length > 0 && (
-          <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
+          <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
             <p className="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-3">
               Өнөөдрийн хичээлүүд
             </p>
@@ -393,7 +393,7 @@ export default function HomeworkDatePage() {
             <p className="text-gray-400">Ачаалж байна...</p>
           </div>
         ) : dayHomework.length === 0 ? (
-          <div className="text-center py-20 bg-white/[0.03] border border-white/10 rounded-3xl">
+          <div className="text-center py-20 bg-surface-elevated border border-border rounded-3xl">
             <div className="text-5xl mb-4 opacity-30">📝</div>
             <p className="text-gray-500">Энэ өдөр даалгавар байхгүй байна</p>
           </div>
@@ -405,7 +405,7 @@ export default function HomeworkDatePage() {
               return (
                 <div
                   key={item.id}
-                  className="group rounded-2xl border border-white/8 bg-white/[0.03] overflow-hidden
+                  className="group rounded-2xl border border-border-subtle bg-white/[0.03] overflow-hidden
                     hover:border-white/15 hover:bg-white/[0.05] transition-all duration-200"
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
@@ -430,7 +430,7 @@ export default function HomeworkDatePage() {
                       )}
                     </div>
                     {/* Title */}
-                    <p className="text-gray-100 font-semibold leading-relaxed whitespace-pre-line group-hover:text-white transition-colors">
+                    <p className="text-on-surface font-semibold leading-relaxed whitespace-pre-line group-hover:text-on-surface transition-colors">
                       {item.title}
                     </p>
                     {/* Images */}

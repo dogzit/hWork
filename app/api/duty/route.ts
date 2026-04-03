@@ -1,15 +1,17 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-
-function isNonEmptyString(x: unknown): x is string {
-  return typeof x === "string" && x.trim().length > 0;
-}
+import { isNonEmptyString } from "@/lib/validation";
 
 export async function GET() {
-  const items = await prisma.dutySchedule.findMany({
-    orderBy: { date: "asc" },
-  });
-  return NextResponse.json(items);
+  try {
+    const items = await prisma.dutySchedule.findMany({
+      orderBy: { date: "asc" },
+    });
+    return NextResponse.json(items);
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -50,13 +52,15 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(created, { status: 201 });
-  } catch (e: any) {
-    if (e?.code === "P2002") {
+  } catch (e) {
+    const code = (e as { code?: string } | undefined)?.code;
+    if (code === "P2002") {
       return NextResponse.json(
         { error: "This date already exists" },
         { status: 409 },
       );
     }
+    console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

@@ -69,7 +69,7 @@ export default function SignupPage() {
   if (checking) return null;
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6 font-sans">
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-emerald-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-15 animate-pulse" />
         <div
@@ -80,10 +80,10 @@ export default function SignupPage() {
 
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white/5 border border-white/10 mb-6 shadow-2xl">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-surface-elevated border border-border mb-6 shadow-2xl">
             <span className="text-3xl">🎓</span>
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-white uppercase italic mb-2">
+          <h1 className="text-4xl font-black tracking-tight text-on-surface uppercase italic mb-2">
             Бүртгэл
           </h1>
           <p className="text-gray-500 text-sm">
@@ -91,7 +91,7 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
+        <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-8 shadow-2xl">
           <form onSubmit={onSubmit} className="space-y-5">
             <div className="space-y-2">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">
@@ -102,7 +102,7 @@ export default function SignupPage() {
                 onChange={(e) => setName(e.target.value)}
                 disabled={loading}
                 placeholder="Нэрээ оруулна уу"
-                className="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white placeholder:text-gray-700 outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30 transition-all"
+                className="w-full rounded-2xl bg-surface-elevated border border-border px-5 py-4 text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/30 transition-all"
               />
             </div>
 
@@ -118,7 +118,7 @@ export default function SignupPage() {
                 disabled={loading}
                 placeholder="••••"
                 maxLength={6}
-                className="w-full rounded-2xl bg-white/5 border border-white/10 px-5 py-4 text-white outline-none tracking-[0.4em] focus:ring-2 focus:ring-emerald-500/40"
+                className="w-full rounded-2xl bg-surface-elevated border border-border px-5 py-4 text-on-surface outline-none tracking-[0.4em] focus:ring-2 focus:ring-emerald-500/40"
               />
             </div>
 
@@ -134,8 +134,8 @@ export default function SignupPage() {
                 disabled={loading}
                 placeholder="••••"
                 maxLength={6}
-                className={`w-full rounded-2xl bg-white/5 border px-5 py-4 text-white outline-none tracking-[0.4em] transition-all
-                  ${confirm && pin && confirm !== pin ? "border-red-500/40" : confirm && pin && confirm === pin ? "border-emerald-500/40" : "border-white/10"}`}
+                className={`w-full rounded-2xl bg-surface-elevated border px-5 py-4 text-on-surface outline-none tracking-[0.4em] transition-all
+                  ${confirm && pin && confirm !== pin ? "border-red-500/40" : confirm && pin && confirm === pin ? "border-emerald-500/40" : "border-border"}`}
               />
             </div>
 
@@ -161,7 +161,7 @@ export default function SignupPage() {
         <button
           type="button"
           onClick={() => router.push("/auth/login")}
-          className="w-full mt-5 text-xs font-bold text-gray-600 hover:text-gray-300 uppercase tracking-widest text-center"
+          className="w-full mt-5 text-xs font-bold text-gray-600 hover:text-on-surface-muted uppercase tracking-widest text-center"
         >
           Аль хэдийн бүртгэлтэй юу? Нэвтрэх
         </button>

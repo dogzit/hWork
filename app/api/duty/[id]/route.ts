@@ -1,20 +1,20 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-
-function isNonEmptyString(x: unknown): x is string {
-  return typeof x === "string" && x.trim().length > 0;
-}
+import { isNonEmptyString } from "@/lib/validation";
 
 export async function GET(
   _req: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await context.params;
-
-  const item = await prisma.dutySchedule.findUnique({ where: { id } });
-  if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  return NextResponse.json(item);
+  try {
+    const { id } = await context.params;
+    const item = await prisma.dutySchedule.findUnique({ where: { id } });
+    if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(item);
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
 
 export async function PATCH(
@@ -26,7 +26,7 @@ export async function PATCH(
   const body = (await req.json()) as unknown;
   const b = body as { date?: unknown; names?: unknown; notes?: unknown };
 
-  const data: any = {};
+  const data: { date?: Date; names?: string[]; notes?: string | null } = {};
 
   if (b.date !== undefined) {
     if (!isNonEmptyString(b.date)) {
@@ -67,16 +67,18 @@ export async function PATCH(
       data,
     });
     return NextResponse.json(updated);
-  } catch (e: any) {
-    if (e?.code === "P2025") {
+  } catch (e) {
+    const code = (e as { code?: string } | undefined)?.code;
+    if (code === "P2025") {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    if (e?.code === "P2002") {
+    if (code === "P2002") {
       return NextResponse.json(
         { error: "This date already exists" },
         { status: 409 },
       );
     }
+    console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
@@ -90,10 +92,12 @@ export async function DELETE(
   try {
     await prisma.dutySchedule.delete({ where: { id } });
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
-    if (e?.code === "P2025") {
+  } catch (e) {
+    const code = (e as { code?: string } | undefined)?.code;
+    if (code === "P2025") {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+    console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

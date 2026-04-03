@@ -8,6 +8,7 @@ import {
   RefreshCw,
   BookOpen,
   Calendar,
+  ChevronLeft,
   ChevronRight,
   Loader2,
   AlertCircle,
@@ -119,12 +120,39 @@ function getSubjectColor(subject: string) {
   return SUBJECT_COLORS[subject] || SUBJECT_COLORS.default;
 }
 
+function getWeekRange(weekOffset: number) {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon...
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset + weekOffset * 7);
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return { start: monday, end: sunday };
+}
+
+function formatWeekLabel(weekOffset: number) {
+  if (weekOffset === 0) return "Энэ долоо хоног";
+  if (weekOffset === -1) return "Өмнөх долоо хоног";
+  if (weekOffset === 1) return "Дараагийн долоо хоног";
+
+  const { start, end } = getWeekRange(weekOffset);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(start.getMonth() + 1)}/${pad(start.getDate())} - ${pad(end.getMonth() + 1)}/${pad(end.getDate())}`;
+}
+
 export default function HomeworkTimelinePage() {
   const router = useRouter();
   const [data, setData] = useState<HworkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [subjectFilter, setSubjectFilter] = useState("ALL");
+  const [weekOffset, setWeekOffset] = useState(0);
 
   const subjects = useMemo(() => {
     const s = new Set<string>();
@@ -137,13 +165,14 @@ export default function HomeworkTimelinePage() {
     ];
   }, [data]);
 
-  const filtered = useMemo(
-    () =>
-      data.filter(
-        (x) => subjectFilter === "ALL" || x.subject === subjectFilter,
-      ),
-    [data, subjectFilter],
-  );
+  const filtered = useMemo(() => {
+    const { start, end } = getWeekRange(weekOffset);
+    return data.filter((x) => {
+      if (subjectFilter !== "ALL" && x.subject !== subjectFilter) return false;
+      const d = new Date(x.date);
+      return d >= start && d <= end;
+    });
+  }, [data, subjectFilter, weekOffset]);
 
   const groupedByDate = useMemo(() => {
     const groups: Record<string, HworkItem[]> = {};
@@ -179,14 +208,11 @@ export default function HomeworkTimelinePage() {
   }, []);
 
   const navigateToDate = (dateKey: string) => {
-    toast.info(`${formatDateDisplay(dateKey)} харж байна...`, {
-      duration: 1000,
-    });
-    setTimeout(() => router.push(`/homeWork/${dateKey}`), 300);
+    router.push(`/homeWork/${dateKey}`);
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-pink-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
@@ -209,7 +235,7 @@ export default function HomeworkTimelinePage() {
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.push("/")}
-            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
             <ArrowLeft
               size={24}
@@ -228,7 +254,7 @@ export default function HomeworkTimelinePage() {
         </div>
 
         {/* Filter + Refresh */}
-        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
+        <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
               Хичээл шүүх
@@ -236,9 +262,9 @@ export default function HomeworkTimelinePage() {
             <button
               onClick={() => fetchAll(true)}
               disabled={refreshing}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10
-                hover:bg-white/10 hover:border-white/20 hover:scale-105 active:scale-95
-                transition-all duration-200 text-xs text-gray-300
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-elevated border border-border
+                hover:bg-card-hover hover:border-white/20 hover:scale-105 active:scale-95
+                transition-all duration-200 text-xs text-on-surface-muted
                 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <RefreshCw
@@ -265,7 +291,7 @@ export default function HomeworkTimelinePage() {
                     ${
                       active
                         ? `bg-gradient-to-r ${c.gradient} text-white border-transparent shadow-lg`
-                        : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/20"
+                        : "bg-surface-elevated border-border text-gray-400 hover:bg-card-hover hover:text-on-surface hover:border-white/20"
                     }`}
                 >
                   {s === "ALL" ? "📚 Бүгд" : s}
@@ -281,6 +307,44 @@ export default function HomeworkTimelinePage() {
           </div>
         </div>
 
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between mb-6 bg-surface-elevated border border-border backdrop-blur-xl rounded-2xl px-4 py-3">
+          <button
+            onClick={() => setWeekOffset((w) => w - 1)}
+            className="p-2 hover:bg-card-hover rounded-xl transition-all hover:scale-110 active:scale-95"
+          >
+            <ChevronLeft size={18} className="text-gray-400" />
+          </button>
+          <div className="text-center">
+            <p className="text-sm font-bold text-on-surface">
+              {formatWeekLabel(weekOffset)}
+            </p>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              {(() => {
+                const { start, end } = getWeekRange(weekOffset);
+                const pad = (n: number) => String(n).padStart(2, "0");
+                return `${start.getFullYear()}.${pad(start.getMonth() + 1)}.${pad(start.getDate())} — ${end.getFullYear()}.${pad(end.getMonth() + 1)}.${pad(end.getDate())}`;
+              })()}
+            </p>
+          </div>
+          <div className="flex items-center gap-1">
+            {weekOffset !== 0 && (
+              <button
+                onClick={() => setWeekOffset(0)}
+                className="px-2 py-1 text-[10px] font-bold text-pink-400 bg-pink-500/10 border border-pink-500/20 rounded-lg hover:bg-pink-500/20 transition-all"
+              >
+                Өнөөдөр
+              </button>
+            )}
+            <button
+              onClick={() => setWeekOffset((w) => w + 1)}
+              className="p-2 hover:bg-card-hover rounded-xl transition-all hover:scale-110 active:scale-95"
+            >
+              <ChevronRight size={18} className="text-gray-400" />
+            </button>
+          </div>
+        </div>
+
         {/* Timeline */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
@@ -288,7 +352,7 @@ export default function HomeworkTimelinePage() {
             <p className="text-gray-400">Ачаалж байна...</p>
           </div>
         ) : groupedByDate.length === 0 ? (
-          <div className="text-center py-20 bg-white/[0.03] border border-white/10 rounded-3xl">
+          <div className="text-center py-20 bg-surface-elevated border border-border rounded-3xl">
             <div className="text-5xl mb-4 opacity-30">📭</div>
             <p className="text-gray-500">Даалгавар олдсонгүй</p>
             <p className="text-gray-600 text-sm mt-1">
@@ -311,8 +375,8 @@ export default function HomeworkTimelinePage() {
                   key={dateKey}
                   type="button"
                   onClick={() => navigateToDate(dateKey)}
-                  className="w-full text-left group rounded-2xl border border-white/8 bg-white/[0.03]
-                    hover:bg-white/[0.06] hover:border-white/15 hover:scale-[1.01]
+                  className="w-full text-left group rounded-2xl border border-border-subtle bg-white/[0.03]
+                    hover:bg-card-hover hover:border-white/15 hover:scale-[1.01]
                     active:scale-[0.99] transition-all duration-200 overflow-hidden"
                 >
                   <div className="flex items-stretch">
@@ -352,7 +416,7 @@ export default function HomeworkTimelinePage() {
                                 );
                               })}
                             {subjectSet.size > 4 && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-white/5 text-gray-500 border-white/10">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-surface-elevated text-gray-500 border-border">
                                 +{subjectSet.size - 4}
                               </span>
                             )}
@@ -360,7 +424,7 @@ export default function HomeworkTimelinePage() {
                         </div>
                         {/* Preview image */}
                         {preview && (
-                          <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/10 flex-shrink-0 group-hover:border-white/20 transition-colors">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden border border-border flex-shrink-0 group-hover:border-white/20 transition-colors">
                             <img
                               src={preview}
                               alt=""
@@ -382,7 +446,7 @@ export default function HomeworkTimelinePage() {
                               <div
                                 className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${c.gradient} flex-shrink-0`}
                               />
-                              <p className="text-xs text-gray-400 truncate group-hover:text-gray-300 transition-colors">
+                              <p className="text-xs text-gray-400 truncate group-hover:text-on-surface-muted transition-colors">
                                 {item.title}
                               </p>
                             </div>
@@ -400,7 +464,7 @@ export default function HomeworkTimelinePage() {
                     <div className="flex items-center pr-4">
                       <ChevronRight
                         size={16}
-                        className="text-gray-600 group-hover:text-gray-300 group-hover:translate-x-0.5 transition-all duration-200"
+                        className="text-gray-600 group-hover:text-on-surface-muted group-hover:translate-x-0.5 transition-all duration-200"
                       />
                     </div>
                   </div>

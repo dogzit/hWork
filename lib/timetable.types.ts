@@ -34,9 +34,8 @@ export function isInt(x: unknown): x is number {
   return typeof x === "number" && Number.isInteger(x);
 }
 
-export function isNonEmptyString(x: unknown): x is string {
-  return typeof x === "string" && x.trim().length > 0;
-}
+import { isNonEmptyString } from "@/lib/validation";
+export { isNonEmptyString };
 
 export function parseUpsertBody(input: unknown): TimetableUpsertBody | null {
   if (typeof input !== "object" || input === null) return null;

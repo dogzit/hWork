@@ -87,9 +87,9 @@ export default function DutyUserPage() {
       <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
         <Link
           href="/"
-          className="inline-flex items-center gap-3 rounded-2xl bg-white/5 px-4 py-2 ring-1 ring-white/10 backdrop-blur transition hover:bg-white/10"
+          className="inline-flex items-center gap-3 rounded-2xl bg-surface-elevated px-4 py-2 ring-1 ring-white/10 backdrop-blur transition hover:bg-card-hover"
         >
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-card-hover ring-1 ring-white/15">
             ←
           </span>
           <span className="font-semibold">Буцах</span>
@@ -98,7 +98,7 @@ export default function DutyUserPage() {
         <button
           type="button"
           onClick={load}
-          className="rounded-2xl bg-white/5 px-4 py-2 font-semibold ring-1 ring-white/10 backdrop-blur transition hover:bg-white/10"
+          className="rounded-2xl bg-surface-elevated px-4 py-2 font-semibold ring-1 ring-white/10 backdrop-blur transition hover:bg-card-hover"
         >
           ↻ Шинэчлэх
         </button>
@@ -125,7 +125,7 @@ export default function DutyUserPage() {
         )}
 
         {isLoading ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-white/70 backdrop-blur">
+          <div className="rounded-3xl border border-border bg-surface-elevated p-8 text-center text-white/70 backdrop-blur">
             Уншиж байна...
           </div>
         ) : (
@@ -141,7 +141,7 @@ export default function DutyUserPage() {
                 accent="from-emerald-500 via-teal-500 to-cyan-600"
               />
             ) : (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur">
+              <div className="rounded-3xl border border-border bg-surface-elevated p-8 backdrop-blur">
                 <div className="text-xl font-extrabold">
                   Өнөөдөр жижүүр бүртгэгдээгүй байна 😅
                 </div>
@@ -177,13 +177,13 @@ export default function DutyUserPage() {
                 <h2 className="text-lg font-extrabold text-white/90">
                   Бүх өдрүүд
                 </h2>
-                <span className="rounded-full bg-white/5 px-3 py-1 text-sm ring-1 ring-white/10">
+                <span className="rounded-full bg-surface-elevated px-3 py-1 text-sm ring-1 ring-white/10">
                   {sorted.length} бүртгэл
                 </span>
               </div>
 
               {sorted.length === 0 ? (
-                <div className="mt-4 rounded-3xl border border-white/10 bg-white/5 p-8 text-white/70 backdrop-blur">
+                <div className="mt-4 rounded-3xl border border-border bg-surface-elevated p-8 text-white/70 backdrop-blur">
                   Одоогоор бүртгэл алга байна.
                 </div>
               ) : (
@@ -191,11 +191,11 @@ export default function DutyUserPage() {
                   {sorted.map((x) => (
                     <div
                       key={x.id}
-                      className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur"
+                      className="rounded-3xl border border-border bg-surface-elevated p-6 backdrop-blur"
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 ring-1 ring-white/10">
+                          <div className="inline-flex items-center gap-2 rounded-full bg-surface-elevated px-4 py-2 ring-1 ring-white/10">
                             <span className="font-extrabold">
                               📅{" "}
                               {prettyFromInputDate(isoToInputDateUTC(x.date))}
@@ -203,7 +203,7 @@ export default function DutyUserPage() {
                           </div>
 
                           {x.notes && (
-                            <div className="mt-3 rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80 ring-1 ring-white/10">
+                            <div className="mt-3 rounded-2xl bg-surface-elevated px-4 py-3 text-sm text-white/80 ring-1 ring-white/10">
                               <span className="font-semibold">Тайлбар:</span>{" "}
                               {x.notes}
                             </div>
@@ -213,7 +213,7 @@ export default function DutyUserPage() {
                             {x.names.map((n, i) => (
                               <div
                                 key={i}
-                                className="rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10"
+                                className="rounded-2xl bg-surface-elevated px-4 py-3 ring-1 ring-white/10"
                               >
                                 <div className="text-xs text-white/60">
                                   #{i + 1}
@@ -258,7 +258,7 @@ function DutyCard({
   accent: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur">
+    <div className="overflow-hidden rounded-3xl border border-border bg-surface-elevated shadow-2xl backdrop-blur">
       <div className={`bg-gradient-to-r ${accent} p-6`}>
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -274,7 +274,7 @@ function DutyCard({
 
       <div className="p-6">
         {notes && (
-          <div className="mb-4 rounded-2xl bg-white/5 px-4 py-3 text-sm text-white/80 ring-1 ring-white/10">
+          <div className="mb-4 rounded-2xl bg-surface-elevated px-4 py-3 text-sm text-white/80 ring-1 ring-white/10">
             <span className="font-semibold">Тайлбар:</span> {notes}
           </div>
         )}
@@ -283,7 +283,7 @@ function DutyCard({
           {names.map((n, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/5 px-4 py-3 ring-1 ring-white/10"
+              className="rounded-2xl bg-surface-elevated px-4 py-3 ring-1 ring-white/10"
             >
               <div className="text-xs text-white/60">#{i + 1}</div>
               <div className="font-bold truncate">{n}</div>

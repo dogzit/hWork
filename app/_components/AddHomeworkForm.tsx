@@ -162,7 +162,7 @@ export default function AddHomeworkForm({
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-emerald-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-25 animate-pulse" />
         <div
@@ -183,7 +183,7 @@ export default function AddHomeworkForm({
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
             <ArrowLeft
               size={22}
@@ -191,14 +191,14 @@ export default function AddHomeworkForm({
             />
           </button>
           <div className="text-right">
-            <h1 className="text-xl font-bold text-white">Даалгавар нэмэх</h1>
+            <h1 className="text-xl font-bold text-on-surface">Даалгавар нэмэх</h1>
             <p className="text-gray-600 text-xs mt-0.5">
               Шинэ даалгавар үүсгэх
             </p>
           </div>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 space-y-5">
+        <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-6 space-y-5">
           {/* Subject + Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -210,7 +210,7 @@ export default function AddHomeworkForm({
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   disabled={loading}
-                  className="w-full appearance-none bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all disabled:opacity-50 [color-scheme:dark]"
+                  className="w-full appearance-none bg-surface-elevated border border-border rounded-xl px-3.5 py-2.5 text-sm text-on-surface outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all disabled:opacity-50 [color-scheme:dark]"
                 >
                   {defaultSubjects.map((s) => (
                     <option key={s} value={s}>
@@ -242,7 +242,7 @@ export default function AddHomeworkForm({
                 value={dateYmd}
                 onChange={(e) => setDateYmd(e.target.value)}
                 disabled={loading}
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all disabled:opacity-50 [color-scheme:dark]"
+                className="w-full bg-surface-elevated border border-border rounded-xl px-3.5 py-2.5 text-sm text-on-surface outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all disabled:opacity-50 [color-scheme:dark]"
               />
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function AddHomeworkForm({
               rows={5}
               disabled={loading}
               placeholder={`Жишээ:\nМ/хэл-35хуу "Ажиллах өгүүлбэр"\nМат-Самбар дээрх дасгал`}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-700 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all resize-none disabled:opacity-50"
+              className="w-full bg-surface-elevated border border-border rounded-xl px-3.5 py-2.5 text-sm text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:ring-1 focus:ring-white/20 hover:border-white/20 transition-all resize-none disabled:opacity-50"
             />
           </div>
 
@@ -293,7 +293,7 @@ export default function AddHomeworkForm({
                 applyFiles(Array.from(e.dataTransfer.files || []), "append");
               }}
               className={`border border-dashed rounded-xl p-5 text-center transition-all duration-200
-                ${dragOver ? "border-emerald-500/50 bg-emerald-500/5" : "border-white/10 hover:border-white/20"}`}
+                ${dragOver ? "border-emerald-500/50 bg-emerald-500/5" : "border-border hover:border-white/20"}`}
             >
               <input
                 ref={fileRef}
@@ -321,7 +321,7 @@ export default function AddHomeworkForm({
                       <img
                         src={u}
                         alt=""
-                        className="h-20 w-full object-cover rounded-xl border border-white/10"
+                        className="h-20 w-full object-cover rounded-xl border border-border"
                       />
                       <button
                         onClick={() => removeOne(i)}
@@ -348,7 +348,7 @@ export default function AddHomeworkForm({
                 toast.info("Цэвэрлэгдлээ");
               }}
               disabled={loading}
-              className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-gray-500 hover:bg-white/[0.06] hover:text-gray-300 active:scale-95 transition-all disabled:opacity-40"
+              className="px-4 py-2.5 rounded-xl bg-surface-elevated border border-border text-sm text-gray-500 hover:bg-card-hover hover:text-on-surface-muted active:scale-95 transition-all disabled:opacity-40"
             >
               Цэвэрлэх
             </button>

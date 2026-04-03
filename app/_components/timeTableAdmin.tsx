@@ -149,7 +149,7 @@ export default function TimetableAdminBoard({
   const filledCount = dayItems.filter((x) => x.item).length;
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       {/* Muted orbs for admin */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-blue-900 rounded-full mix-blend-multiply filter blur-[140px] opacity-30 animate-pulse" />
@@ -171,7 +171,7 @@ export default function TimetableAdminBoard({
         <div className="flex items-center justify-between mb-10">
           <button
             onClick={() => router.push("/admin")}
-            className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
           >
             <ArrowLeft
               size={22}
@@ -179,7 +179,7 @@ export default function TimetableAdminBoard({
             />
           </button>
           <div className="text-right">
-            <h1 className="text-xl font-bold text-white tracking-tight">
+            <h1 className="text-xl font-bold text-on-surface tracking-tight">
               Хичээлийн хуваарь
             </h1>
             <p className="text-gray-600 text-xs mt-0.5">
@@ -189,7 +189,7 @@ export default function TimetableAdminBoard({
         </div>
 
         {/* Day tabs + refresh */}
-        <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-4 mb-5">
+        <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 mb-5">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] text-gray-600 uppercase tracking-widest font-semibold">
               Өдөр сонгох
@@ -201,8 +201,8 @@ export default function TimetableAdminBoard({
               <button
                 onClick={() => fetchAll(true)}
                 disabled={refreshing}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10
-                  hover:bg-white/10 hover:border-white/20 hover:scale-105 active:scale-95
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface-elevated border border-border
+                  hover:bg-card-hover hover:border-white/20 hover:scale-105 active:scale-95
                   transition-all duration-200 disabled:opacity-40"
               >
                 <RefreshCw
@@ -227,7 +227,7 @@ export default function TimetableAdminBoard({
                     ${
                       active
                         ? "bg-gradient-to-r from-blue-700 to-cyan-700 text-white shadow-md shadow-blue-900/40"
-                        : "bg-white/[0.03] border border-white/8 text-gray-500 hover:bg-white/[0.06] hover:text-gray-300"
+                        : "bg-surface-elevated border border-border-subtle text-gray-500 hover:bg-card-hover hover:text-on-surface-muted"
                     }`}
                 >
                   {DAY_LABELS[d]}
@@ -258,8 +258,8 @@ export default function TimetableAdminBoard({
                     isEditing
                       ? "border-blue-500/40 bg-blue-500/[0.04] shadow-lg shadow-blue-900/20"
                       : item
-                        ? "border-white/8 bg-white/[0.03] hover:border-white/12 hover:bg-white/[0.05]"
-                        : "border-white/5 bg-white/[0.01] hover:border-white/10"
+                        ? "border-border-subtle bg-white/[0.03] hover:border-white/12 hover:bg-white/[0.05]"
+                        : "border-white/5 bg-white/[0.01] hover:border-border"
                   }`}
                 >
                   {!isEditing ? (
@@ -270,7 +270,7 @@ export default function TimetableAdminBoard({
                     >
                       <div
                         className={`w-9 h-9 rounded-xl bg-gradient-to-br ${LESSON_COLORS[colorIdx]}
-                        flex items-center justify-center font-bold text-white text-sm flex-shrink-0
+                        flex items-center justify-center font-bold text-on-surface text-sm flex-shrink-0
                         group-hover:scale-110 transition-transform duration-200 shadow-md`}
                       >
                         {ln}
@@ -278,7 +278,7 @@ export default function TimetableAdminBoard({
                       <div className="flex-1 min-w-0">
                         <p
                           className={`text-sm font-semibold truncate transition-colors
-                          ${item ? "text-gray-200 group-hover:text-white" : "text-gray-700 italic group-hover:text-gray-500"}`}
+                          ${item ? "text-on-surface group-hover:text-on-surface" : "text-gray-700 italic group-hover:text-gray-500"}`}
                         >
                           {item?.subject ?? "Хичээл байхгүй"}
                         </p>
@@ -292,7 +292,7 @@ export default function TimetableAdminBoard({
                     <div className="flex items-center gap-3 px-4 py-3">
                       <div
                         className={`w-9 h-9 rounded-xl bg-gradient-to-br ${LESSON_COLORS[colorIdx]}
-                        flex items-center justify-center font-bold text-white text-sm flex-shrink-0 shadow-md`}
+                        flex items-center justify-center font-bold text-on-surface text-sm flex-shrink-0 shadow-md`}
                       >
                         {ln}
                       </div>
@@ -306,7 +306,7 @@ export default function TimetableAdminBoard({
                         }}
                         disabled={saving}
                         placeholder="Хичээлийн нэр..."
-                        className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-gray-600
+                        className="flex-1 bg-transparent outline-none text-sm text-on-surface placeholder:text-gray-600
                           border-b border-blue-500/40 pb-0.5 focus:border-blue-400/70 transition-colors"
                       />
                       <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -329,8 +329,8 @@ export default function TimetableAdminBoard({
                         <button
                           onClick={cancelEdit}
                           disabled={saving}
-                          className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center
-                            hover:bg-white/10 hover:scale-110 active:scale-95 transition-all duration-150 disabled:opacity-30"
+                          className="w-8 h-8 rounded-xl bg-surface-elevated border border-border flex items-center justify-center
+                            hover:bg-card-hover hover:scale-110 active:scale-95 transition-all duration-150 disabled:opacity-30"
                         >
                           <X size={13} className="text-gray-500" />
                         </button>

@@ -37,7 +37,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Шалгаж дуустал (redirect хийгдэх хооронд) хоосон дэлгэц харуулна
   // Энэ нь нэвтрээгүй хэрэглэгчид админ хуудас "гялс" харагдаад алга болохоос сэргийлнэ.
   if (checking) {
-    return <div className="min-h-screen bg-black" />;
+    return <div className="min-h-screen bg-surface" />;
   }
 
   return <>{children}</>;

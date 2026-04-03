@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# AI context and logs
+CLAUDE.md
+
 # next.js
 /.next/
 /out/
@@ -41,3 +44,6 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# uploads
+/public/uploads

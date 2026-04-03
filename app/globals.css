@@ -1,5 +1,824 @@
 @import "tailwindcss";
+@variant dark (&:is(.dark *));
+
+@theme {
+  --color-surface: #000000;
+  --color-surface-alt: #0a0a0a;
+  --color-surface-elevated: rgba(255, 255, 255, 0.04);
+  --color-on-surface: #ffffff;
+  --color-on-surface-muted: #9ca3af;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-accent: #8b5cf6;
+  --color-accent-glow: rgba(139, 92, 246, 0.15);
+  --color-card: rgba(255, 255, 255, 0.03);
+  --color-card-hover: rgba(255, 255, 255, 0.06);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🌙 DARK — Цэвэр хар
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.theme-dark {
+  --color-surface: #000000;
+  --color-surface-alt: #0a0a0a;
+  --color-surface-elevated: rgba(255, 255, 255, 0.04);
+  --color-on-surface: #ffffff;
+  --color-on-surface-muted: #9ca3af;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-accent: #8b5cf6;
+  --color-accent-glow: rgba(139, 92, 246, 0.15);
+  --color-card: rgba(255, 255, 255, 0.03);
+  --color-card-hover: rgba(255, 255, 255, 0.06);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ☀️ LIGHT — Цэвэр цагаан
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.theme-light {
+  --color-surface: #f8f8f8;
+  --color-surface-alt: #eeeeee;
+  --color-surface-elevated: #ffffff;
+  --color-on-surface: #111111;
+  --color-on-surface-muted: #555555;
+  --color-border: #d4d4d4;
+  --color-border-subtle: #e5e5e5;
+  --color-accent: #6d28d9;
+  --color-accent-glow: rgba(109, 40, 217, 0.08);
+  --color-card: #ffffff;
+  --color-card-hover: #f0f0f0;
+}
+
+.theme-light {
+  color-scheme: light;
+}
+
+.theme-light input,
+.theme-light textarea,
+.theme-light select {
+  color-scheme: light;
+}
+
+.theme-light [class*="shadow-2xl"] {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.theme-light [class*="backdrop-blur"] {
+  background: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⛏️ MINECRAFT — Grass block стиль
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.theme-minecraft {
+  --color-surface: #6b4226;
+  --color-surface-alt: #5c3a22;
+  --color-surface-elevated: #7a4b2a;
+  --color-on-surface: #f5e6c8;
+  --color-on-surface-muted: #c4a882;
+  --color-border: #8b5e3c;
+  --color-border-subtle: #7a4b2a;
+  --color-accent: #5d8c2f;
+  --color-accent-glow: rgba(93, 140, 47, 0.3);
+  --color-card: #7a4b2a;
+  --color-card-hover: #8b5e3c;
+  font-family: "Courier New", monospace;
+}
+
+.theme-minecraft button,
+.theme-minecraft [class*="rounded"] {
+  border-radius: 4px !important;
+}
+
+.theme-minecraft [class*="shadow"] {
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.15),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.3),
+    2px 2px 0 rgba(0, 0, 0, 0.4) !important;
+}
+
+.theme-minecraft [class*="border-border-subtle"] {
+  border-color: #5d8c2f !important;
+  border-top: 3px solid #67a632 !important;
+}
+
+.theme-minecraft {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 8px,
+      rgba(0, 0, 0, 0.05) 8px,
+      rgba(0, 0, 0, 0.05) 16px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 8px,
+      rgba(0, 0, 0, 0.05) 8px,
+      rgba(0, 0, 0, 0.05) 16px
+    );
+}
+
+.theme-minecraft [class*="bg-gradient-to-br"] {
+  background: linear-gradient(
+    to bottom,
+    #67a632 0%,
+    #5d8c2f 40%,
+    #6b4226 100%
+  ) !important;
+}
+
+.theme-minecraft input,
+.theme-minecraft textarea,
+.theme-minecraft select {
+  background: #8b8b8b !important;
+  color: #1a1a1a !important;
+  border: 2px solid #6b6b6b !important;
+  border-radius: 2px !important;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.2),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+.theme-minecraft input::placeholder,
+.theme-minecraft textarea::placeholder {
+  color: #555 !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🌊 OCEAN — Гүн далай
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.theme-ocean {
+  --color-surface: #051525;
+  --color-surface-alt: #0a1e35;
+  --color-surface-elevated: rgba(20, 100, 180, 0.12);
+  --color-on-surface: #b8deff;
+  --color-on-surface-muted: #5a8ab5;
+  --color-border: rgba(40, 140, 220, 0.25);
+  --color-border-subtle: rgba(40, 140, 220, 0.12);
+  --color-accent: #00b4d8;
+  --color-accent-glow: rgba(0, 180, 216, 0.2);
+  --color-card: rgba(20, 100, 180, 0.08);
+  --color-card-hover: rgba(20, 100, 180, 0.15);
+}
+
+/* Wave animation on cards */
+.theme-ocean [class*="border-border-subtle"] {
+  border-bottom: 2px solid rgba(0, 180, 216, 0.3) !important;
+  position: relative;
+}
+
+.theme-ocean {
+  background-image:
+    radial-gradient(
+      ellipse at 20% 80%,
+      rgba(0, 100, 200, 0.15) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      rgba(0, 180, 216, 0.1) 0%,
+      transparent 50%
+    );
+}
+
+.theme-ocean [class*="bg-gradient-to-br"] {
+  background: linear-gradient(
+    135deg,
+    #0077b6 0%,
+    #00b4d8 50%,
+    #48cae4 100%
+  ) !important;
+}
+
+.theme-ocean [class*="rounded-2xl"] {
+  border-radius: 16px !important;
+}
+
+.theme-ocean [class*="shadow-2xl"] {
+  box-shadow: 0 8px 32px rgba(0, 100, 180, 0.2) !important;
+}
+
+.theme-ocean input,
+.theme-ocean textarea,
+.theme-ocean select {
+  background: rgba(10, 50, 90, 0.6) !important;
+  color: #b8deff !important;
+  border: 1px solid rgba(40, 140, 220, 0.3) !important;
+}
+
+.theme-ocean input::placeholder,
+.theme-ocean textarea::placeholder {
+  color: #4a7a9e !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🌅 SUNSET — Нарны жаргалт
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.theme-sunset {
+  --color-surface: #1a0a12;
+  --color-surface-alt: #2a1020;
+  --color-surface-elevated: rgba(255, 80, 50, 0.08);
+  --color-on-surface: #ffe0d0;
+  --color-on-surface-muted: #c48b6a;
+  --color-border: rgba(255, 100, 50, 0.2);
+  --color-border-subtle: rgba(255, 100, 50, 0.1);
+  --color-accent: #ff6b35;
+  --color-accent-glow: rgba(255, 107, 53, 0.2);
+  --color-card: rgba(255, 80, 50, 0.06);
+  --color-card-hover: rgba(255, 80, 50, 0.12);
+}
+
+.theme-sunset {
+  background-image:
+    linear-gradient(180deg, #1a0a12 0%, #2d1020 30%, #3a1525 60%, #1a0a12 100%),
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(255, 100, 0, 0.15) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 30% 100%,
+      rgba(200, 50, 100, 0.1) 0%,
+      transparent 50%
+    );
+}
+
+.theme-sunset [class*="border-border-subtle"] {
+  border-left: 2px solid rgba(255, 100, 50, 0.3) !important;
+}
+
+.theme-sunset [class*="bg-gradient-to-br"] {
+  background: linear-gradient(
+    135deg,
+    #ff6b35 0%,
+    #f72585 50%,
+    #b5179e 100%
+  ) !important;
+}
+
+.theme-sunset [class*="rounded-2xl"],
+.theme-sunset [class*="rounded-3xl"] {
+  border-radius: 20px !important;
+}
+
+.theme-sunset [class*="shadow-2xl"] {
+  box-shadow: 0 8px 40px rgba(255, 80, 50, 0.12) !important;
+}
+
+.theme-sunset input,
+.theme-sunset textarea,
+.theme-sunset select {
+  background: rgba(60, 20, 30, 0.6) !important;
+  color: #ffe0d0 !important;
+  border: 1px solid rgba(255, 100, 50, 0.2) !important;
+}
+
+.theme-sunset input::placeholder,
+.theme-sunset textarea::placeholder {
+  color: #8a5040 !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🤖 CYBERPUNK — Neon хакер
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.theme-cyberpunk {
+  --color-surface: #0a0014;
+  --color-surface-alt: #120020;
+  --color-surface-elevated: rgba(0, 255, 136, 0.05);
+  --color-on-surface: #00ff88;
+  --color-on-surface-muted: #00994d;
+  --color-border: rgba(0, 255, 136, 0.2);
+  --color-border-subtle: rgba(0, 255, 136, 0.08);
+  --color-accent: #ff00ff;
+  --color-accent-glow: rgba(255, 0, 255, 0.2);
+  --color-card: rgba(0, 255, 136, 0.03);
+  --color-card-hover: rgba(0, 255, 136, 0.08);
+  font-family: "Courier New", "Lucida Console", monospace;
+}
+
+.theme-cyberpunk {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 136, 0.02) 2px,
+    rgba(0, 255, 136, 0.02) 4px
+  );
+  animation: cyber-scan 8s linear infinite;
+}
+
+@keyframes cyber-scan {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100px;
+  }
+}
+
+.theme-cyberpunk [class*="border-border-subtle"] {
+  border: 1px solid rgba(0, 255, 136, 0.15) !important;
+  box-shadow:
+    0 0 8px rgba(0, 255, 136, 0.05),
+    inset 0 0 8px rgba(0, 255, 136, 0.02) !important;
+}
+
+.theme-cyberpunk [class*="border-border-subtle"]:hover {
+  box-shadow:
+    0 0 15px rgba(0, 255, 136, 0.1),
+    0 0 30px rgba(255, 0, 255, 0.05) !important;
+}
+
+.theme-cyberpunk [class*="bg-gradient-to-br"] {
+  background: linear-gradient(
+    135deg,
+    #00ff88 0%,
+    #00cc66 50%,
+    #ff00ff 100%
+  ) !important;
+}
+
+.theme-cyberpunk [class*="rounded-2xl"],
+.theme-cyberpunk [class*="rounded-3xl"] {
+  border-radius: 2px !important;
+}
+
+.theme-cyberpunk [class*="shadow-2xl"] {
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.08),
+    0 0 60px rgba(255, 0, 255, 0.04) !important;
+}
+
+.theme-cyberpunk input,
+.theme-cyberpunk textarea,
+.theme-cyberpunk select {
+  background: rgba(0, 20, 10, 0.8) !important;
+  color: #00ff88 !important;
+  border: 1px solid rgba(0, 255, 136, 0.3) !important;
+  border-radius: 0 !important;
+  caret-color: #ff00ff;
+}
+
+.theme-cyberpunk input::placeholder,
+.theme-cyberpunk textarea::placeholder {
+  color: #006633 !important;
+}
+
+.theme-cyberpunk input:focus,
+.theme-cyberpunk textarea:focus {
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.15) !important;
+}
+
+/* Glitch effect on headings */
+.theme-cyberpunk h1 {
+  text-shadow:
+    1px 0 #ff00ff,
+    -1px 0 #00ffff;
+  animation: cyber-glitch 3s infinite;
+}
+
+@keyframes cyber-glitch {
+  0%,
+  95%,
+  100% {
+    text-shadow:
+      1px 0 #ff00ff,
+      -1px 0 #00ffff;
+  }
+  96% {
+    text-shadow:
+      -2px 0 #ff00ff,
+      2px 0 #00ffff;
+  }
+  97% {
+    text-shadow:
+      2px 1px #ff00ff,
+      -1px -1px #00ffff;
+  }
+}
+
 button:hover {
-  filter: contrast(1.2) brightness(0.9);
   cursor: pointer;
+}
+
+/* ============================================================
+   NEW THEMES — Games, Anime, K-Pop, Aesthetic
+   Одоо байгаа globals.css дотор байгаа theme-уудын доор нэмнэ
+   ============================================================ */
+
+/* ── Valorant ── */
+.theme-valorant {
+  --color-surface: #0f1923;
+  --color-surface-alt: #1a2730;
+  --color-surface-elevated: rgba(255, 70, 85, 0.06);
+  --color-on-surface: #ece8e1;
+  --color-on-surface-muted: #8a8a8a;
+  --color-border: rgba(255, 70, 85, 0.3);
+  --color-border-subtle: rgba(255, 70, 85, 0.12);
+  --color-accent: #ff4655;
+  --color-accent-glow: rgba(255, 70, 85, 0.2);
+  --color-card: rgba(255, 70, 85, 0.04);
+  --color-card-hover: rgba(255, 70, 85, 0.08);
+  font-family: "Arial Narrow", "Arial", sans-serif;
+}
+
+/* Valorant — corner bracket декор */
+.theme-valorant [class*="card"],
+.theme-valorant [class*="rounded"] {
+  position: relative;
+}
+.theme-valorant [class*="card"]::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 20px;
+  height: 20px;
+  border-top: 2px solid #ff4655;
+  border-left: 2px solid #ff4655;
+  pointer-events: none;
+}
+.theme-valorant [class*="card"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 20px;
+  height: 20px;
+  border-bottom: 2px solid #ff4655;
+  border-right: 2px solid #ff4655;
+  pointer-events: none;
+}
+
+/* ── Roblox ── */
+.theme-roblox {
+  --color-surface: #ffffff;
+  --color-surface-alt: #f0f0f0;
+  --color-surface-elevated: rgba(0, 0, 0, 0.04);
+  --color-on-surface: #1a1a1a;
+  --color-on-surface-muted: #555555;
+  --color-border: #e0e0e0;
+  --color-border-subtle: #eeeeee;
+  --color-accent: #cc0000;
+  --color-accent-glow: rgba(204, 0, 0, 0.12);
+  --color-card: rgba(0, 0, 0, 0.02);
+  --color-card-hover: rgba(0, 0, 0, 0.05);
+  font-family: "Arial Rounded MT Bold", "Arial", sans-serif;
+}
+
+.theme-roblox [class*="shadow"] {
+  box-shadow: 4px 4px 0 #c4c4c4 !important;
+}
+
+.theme-roblox button,
+.theme-roblox [class*="rounded"] {
+  border-radius: 6px !important;
+}
+
+/* ── Arcane ── */
+.theme-arcane {
+  --color-surface: #0d0d1a;
+  --color-surface-alt: #1a0d2e;
+  --color-surface-elevated: rgba(100, 220, 200, 0.06);
+  --color-on-surface: #c8f0e8;
+  --color-on-surface-muted: #6ba89a;
+  --color-border: rgba(100, 220, 200, 0.25);
+  --color-border-subtle: rgba(100, 220, 200, 0.1);
+  --color-accent: #64dcc8;
+  --color-accent-glow: rgba(100, 220, 200, 0.15);
+  --color-card: rgba(100, 220, 200, 0.04);
+  --color-card-hover: rgba(180, 100, 255, 0.08);
+  font-family: "Georgia", serif;
+}
+
+/* Arcane — ambient purple glow top-right */
+.theme-arcane {
+  background-image: radial-gradient(
+    ellipse at 80% 0%,
+    rgba(180, 100, 255, 0.08) 0%,
+    transparent 60%
+  );
+}
+
+/* ── Impostor (Among Us) ── */
+.theme-impostor {
+  --color-surface: #1a0a2e;
+  --color-surface-alt: #250f3e;
+  --color-surface-elevated: rgba(200, 0, 100, 0.06);
+  --color-on-surface: #f0d0e8;
+  --color-on-surface-muted: #9060a0;
+  --color-border: rgba(200, 0, 100, 0.35);
+  --color-border-subtle: rgba(200, 0, 100, 0.12);
+  --color-accent: #ff2d7a;
+  --color-accent-glow: rgba(255, 45, 122, 0.18);
+  --color-card: rgba(200, 0, 100, 0.04);
+  --color-card-hover: rgba(200, 0, 100, 0.09);
+  font-family: monospace;
+}
+
+/* ── Ghibli ── */
+.theme-ghibli {
+  --color-surface: #eaf5e2;
+  --color-surface-alt: #d8edcc;
+  --color-surface-elevated: rgba(100, 160, 80, 0.07);
+  --color-on-surface: #2d5016;
+  --color-on-surface-muted: #5a8040;
+  --color-border: rgba(100, 160, 80, 0.28);
+  --color-border-subtle: rgba(100, 160, 80, 0.12);
+  --color-accent: #4a9a28;
+  --color-accent-glow: rgba(74, 154, 40, 0.12);
+  --color-card: rgba(100, 160, 80, 0.05);
+  --color-card-hover: rgba(160, 200, 240, 0.1);
+  font-family: "Georgia", serif;
+}
+
+/* ── Jujutsu Kaisen ── */
+.theme-jujutsu {
+  --color-surface: #080808;
+  --color-surface-alt: #111111;
+  --color-surface-elevated: rgba(180, 0, 0, 0.07);
+  --color-on-surface: #e8e8e8;
+  --color-on-surface-muted: #888888;
+  --color-border: rgba(180, 0, 0, 0.45);
+  --color-border-subtle: rgba(180, 0, 0, 0.15);
+  --color-accent: #cc2200;
+  --color-accent-glow: rgba(204, 34, 0, 0.2);
+  --color-card: rgba(180, 0, 0, 0.04);
+  --color-card-hover: rgba(180, 0, 0, 0.09);
+  font-family: "Arial Black", sans-serif;
+}
+
+.theme-jujutsu [class*="shadow"] {
+  box-shadow: 0 0 20px rgba(180, 0, 0, 0.15) !important;
+}
+
+/* ── One Piece ── */
+.theme-onepiece {
+  --color-surface: #0d3b6e;
+  --color-surface-alt: #0a2a55;
+  --color-surface-elevated: rgba(245, 200, 66, 0.08);
+  --color-on-surface: #fdf0c0;
+  --color-on-surface-muted: #c8a860;
+  --color-border: rgba(245, 200, 66, 0.4);
+  --color-border-subtle: rgba(245, 200, 66, 0.15);
+  --color-accent: #f5c842;
+  --color-accent-glow: rgba(245, 200, 66, 0.18);
+  --color-card: rgba(245, 200, 66, 0.05);
+  --color-card-hover: rgba(200, 68, 26, 0.12);
+  font-family: "Impact", sans-serif;
+}
+
+/* ── Demon Slayer ── */
+.theme-demonslayer {
+  --color-surface: #0a1628;
+  --color-surface-alt: #0f1e38;
+  --color-surface-elevated: rgba(220, 50, 50, 0.06);
+  --color-on-surface: #f0e8d0;
+  --color-on-surface-muted: #9090a0;
+  --color-border: rgba(220, 50, 50, 0.3);
+  --color-border-subtle: rgba(220, 50, 50, 0.1);
+  --color-accent: #dc3232;
+  --color-accent-glow: rgba(220, 50, 50, 0.15);
+  --color-card: rgba(220, 50, 50, 0.04);
+  --color-card-hover: rgba(50, 100, 220, 0.1);
+  font-family: "Georgia", serif;
+}
+
+/* Demon Slayer — checkered pattern overlay */
+.theme-demonslayer {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 20px,
+    rgba(180, 30, 30, 0.025) 20px,
+    rgba(180, 30, 30, 0.025) 40px
+  );
+}
+
+/* ── Naruto ── */
+.theme-naruto {
+  --color-surface: #1a1200;
+  --color-surface-alt: #2a1e00;
+  --color-surface-elevated: rgba(232, 128, 10, 0.08);
+  --color-on-surface: #ffd97a;
+  --color-on-surface-muted: #a07830;
+  --color-border: rgba(232, 128, 10, 0.4);
+  --color-border-subtle: rgba(232, 128, 10, 0.15);
+  --color-accent: #e8800a;
+  --color-accent-glow: rgba(232, 128, 10, 0.2);
+  --color-card: rgba(232, 128, 10, 0.04);
+  --color-card-hover: rgba(204, 34, 0, 0.1);
+  font-family: "Impact", sans-serif;
+}
+
+.theme-naruto [class*="shadow"] {
+  box-shadow: 0 0 20px rgba(232, 128, 10, 0.15) !important;
+}
+
+/* ── NewJeans ── */
+.theme-newjeans {
+  --color-surface: #fef6f0;
+  --color-surface-alt: #fde8e0;
+  --color-surface-elevated: rgba(232, 108, 160, 0.06);
+  --color-on-surface: #2a1a10;
+  --color-on-surface-muted: #906858;
+  --color-border: rgba(232, 108, 160, 0.25);
+  --color-border-subtle: rgba(108, 160, 232, 0.15);
+  --color-accent: #e86ca0;
+  --color-accent-glow: rgba(232, 108, 160, 0.12);
+  --color-card: rgba(232, 108, 160, 0.04);
+  --color-card-hover: rgba(108, 160, 232, 0.07);
+  font-family: "Georgia", serif;
+}
+
+/* ── Borahae (BTS) ── */
+.theme-borahae {
+  --color-surface: #1a0832;
+  --color-surface-alt: #2d1460;
+  --color-surface-elevated: rgba(165, 100, 255, 0.07);
+  --color-on-surface: #e8d0ff;
+  --color-on-surface-muted: #9060c0;
+  --color-border: rgba(165, 100, 255, 0.35);
+  --color-border-subtle: rgba(165, 100, 255, 0.12);
+  --color-accent: #c87cff;
+  --color-accent-glow: rgba(200, 124, 255, 0.15);
+  --color-card: rgba(165, 100, 255, 0.04);
+  --color-card-hover: rgba(124, 156, 255, 0.08);
+  font-family: "Georgia", serif;
+}
+
+/* ── Blackpink ── */
+.theme-blackpink {
+  --color-surface: #080808;
+  --color-surface-alt: #141414;
+  --color-surface-elevated: rgba(255, 20, 147, 0.06);
+  --color-on-surface: #ffffff;
+  --color-on-surface-muted: #888888;
+  --color-border: rgba(255, 20, 147, 0.4);
+  --color-border-subtle: rgba(255, 20, 147, 0.15);
+  --color-accent: #ff1493;
+  --color-accent-glow: rgba(255, 20, 147, 0.2);
+  --color-card: rgba(255, 20, 147, 0.04);
+  --color-card-hover: rgba(255, 20, 147, 0.09);
+  font-family: "Arial Black", sans-serif;
+}
+
+.theme-blackpink [class*="shadow"] {
+  box-shadow: 0 0 25px rgba(255, 20, 147, 0.12) !important;
+}
+
+/* ── Stray Kids ── */
+.theme-straykids {
+  --color-surface: #0f0f0f;
+  --color-surface-alt: #1a1a1a;
+  --color-surface-elevated: rgba(255, 200, 0, 0.06);
+  --color-on-surface: #f0f0f0;
+  --color-on-surface-muted: #777777;
+  --color-border: rgba(255, 200, 0, 0.3);
+  --color-border-subtle: rgba(255, 200, 0, 0.1);
+  --color-accent: #ffc800;
+  --color-accent-glow: rgba(255, 200, 0, 0.15);
+  --color-card: rgba(255, 200, 0, 0.03);
+  --color-card-hover: rgba(255, 200, 0, 0.07);
+  font-family: "Arial Black", sans-serif;
+}
+
+/* ── StayC ── */
+.theme-stayc {
+  --color-surface: #fff4fc;
+  --color-surface-alt: #f0f0ff;
+  --color-surface-elevated: rgba(200, 120, 216, 0.06);
+  --color-on-surface: #2a1a3a;
+  --color-on-surface-muted: #8060a0;
+  --color-border: rgba(200, 120, 216, 0.3);
+  --color-border-subtle: rgba(120, 120, 232, 0.15);
+  --color-accent: #c878d8;
+  --color-accent-glow: rgba(200, 120, 216, 0.12);
+  --color-card: rgba(200, 120, 216, 0.04);
+  --color-card-hover: rgba(120, 120, 232, 0.08);
+  font-family: "Georgia", serif;
+}
+
+/* ── Lofi ── */
+.theme-lofi {
+  --color-surface: #1a1530;
+  --color-surface-alt: #231e40;
+  --color-surface-elevated: rgba(180, 160, 220, 0.06);
+  --color-on-surface: #c8c0e0;
+  --color-on-surface-muted: #7870a0;
+  --color-border: rgba(180, 160, 220, 0.2);
+  --color-border-subtle: rgba(180, 160, 220, 0.08);
+  --color-accent: #b4a8d8;
+  --color-accent-glow: rgba(180, 168, 216, 0.12);
+  --color-card: rgba(180, 160, 220, 0.04);
+  --color-card-hover: rgba(216, 180, 168, 0.07);
+  font-family: "Georgia", serif;
+}
+
+/* Lofi — subtle grain texture */
+.theme-lofi::before,
+.theme-lofi {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* ── Y2K ── */
+.theme-y2k {
+  --color-surface: #d8f0ff;
+  --color-surface-alt: #f0d8ff;
+  --color-surface-elevated: rgba(255, 255, 255, 0.5);
+  --color-on-surface: #180840;
+  --color-on-surface-muted: #5030a0;
+  --color-border: rgba(255, 255, 255, 0.7);
+  --color-border-subtle: rgba(200, 160, 255, 0.3);
+  --color-accent: #ff00cc;
+  --color-accent-glow: rgba(255, 0, 204, 0.15);
+  --color-card: rgba(255, 255, 255, 0.35);
+  --color-card-hover: rgba(255, 255, 255, 0.5);
+  font-family: "Arial", sans-serif;
+}
+
+.theme-y2k {
+  background: linear-gradient(135deg, #c0e8ff 0%, #ffc0f0 50%, #c0ffc0 100%);
+}
+
+.theme-y2k [class*="shadow"] {
+  box-shadow:
+    0 4px 15px rgba(180, 100, 255, 0.2),
+    inset 0 0 20px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ── Cottagecore ── */
+.theme-cottagecore {
+  --color-surface: #f5f0e8;
+  --color-surface-alt: #eae0d0;
+  --color-surface-elevated: rgba(150, 120, 80, 0.06);
+  --color-on-surface: #3a2a1a;
+  --color-on-surface-muted: #7a6a4a;
+  --color-border: rgba(150, 120, 80, 0.28);
+  --color-border-subtle: rgba(150, 120, 80, 0.12);
+  --color-accent: #6a9a4a;
+  --color-accent-glow: rgba(106, 154, 74, 0.12);
+  --color-card: rgba(150, 120, 80, 0.04);
+  --color-card-hover: rgba(196, 152, 106, 0.1);
+  font-family: "Georgia", serif;
+}
+
+/* ── Synthwave ── */
+.theme-synthwave {
+  --color-surface: #0d0028;
+  --color-surface-alt: #1a0050;
+  --color-surface-elevated: rgba(255, 0, 255, 0.06);
+  --color-on-surface: #ff80ff;
+  --color-on-surface-muted: #994d99;
+  --color-border: rgba(255, 0, 255, 0.35);
+  --color-border-subtle: rgba(0, 200, 255, 0.15);
+  --color-accent: #ff00ff;
+  --color-accent-glow: rgba(255, 0, 255, 0.2);
+  --color-card: rgba(255, 0, 255, 0.04);
+  --color-card-hover: rgba(0, 255, 255, 0.06);
+  font-family: "Arial", sans-serif;
+}
+
+.theme-synthwave [class*="shadow"] {
+  box-shadow:
+    0 0 30px rgba(255, 0, 255, 0.12),
+    0 0 60px rgba(0, 200, 255, 0.06) !important;
+}
+
+/* Synthwave — grid floor effect */
+.theme-synthwave {
+  background-image:
+    linear-gradient(180deg, transparent 60%, rgba(255, 0, 255, 0.04) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(255, 0, 255, 0.06) 40px,
+      rgba(255, 0, 255, 0.06) 41px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 40px,
+      rgba(0, 200, 255, 0.04) 40px,
+      rgba(0, 200, 255, 0.04) 41px
+    );
+}
+
+/* ── Midnight ── */
+.theme-midnight {
+  --color-surface: #020408;
+  --color-surface-alt: #060c14;
+  --color-surface-elevated: rgba(40, 60, 100, 0.15);
+  --color-on-surface: #c8d8f0;
+  --color-on-surface-muted: #506080;
+  --color-border: rgba(40, 60, 100, 0.5);
+  --color-border-subtle: rgba(40, 60, 100, 0.2);
+  --color-accent: #8090c0;
+  --color-accent-glow: rgba(128, 144, 192, 0.1);
+  --color-card: rgba(40, 60, 100, 0.08);
+  --color-card-hover: rgba(40, 60, 100, 0.15);
+  font-family: "Georgia", serif;
 }

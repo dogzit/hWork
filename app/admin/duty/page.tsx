@@ -404,14 +404,14 @@ export default function AdminDutyPage() {
                       <button
                         type="button"
                         onClick={() => startEdit(x)}
-                        className="rounded-2xl bg-indigo-600 px-4 py-2.5 font-bold text-white shadow-sm transition hover:bg-indigo-500"
+                        className="rounded-2xl bg-indigo-600 px-4 py-2.5 font-bold text-on-surface shadow-sm transition hover:bg-indigo-500"
                       >
                         ✏️ Засах
                       </button>
                       <button
                         type="button"
                         onClick={() => remove(x.id)}
-                        className="rounded-2xl bg-rose-600 px-4 py-2.5 font-bold text-white shadow-sm transition hover:bg-rose-500"
+                        className="rounded-2xl bg-rose-600 px-4 py-2.5 font-bold text-on-surface shadow-sm transition hover:bg-rose-500"
                       >
                         🗑️ Устгах
                       </button>

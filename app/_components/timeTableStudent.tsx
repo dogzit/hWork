@@ -181,7 +181,7 @@ function HomeworkPanel({
                         ${
                           dayFilter === day
                             ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-400"
-                            : "bg-white/5 border border-white/10 text-gray-500 hover:bg-white/10 hover:text-gray-300"
+                            : "bg-surface-elevated border border-border text-gray-500 hover:bg-card-hover hover:text-on-surface-muted"
                         }`}
                     >
                       {day === "ALL" ? "Бүгд" : day}
@@ -206,7 +206,7 @@ function HomeworkPanel({
                         ${
                           dateFilter === date
                             ? "bg-cyan-500/20 border border-cyan-500/40 text-cyan-400"
-                            : "bg-white/5 border border-white/10 text-gray-500 hover:bg-white/10 hover:text-gray-300"
+                            : "bg-surface-elevated border border-border text-gray-500 hover:bg-card-hover hover:text-on-surface-muted"
                         }`}
                     >
                       {date === "ALL"
@@ -243,7 +243,7 @@ function HomeworkPanel({
                       );
                     }}
                     className="w-full text-left group/hw flex items-start gap-3 p-3 rounded-xl
-                    bg-white/[0.03] border border-white/8
+                    bg-surface-elevated border border-border-subtle
                     hover:bg-white/[0.07] hover:border-violet-500/30 hover:pl-4
                     active:scale-[0.98] transition-all duration-150 cursor-pointer"
                   >
@@ -254,7 +254,7 @@ function HomeworkPanel({
                       <CheckCircle2 size={12} className="text-violet-400" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-gray-200 group-hover/hw:text-white transition-colors leading-snug">
+                      <p className="text-sm text-on-surface group-hover/hw:text-white transition-colors leading-snug">
                         {hw.title}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
@@ -429,7 +429,7 @@ export default function TimetableReadOnly({
   }, [activeDay, grid]);
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
         <div
@@ -445,7 +445,7 @@ export default function TimetableReadOnly({
           {showBackButton ? (
             <button
               onClick={() => router.push("/")}
-              className="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
+              className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
             >
               <ArrowLeft
                 size={24}
@@ -469,7 +469,7 @@ export default function TimetableReadOnly({
         </div>
 
         {/* Day Tabs */}
-        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
+        <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs text-gray-400 uppercase tracking-widest font-semibold">
               Өдөр сонгох
@@ -477,9 +477,9 @@ export default function TimetableReadOnly({
             <button
               onClick={() => fetchAll(true)}
               disabled={refreshing}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10
-                hover:bg-white/10 hover:border-white/20 hover:scale-105 active:scale-95
-                transition-all duration-200 text-xs text-gray-300
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-elevated border border-border
+                hover:bg-card-hover hover:border-white/20 hover:scale-105 active:scale-95
+                transition-all duration-200 text-xs text-on-surface-muted
                 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <RefreshCw
@@ -507,7 +507,7 @@ export default function TimetableReadOnly({
                     ${
                       active
                         ? "bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-900/40"
-                        : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/20"
+                        : "bg-surface-elevated border border-border text-gray-400 hover:bg-card-hover hover:text-on-surface hover:border-white/20"
                     }`}
                 >
                   {DAY_LABELS[d]}
@@ -579,7 +579,7 @@ export default function TimetableReadOnly({
                           ? "border-yellow-400/40 bg-yellow-400/5 shadow-lg shadow-yellow-900/20 ring-1 ring-yellow-400/20"
                           : isExpanded
                             ? "border-cyan-400/40 bg-cyan-400/5 border-b-0"
-                            : "border-white/8 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/15"
+                            : "border-border-subtle bg-white/[0.03] hover:bg-card-hover hover:border-white/15"
                       }`}
                   >
                     <div className="flex items-center gap-4">
@@ -594,7 +594,7 @@ export default function TimetableReadOnly({
                       <div className="flex-1 min-w-0">
                         <div
                           className={`font-bold text-base truncate transition-colors duration-200
-                          ${subject ? "text-gray-100 group-hover:text-white" : "text-gray-600 italic"}`}
+                          ${subject ? "text-on-surface group-hover:text-on-surface" : "text-gray-600 italic"}`}
                         >
                           {subject ?? "Тэмдэглээгүй"}
                         </div>

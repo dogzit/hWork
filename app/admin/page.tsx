@@ -5,7 +5,6 @@ import {
   LogOut,
   Calendar,
   Plus,
-  BookOpen,
   Edit3,
   ArrowRight,
   Settings,
@@ -14,12 +13,11 @@ import {
 export default function AdminHomePage() {
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     toast.info("Гарч байна...", { duration: 1200 });
-    setTimeout(() => {
-      localStorage.removeItem("name");
-      window.location.href = "/auth/login";
-    }, 800);
+    await fetch("/api/auth/logout", { method: "POST" });
+    localStorage.removeItem("name");
+    window.location.href = "/auth/login";
   };
 
   const cards = [
@@ -50,18 +48,18 @@ export default function AdminHomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
-      {/* Orbs — muted for admin */}
-      <div className="fixed inset-0 overflow-hidden -z-10">
+    <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6 font-sans">
+      {/* Orbs */}
+      <div className="fixed inset-0 overflow-hidden -z-10 dark:opacity-100 opacity-40">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-slate-700 rounded-full mix-blend-multiply filter blur-[160px] opacity-30 animate-pulse" />
         <div
           className="absolute bottom-0 -right-4 w-96 h-96 bg-slate-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-20 animate-pulse"
           style={{ animationDelay: "2s" }}
         />
         <div
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0 dark:opacity-[0.02] opacity-[0.05]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(128,128,128,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(128,128,128,0.5) 1px, transparent 1px)`,
             backgroundSize: "48px 48px",
           }}
         />
@@ -70,13 +68,13 @@ export default function AdminHomePage() {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/10 mb-5 shadow-xl">
-            <Settings size={24} className="text-gray-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-elevated border border-border mb-5 shadow-xl">
+            <Settings size={24} className="text-on-surface-muted" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mb-1">
+          <h1 className="text-2xl font-bold tracking-tight mb-1">
             Админ удирдлага
           </h1>
-          <p className="text-gray-600 text-sm">
+          <p className="text-on-surface-muted text-sm">
             Хичээлийн хуваарь болон даалгаврын удирдлага
           </p>
         </div>
@@ -87,13 +85,10 @@ export default function AdminHomePage() {
             <button
               key={card.href}
               type="button"
-              onClick={() => {
-                toast.info(`${card.title}...`, { duration: 900 });
-                setTimeout(() => router.push(card.href), 300);
-              }}
-              className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03]
+              onClick={() => router.push(card.href)}
+              className="group relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated
                 px-5 py-4 text-left
-                hover:bg-white/[0.06] hover:border-white/15 hover:scale-[1.01] hover:shadow-lg
+                hover:border-border hover:scale-[1.01] hover:shadow-lg
                 active:scale-[0.99] transition-all duration-200"
             >
               {/* Left accent */}
@@ -107,21 +102,21 @@ export default function AdminHomePage() {
 
               <div className="relative flex items-center gap-3.5">
                 <div
-                  className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-200`}
+                  className={`w-9 h-9 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-200`}
                 >
                   {card.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-100 text-sm group-hover:text-white transition-colors">
+                  <p className="font-semibold text-on-surface text-sm group-hover:text-on-surface transition-colors">
                     {card.title}
                   </p>
-                  <p className="text-xs text-gray-600 mt-0.5 group-hover:text-gray-500 transition-colors">
+                  <p className="text-xs text-on-surface-muted mt-0.5 transition-colors">
                     {card.desc}
                   </p>
                 </div>
                 <ArrowRight
                   size={15}
-                  className="text-gray-700 group-hover:text-gray-400 group-hover:translate-x-0.5 transition-all duration-200 flex-shrink-0"
+                  className="text-on-surface-muted group-hover:text-on-surface group-hover:translate-x-0.5 transition-all duration-200 shrink-0"
                 />
               </div>
             </button>
@@ -131,7 +126,7 @@ export default function AdminHomePage() {
         {/* Status pill */}
         <div className="flex items-center justify-center gap-2 py-3 mb-3">
           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-on-surface-muted">
             Систем хэвийн ажиллаж байна
           </span>
         </div>
@@ -142,7 +137,7 @@ export default function AdminHomePage() {
           onClick={handleLogout}
           className="group w-full flex items-center justify-center gap-2
             px-5 py-3 rounded-2xl
-            bg-white/[0.02] border border-white/8 text-gray-600
+            bg-surface-elevated border border-border-subtle text-on-surface-muted
             hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
             hover:scale-[1.01] active:scale-[0.99]
             transition-all duration-200 text-sm font-semibold"
