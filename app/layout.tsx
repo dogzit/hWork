@@ -5,6 +5,7 @@ import "./globals.css";
 import AuthGuard from "./_components/AuthGuard";
 import ThemeProvider from "./_components/ThemeProvider";
 import ThemeToggle from "./_components/ThemeToggle";
+import RefreshButton from "./_components/RefreshButton";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -32,8 +33,9 @@ export default function RootLayout({
 
           <Toaster position="top-right" richColors closeButton duration={3000} />
 
-          {/* Fixed top-right theme toggle — бүх хуудсанд харагдана */}
-          <div className="fixed top-4 right-4 z-50">
+          {/* Fixed top-right theme toggle + refresh — бүх хуудсанд харагдана */}
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+            <RefreshButton />
             <ThemeToggle />
           </div>
 
