@@ -2,11 +2,21 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
-import { LogOut, Clock, BookOpen, CheckSquare, MessageCircle, Search, Newspaper, Shuffle, User } from "lucide-react";
+import { LogOut, Clock, BookOpen, CheckSquare, MessageCircle, Search, Newspaper, Shuffle, User, RefreshCw } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
   const [showLogout, setShowLogout] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    // auth-г хадгалаад бусдыг цэвэрлэнэ
+    const name = localStorage.getItem("name");
+    localStorage.clear();
+    if (name) localStorage.setItem("name", name);
+    window.location.reload();
+  };
 
   const handleLogout = async () => {
     toast.info("Гарч байна...", { duration: 1200 });
@@ -173,7 +183,7 @@ export default function HomePage() {
           </div>
         </button>
 
-        {/* Bottom bar — Profile + Logout */}
+        {/* Bottom bar — Profile + Refresh + Logout */}
         <div className="flex gap-3">
           <button
             onClick={() => router.push("/profile")}
@@ -186,6 +196,19 @@ export default function HomePage() {
           >
             <User size={14} />
             Профайл
+          </button>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="group flex items-center justify-center gap-2
+              px-5 py-3 rounded-2xl
+              bg-surface-elevated border border-border-subtle text-on-surface-muted
+              hover:border-cyan-500/30 hover:text-cyan-400
+              hover:scale-[1.01] active:scale-[0.99]
+              transition-all duration-200 text-xs font-semibold"
+          >
+            <RefreshCw size={14} className={`transition-transform duration-500 ${refreshing ? "animate-spin" : "group-hover:rotate-180"}`} />
+            Шинэчлэх
           </button>
           <button
             type="button"
