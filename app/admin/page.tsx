@@ -8,6 +8,7 @@ import {
   Edit3,
   ArrowRight,
   Settings,
+  Shuffle,
 } from "lucide-react";
 
 export default function AdminHomePage() {
@@ -44,6 +45,14 @@ export default function AdminHomePage() {
       title: "Даалгавар удирдах",
       desc: "Даалгавар өөрчлөх, засах, устгах",
       href: "/admin/homework",
+    },
+    {
+      icon: <Shuffle size={20} className="text-white" />,
+      gradient: "from-indigo-600 to-blue-500",
+      glow: "bg-indigo-500",
+      title: "Сурагч сонгох",
+      desc: "Хичээл дээр хэнийг дуудах",
+      href: "/random",
     },
   ];
 

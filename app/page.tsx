@@ -1,10 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { LogOut, Clock, BookOpen, CheckSquare, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { LogOut, Clock, BookOpen, CheckSquare, MessageCircle, Search, Newspaper, Shuffle, User } from "lucide-react";
 
-export default function HomeworkAddPage() {
+export default function HomePage() {
   const router = useRouter();
+  const [showLogout, setShowLogout] = useState(false);
 
   const handleLogout = async () => {
     toast.info("Гарч байна...", { duration: 1200 });
@@ -13,144 +15,218 @@ export default function HomeworkAddPage() {
     window.location.href = "/auth/login";
   };
 
-  const cards = [
+  // Hero cards — том, гол feature-ууд
+  const hero = [
     {
-      icon: <Clock size={22} className="text-white" />,
-      gradient: "from-blue-600 to-cyan-500",
-      glow: "bg-blue-500",
-      shadow: "shadow-blue-900/40",
-      ring: "ring-blue-500/20",
-      title: "Хичээлийн хуваарь",
-      desc: "Өнөөдрийн цагуудыг харах",
-      href: "/timeTable",
-    },
-    {
-      icon: <BookOpen size={22} className="text-white" />,
+      icon: <BookOpen size={28} className="text-white" />,
       gradient: "from-pink-600 to-orange-500",
       glow: "bg-pink-500",
-      shadow: "shadow-pink-900/40",
-      ring: "ring-pink-500/20",
       title: "Даалгавар",
       desc: "Шинэ даалгавраа шалгах",
       href: "/homeWork",
+      emoji: "📚",
     },
+    {
+      icon: <Clock size={28} className="text-white" />,
+      gradient: "from-blue-600 to-cyan-500",
+      glow: "bg-blue-500",
+      title: "Хуваарь",
+      desc: "Өнөөдрийн цагууд",
+      href: "/timeTable",
+      emoji: "🕐",
+    },
+  ];
+
+  // Grid cards — дунд хэмжээтэй
+  const grid = [
     {
       icon: <CheckSquare size={22} className="text-white" />,
       gradient: "from-emerald-500 to-cyan-600",
-      glow: "bg-emerald-500",
-      shadow: "shadow-emerald-900/40",
-      ring: "ring-emerald-500/20",
-      title: "Хийх ажлууд",
-      desc: "Төлөвлөгөөгөө хянах",
+      title: "Todo",
+      desc: "Хийх ажлууд",
       href: "/todo",
+    },
+    {
+      icon: <MessageCircle size={22} className="text-white" />,
+      gradient: "from-violet-500 to-purple-600",
+      title: "Чат",
+      desc: "Ангийн чат",
+      href: "/chat",
+    },
+    {
+      icon: <Search size={22} className="text-white" />,
+      gradient: "from-amber-500 to-orange-600",
+      title: "Хайлт",
+      desc: "Хүн, мэдээ хайх",
+      href: "/search",
+    },
+    {
+      icon: <Newspaper size={22} className="text-white" />,
+      gradient: "from-rose-500 to-pink-600",
+      title: "Мэдээ",
+      desc: "Зураг, мэдээ",
+      href: "/feed",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface flex items-center justify-center p-6 font-sans">
-      {/* Background Orbs */}
-      <div className="fixed inset-0 overflow-hidden -z-10 dark:opacity-100 opacity-50">
+    <div className="min-h-screen bg-surface text-on-surface p-5 font-sans">
+      {/* Background */}
+      <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-15 animate-pulse" />
-        <div
-          className="absolute bottom-0 -right-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-[160px] opacity-15 animate-pulse"
-          style={{ animationDelay: "1.5s" }}
-        />
+        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-[160px] opacity-15 animate-pulse" style={{ animationDelay: "1.5s" }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-multiply filter blur-[200px] opacity-10" />
-        <div
-          className="absolute inset-0 dark:opacity-[0.03] opacity-[0.06]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(128,128,128,0.5) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(128,128,128,0.5) 1px, transparent 1px)`,
-            backgroundSize: "48px 48px",
-          }}
-        />
       </div>
 
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-md mx-auto pt-8 pb-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-surface-elevated border border-border mb-6 shadow-2xl">
-            <span className="text-3xl">🎓</span>
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-surface-elevated border border-border shadow-xl flex items-center justify-center">
+              <span className="text-2xl">🎓</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-on-surface-muted text-xs font-semibold uppercase tracking-wider">11Д анги</p>
+              <h1 className="text-2xl font-black tracking-tight">
+                Сайн уу{" "}
+                <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">!</span>
+              </h1>
+            </div>
           </div>
-          <h1 className="text-4xl font-black tracking-tight mb-2">
-            Сайн байна уу,{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-              11д
-            </span>
-          </h1>
-          <p className="text-on-surface-muted text-sm">Юу хийхийг сонгоно уу</p>
         </div>
 
-        {/* Nav Cards */}
-        <div className="grid grid-cols-1 gap-4 mb-4">
-          {cards.map((card, i) => (
+        {/* Hero Cards — 2 том card зэрэгцээ */}
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          {hero.map((card) => (
             <button
               key={card.href}
-              type="button"
               onClick={() => router.push(card.href)}
-              className={`group relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated
-                px-6 py-5 text-left
-                hover:bg-surface-elevated hover:border-border hover:scale-[1.02] hover:shadow-xl
-                active:scale-[0.98]
-                transition-all duration-200`}
-              style={{ animationDelay: `${i * 80}ms` }}
+              className="group relative overflow-hidden rounded-3xl border border-border-subtle bg-surface-elevated
+                p-5 text-left aspect-square flex flex-col justify-between
+                hover:border-border hover:scale-[1.03] hover:shadow-2xl
+                active:scale-[0.97] transition-all duration-200"
             >
-              {/* Subtle left accent bar */}
-              <div
-                className={`absolute left-0 top-4 bottom-4 w-0.5 rounded-full bg-gradient-to-b ${card.gradient} opacity-60 group-hover:opacity-100 transition-opacity`}
-              />
+              {/* Background glow */}
+              <div className={`absolute -inset-10 ${card.glow} rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
 
-              {/* Hover glow */}
-              <div
-                className={`absolute -inset-10 ${card.glow} rounded-full blur-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-300`}
-              />
+              {/* Top — icon */}
+              <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                {card.icon}
+              </div>
 
-              <div className="relative flex items-center gap-4">
-                {/* Icon */}
-                <div
-                  className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-200 ring-1 ${card.ring}`}
-                >
+              {/* Bottom — text */}
+              <div className="relative">
+                <p className="font-black text-lg leading-tight">{card.title}</p>
+                <p className="text-xs text-on-surface-muted mt-0.5">{card.desc}</p>
+              </div>
+
+              {/* Corner emoji */}
+              <span className="absolute top-4 right-4 text-2xl opacity-20 group-hover:opacity-40 group-hover:scale-125 transition-all duration-300">
+                {card.emoji}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Grid Cards — 2x2 дунд хэмжээ */}
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          {grid.map((card) => (
+            <button
+              key={card.href}
+              onClick={() => router.push(card.href)}
+              className="group relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated
+                px-4 py-4 text-left
+                hover:border-border hover:scale-[1.03] hover:shadow-xl
+                active:scale-[0.97] transition-all duration-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-200`}>
                   {card.icon}
                 </div>
-
-                {/* Text */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-on-surface group-hover:text-on-surface transition-colors">
-                    {card.title}
-                  </p>
-                  <p className="text-xs text-on-surface-muted mt-0.5 transition-colors">
-                    {card.desc}
-                  </p>
+                <div className="min-w-0">
+                  <p className="font-bold text-sm">{card.title}</p>
+                  <p className="text-[10px] text-on-surface-muted">{card.desc}</p>
                 </div>
-
-                {/* Arrow */}
-                <ArrowRight
-                  size={18}
-                  className="text-on-surface-muted group-hover:text-on-surface group-hover:translate-x-1 transition-all duration-200 shrink-0"
-                />
               </div>
             </button>
           ))}
         </div>
 
-        {/* Logout */}
+        {/* Random Student — нэг тусдаа wide card */}
         <button
-          type="button"
-          onClick={handleLogout}
-          className="group w-full flex items-center justify-center gap-2
-            px-6 py-3.5 rounded-2xl
-            bg-surface-elevated border border-border-subtle text-on-surface-muted
-            hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
-            hover:scale-[1.01] active:scale-[0.99]
-            transition-all duration-200 text-sm font-semibold"
+          onClick={() => router.push("/random")}
+          className="group w-full relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated
+            px-5 py-4 text-left mb-6
+            hover:border-border hover:scale-[1.02] hover:shadow-xl
+            active:scale-[0.98] transition-all duration-200"
         >
-          <LogOut
-            size={16}
-            className="group-hover:rotate-12 transition-transform duration-200"
-          />
-          Системээс гарах
+          <div className="absolute -inset-10 bg-indigo-500 rounded-full blur-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
+              <Shuffle size={20} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-sm">Сурагч сонгох</p>
+              <p className="text-[10px] text-on-surface-muted">Санамсаргүй нэг хүн сонгох 🎲</p>
+            </div>
+            <span className="text-2xl opacity-30 group-hover:opacity-60 group-hover:animate-bounce transition-all">🎯</span>
+          </div>
         </button>
+
+        {/* Bottom bar — Profile + Logout */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => router.push("/profile")}
+            className="group flex-1 flex items-center justify-center gap-2
+              px-5 py-3 rounded-2xl
+              bg-surface-elevated border border-border-subtle text-on-surface-muted
+              hover:border-accent/30 hover:text-accent
+              hover:scale-[1.01] active:scale-[0.99]
+              transition-all duration-200 text-xs font-semibold"
+          >
+            <User size={14} />
+            Профайл
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowLogout(true)}
+            className="group flex items-center justify-center gap-2
+              px-5 py-3 rounded-2xl
+              bg-surface-elevated border border-border-subtle text-on-surface-muted
+              hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
+              hover:scale-[1.01] active:scale-[0.99]
+              transition-all duration-200 text-xs font-semibold"
+          >
+            <LogOut size={14} className="group-hover:rotate-12 transition-transform duration-200" />
+            Гарах
+          </button>
+        </div>
       </div>
+
+      {/* Logout Confirm Modal */}
+      {showLogout && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6"
+          onClick={() => setShowLogout(false)}>
+          <div className="bg-surface border border-border rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center space-y-4"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="text-4xl">👋</div>
+            <h2 className="text-lg font-black">Системээс гарах уу?</h2>
+            <p className="text-sm text-on-surface-muted">Дахин нэвтэрхийн тулд PIN кодоо оруулах шаардлагатай</p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowLogout(false)}
+                className="flex-1 py-3 rounded-2xl bg-surface-elevated border border-border text-sm font-bold
+                  hover:bg-card-hover transition-all">
+                Үгүй
+              </button>
+              <button onClick={handleLogout}
+                className="flex-1 py-3 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-bold
+                  hover:bg-red-500/30 transition-all">
+                Гарах
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

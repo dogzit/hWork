@@ -11,9 +11,14 @@ model User {
   name      String    @unique
   pinHash   String    @unique
   pinSalt   String
+  avatar    String?
+  bio       String?
+  instagram String?
   createdAt DateTime  @default(now())
   Session   Session[]
   todos     Todo[]
+  likes     Like[]
+  comments  Comment[]
 }
 
 model Todo {
@@ -63,6 +68,53 @@ model Session {
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, expiresAt])
+}
+
+// --- Chat ---
+model ChatMessage {
+  id        String   @id @default(nanoid())
+  userName  String
+  text      String
+  replyToId String?
+  reaction  String[] @default([])
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// --- News/Photo Feed ---
+model Post {
+  id        String    @id @default(nanoid())
+  userName  String
+  text      String
+  images    String[]  @default([])
+  createdAt DateTime  @default(now())
+  likes     Like[]
+  comments  Comment[]
+
+  @@index([createdAt])
+}
+
+model Like {
+  id       String @id @default(nanoid())
+  postId   String
+  userName String
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userName], references: [name], onDelete: Cascade)
+
+  @@unique([postId, userName])
+}
+
+model Comment {
+  id        String   @id @default(nanoid())
+  postId    String
+  userName  String
+  text      String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userName], references: [name], onDelete: Cascade)
+
+  @@index([postId, createdAt])
 }
 
 enum Day {
