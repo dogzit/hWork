@@ -1,29 +1,9 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useState } from "react";
-import { LogOut, Clock, BookOpen, CheckSquare, MessageCircle, Search, Newspaper, Shuffle, User, RefreshCw } from "lucide-react";
+import { Clock, BookOpen, CheckSquare, MessageCircle, Search, Newspaper, Shuffle, User } from "lucide-react";
 
 export default function HomePage() {
   const router = useRouter();
-  const [showLogout, setShowLogout] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    // auth-г хадгалаад бусдыг цэвэрлэнэ
-    const name = localStorage.getItem("name");
-    localStorage.clear();
-    if (name) localStorage.setItem("name", name);
-    window.location.reload();
-  };
-
-  const handleLogout = async () => {
-    toast.info("Гарч байна...", { duration: 1200 });
-    await fetch("/api/auth/logout", { method: "POST" });
-    localStorage.removeItem("name");
-    window.location.href = "/auth/login";
-  };
 
   // Hero cards — том, гол feature-ууд
   const hero = [
@@ -183,7 +163,7 @@ export default function HomePage() {
           </div>
         </button>
 
-        {/* Bottom bar — Profile + Refresh + Logout */}
+        {/* Bottom bar — Profile */}
         <div className="flex gap-3">
           <button
             onClick={() => router.push("/profile")}
@@ -197,59 +177,8 @@ export default function HomePage() {
             <User size={14} />
             Профайл
           </button>
-          <button
-            type="button"
-            onClick={handleRefresh}
-            className="group flex items-center justify-center gap-2
-              px-5 py-3 rounded-2xl
-              bg-surface-elevated border border-border-subtle text-on-surface-muted
-              hover:border-cyan-500/30 hover:text-cyan-400
-              hover:scale-[1.01] active:scale-[0.99]
-              transition-all duration-200 text-xs font-semibold"
-          >
-            <RefreshCw size={14} className={`transition-transform duration-500 ${refreshing ? "animate-spin" : "group-hover:rotate-180"}`} />
-            Шинэчлэх
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowLogout(true)}
-            className="group flex items-center justify-center gap-2
-              px-5 py-3 rounded-2xl
-              bg-surface-elevated border border-border-subtle text-on-surface-muted
-              hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-400
-              hover:scale-[1.01] active:scale-[0.99]
-              transition-all duration-200 text-xs font-semibold"
-          >
-            <LogOut size={14} className="group-hover:rotate-12 transition-transform duration-200" />
-            Гарах
-          </button>
         </div>
       </div>
-
-      {/* Logout Confirm Modal */}
-      {showLogout && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6"
-          onClick={() => setShowLogout(false)}>
-          <div className="bg-surface border border-border rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center space-y-4"
-            onClick={(e) => e.stopPropagation()}>
-            <div className="text-4xl">👋</div>
-            <h2 className="text-lg font-black">Системээс гарах уу?</h2>
-            <p className="text-sm text-on-surface-muted">Дахин нэвтэрхийн тулд PIN кодоо оруулах шаардлагатай</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowLogout(false)}
-                className="flex-1 py-3 rounded-2xl bg-surface-elevated border border-border text-sm font-bold
-                  hover:bg-card-hover transition-all">
-                Үгүй
-              </button>
-              <button onClick={handleLogout}
-                className="flex-1 py-3 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-bold
-                  hover:bg-red-500/30 transition-all">
-                Гарах
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

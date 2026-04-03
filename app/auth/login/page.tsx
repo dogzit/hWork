@@ -51,7 +51,7 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      localStorage.setItem("name", data.name);
+      localStorage.setItem("name", data.name.toLowerCase());
       toast.success(`Тавтай морил, ${data.name}! ✨`);
       router.push(data.name.toLowerCase() === "admin" ? "/admin" : "/");
     } catch {
