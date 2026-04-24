@@ -174,11 +174,10 @@ export default function TodoPage() {
                       )}
                     </button>
                     <span
-                      className={`text-lg transition-all duration-300 ${
-                        todo.completed
+                      className={`text-lg transition-all duration-300 ${todo.completed
                           ? "line-through text-gray-500 opacity-60"
                           : "text-on-surface"
-                      }`}
+                        }`}
                     >
                       {todo.task}
                     </span>

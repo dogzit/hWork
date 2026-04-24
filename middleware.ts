@@ -1,45 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { createHash } from "crypto";
 
 const JWT_COOKIE_NAME = "auth_jwt";
 
-function getJwtSecret() {
+/**
+ * Web Crypto API ашиглан SHA-256 hash үүсгэх функц.
+ * Энэ нь Edge Runtime дээр алдаагүй ажиллана.
+ */
+async function generateHash(message: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hashHex;
+}
+
+async function getJwtSecret() {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    return createHash("sha256")
-      .update(process.env.DATABASE_URL ?? "dev")
-      .digest("hex");
+    // Хэрэв JWT_SECRET байхгүй бол DATABASE_URL-аас hash үүсгэж ашиглана
+    return await generateHash(process.env.DATABASE_URL ?? "dev");
   }
   return secret;
 }
 
 async function verifyToken(token: string) {
   try {
-    const secret = getJwtSecret();
+    const secret = await getJwtSecret();
     const enc = new TextEncoder();
+    // jose сан нь Edge Runtime дээр ажиллахад зориулагдсан тул зүгээр
     const { payload } = await jwtVerify(token, enc.encode(secret));
     return payload;
-  } catch {
+  } catch (error) {
     return null;
   }
 }
 
-// Public API routes that don't need auth
 const PUBLIC_API = ["/api/auth/login", "/api/auth/signup", "/api/auth/logout"];
-
-// Public pages
 const PUBLIC_PAGES = ["/auth/login", "/auth/signup"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Skip public API routes
   if (PUBLIC_API.some((p) => pathname.startsWith(p))) {
     return NextResponse.next();
   }
 
-  // For protected API routes, verify JWT
   if (pathname.startsWith("/api/")) {
     const token = req.cookies.get(JWT_COOKIE_NAME)?.value;
     if (!token) {
@@ -51,14 +60,15 @@ export async function middleware(req: NextRequest) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    // Add user info to headers for route handlers
     const res = NextResponse.next();
     res.headers.set("x-user-id", String(payload.sub ?? ""));
-    res.headers.set("x-user-name", String((payload as Record<string, unknown>).name ?? ""));
+    res.headers.set(
+      "x-user-name",
+      String((payload as Record<string, unknown>).name ?? ""),
+    );
     return res;
   }
 
-  // For protected pages, check auth and redirect if needed
   if (!PUBLIC_PAGES.includes(pathname)) {
     const token = req.cookies.get(JWT_COOKIE_NAME)?.value;
     if (!token) {
@@ -70,12 +80,10 @@ export async function middleware(req: NextRequest) {
     if (!payload) {
       const loginUrl = new URL("/auth/login", req.url);
       const res = NextResponse.redirect(loginUrl);
-      // Clear invalid cookie
       res.cookies.set(JWT_COOKIE_NAME, "", { maxAge: 0, path: "/" });
       return res;
     }
 
-    // Protect admin routes
     const userName = String((payload as Record<string, unknown>).name ?? "");
     if (pathname.startsWith("/admin") && userName.toLowerCase() !== "admin") {
       return NextResponse.redirect(new URL("/", req.url));
@@ -87,7 +95,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files and Next.js internals
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

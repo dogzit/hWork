@@ -7,18 +7,19 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(nanoid())
-  name      String    @unique
-  pinHash   String    @unique
-  pinSalt   String
-  avatar    String?
-  bio       String?
-  instagram String?
-  createdAt DateTime  @default(now())
-  Session   Session[]
-  todos     Todo[]
-  likes     Like[]
-  comments  Comment[]
+  id          String       @id @default(nanoid())
+  name        String       @unique
+  pinHash     String       @unique
+  pinSalt     String
+  avatar      String?
+  bio         String?
+  instagram   String?
+  createdAt   DateTime     @default(now())
+  Session     Session[]
+  todos       Todo[]
+  likes       Like[]
+  comments    Comment[]
+  busBookings BusBooking[]
 }
 
 model Todo {
@@ -115,6 +116,23 @@ model Comment {
   user      User     @relation(fields: [userName], references: [name], onDelete: Cascade)
 
   @@index([postId, createdAt])
+}
+
+model BusLayout {
+  id        String   @id @default(nanoid())
+  seatId    String   @unique
+  x         Float
+  y         Float
+  isPremium Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model BusBooking {
+  id       String @id @default(nanoid())
+  seatId   String @unique
+  userName String
+  status   String @default("APPROVED")
+  user     User   @relation(fields: [userName], references: [name], onDelete: Cascade)
 }
 
 enum Day {

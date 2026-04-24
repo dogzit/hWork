@@ -117,6 +117,42 @@ export default function HomePage() {
             </button>
           ))}
         </div>
+        {/* Хаврын аялал - Special Event Card */}
+        <button
+          onClick={() => router.push("/bus")} // Эсвэл өөрийн хүссэн path
+          className="group w-full relative overflow-hidden rounded-3xl border border-pink-500/30 bg-surface-elevated
+    px-5 py-6 text-left mb-3
+    hover:border-pink-500/50 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(236,72,153,0.15)]
+    active:scale-[0.98] transition-all duration-300"
+        >
+          {/* Moving Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-orange-500/10 to-pink-500/10 opacity-50 group-hover:opacity-80 transition-opacity" />
+
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform duration-300">
+                <span className="text-3xl">🌸</span>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-black text-lg tracking-tight">Хаврын аялал</p>
+                  <span className="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-500 text-[10px] font-bold uppercase tracking-widest animate-pulse">
+                    Soon
+                  </span>
+                </div>
+                <p className="text-xs text-on-surface-muted mt-0.5">Ангийн дурсамж бүтээх өдөр</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end">
+              <span className="text-2xl group-hover:scale-125 transition-transform duration-500">🏔️</span>
+              <p className="text-[10px] font-bold text-pink-500/60 mt-1 uppercase">05/01</p>
+            </div>
+          </div>
+
+          {/* Decorative elements */}
+          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl" />
+        </button>
 
         {/* Grid Cards — 2x2 дунд хэмжээ */}
         <div className="grid grid-cols-2 gap-3 mb-3">
