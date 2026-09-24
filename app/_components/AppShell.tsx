@@ -16,6 +16,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  // Админ хуудсууд өөрийн header-гүй тул floating товчнуудыг үлдээнэ.
+  // Бусад хуудас AppHeader ашиглана (дээшээ шахагдах асуудал арилна).
+  const showFloatingActions = pathname.startsWith("/admin");
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />
@@ -26,11 +30,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <MobileNav />
 
-      <div className="fixed top-2.5 right-2.5 sm:top-4 sm:right-4 z-50 flex items-center gap-1.5 sm:gap-2">
-        <NotificationBell />
-        <RefreshButton />
-        <ThemeToggle />
-      </div>
+      {showFloatingActions && (
+        <div className="fixed top-2.5 right-2.5 sm:top-4 sm:right-4 z-50 flex items-center gap-1.5 sm:gap-2">
+          <NotificationBell />
+          <RefreshButton />
+          <ThemeToggle />
+        </div>
+      )}
     </div>
   );
 }

@@ -4,16 +4,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   BookOpen,
   ImageIcon,
   ChevronLeft,
   ChevronRight,
   X,
   ZoomIn,
-  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type HworkItem = {
   id: string;
@@ -22,6 +22,8 @@ type HworkItem = {
   date: string;
   image: string | null;
   images?: string[] | null;
+  /** Хэрэглэгч энэ даалгаврыг хийсэн эсэх (HworkCheck) */
+  checked?: boolean;
 };
 
 function formatDate(ymdStr: string) {
@@ -276,6 +278,7 @@ export default function HomeworkDatePage() {
 
   const [allData, setAllData] = useState<HworkItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [modal, setModal] = useState<{
     images: string[];
     index: number;
@@ -323,8 +326,60 @@ export default function HomeworkDatePage() {
     };
   }, [modal]);
 
+  /** Даалгаврыг хийсэн/хийгээгүй болгох — leaderboard эх үүсвэр */
+  const toggleCheck = async (item: HworkItem) => {
+    if (togglingId) return;
+    const prev = item.checked ?? false;
+    // Optimistic update
+    setAllData((d) =>
+      d.map((x) => (x.id === item.id ? { ...x, checked: !prev } : x)),
+    );
+    setTogglingId(item.id);
+    try {
+      const res = await fetch("/api/hwork/check", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ hworkId: item.id }),
+      });
+      if (!res.ok) throw new Error();
+      const j = (await res.json()) as { checked: boolean };
+      setAllData((d) =>
+        d.map((x) => (x.id === item.id ? { ...x, checked: j.checked } : x)),
+      );
+      if (j.checked) toast.success("Хийсэн болголоо ✅");
+      else toast.info("Тэмдэглээг арилгалаа");
+    } catch {
+      // Revert
+      setAllData((d) =>
+        d.map((x) => (x.id === item.id ? { ...x, checked: prev } : x)),
+      );
+      toast.error("Алдаа гарлаа");
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const checkedCount = dayHomework.filter((x) => x.checked).length;
+
   return (
-    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface font-sans">
+      {/* Header */}
+      <AppHeader
+        onBack={() => router.back()}
+        title={dateParam && formatDate(dateParam)}
+        subtitle={
+          dateParam
+            ? `${getDayOfWeek(dateParam)} • ${checkedCount}/${dayHomework.length} хийсэн`
+            : undefined
+        }
+        icon={
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center shrink-0">
+            <BookOpen size={15} className="text-white" />
+          </span>
+        }
+      />
+
+      <div className="p-6">
       {/* Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-pink-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
@@ -336,32 +391,6 @@ export default function HomeworkDatePage() {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
-          >
-            <ArrowLeft
-              size={24}
-              className="group-hover:text-pink-400 transition-colors"
-            />
-          </button>
-          <div className="text-right">
-            <div className="flex items-center justify-end gap-2 mb-1">
-              <span className="text-xs font-bold text-pink-400/80 uppercase tracking-wider bg-pink-500/10 border border-pink-500/20 px-2.5 py-1 rounded-full">
-                {dateParam && getDayOfWeek(dateParam)}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-orange-400 bg-clip-text text-transparent">
-              {dateParam && formatDate(dateParam)}
-            </h1>
-            <p className="text-gray-500 text-xs mt-1">
-              {dayHomework.length} даалгавар • {daySubjects.length} хичээл
-            </p>
-          </div>
-        </div>
-
         {/* Subject pills summary */}
         {!loading && daySubjects.length > 0 && (
           <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
@@ -420,7 +449,7 @@ export default function HomeworkDatePage() {
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
                   <div className="p-5">
-                    {/* Subject badge */}
+                    {/* Subject badge + check toggle */}
                     <div className="flex items-center gap-3 mb-4">
                       <div
                         className={`w-8 h-8 rounded-xl bg-gradient-to-br ${c.gradient} flex items-center justify-center flex-shrink-0 shadow-lg`}
@@ -432,13 +461,22 @@ export default function HomeworkDatePage() {
                       >
                         {item.subject}
                       </span>
-                      {imgs.length > 0 && (
-                        <span className="ml-auto flex items-center gap-1 text-xs text-gray-600">
-                          <ImageIcon size={12} />
-                          {imgs.length}
-                        </span>
-                      )}
-                    </div>
+                      <button
+                        onClick={() => toggleCheck(item)}
+                        disabled={togglingId === item.id}
+                        className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border
+                          transition-all duration-200 active:scale-95
+                          ${
+                            item.checked
+                              ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-400"
+                              : "bg-surface-elevated border-border text-gray-500 hover:border-emerald-500/40 hover:text-emerald-400"
+                          }
+                          ${togglingId === item.id ? "opacity-60" : ""}`}
+                        >
+                          <CheckCircle2 size={14} />
+                          {item.checked ? "Хийсэн" : "Тэмдэглэх"}
+                        </button>
+                      </div>
                     {/* Title */}
                     <p className="text-on-surface font-semibold leading-relaxed whitespace-pre-line group-hover:text-on-surface transition-colors">
                       {item.title}
@@ -465,6 +503,7 @@ export default function HomeworkDatePage() {
           onClose={() => setModal(null)}
         />
       )}
+      </div>
     </div>
   );
 }

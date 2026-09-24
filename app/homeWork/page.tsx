@@ -4,16 +4,15 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   RefreshCw,
   BookOpen,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   Loader2,
   AlertCircle,
 } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type HworkItem = {
   id: string;
@@ -213,7 +212,19 @@ export default function HomeworkTimelinePage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface font-sans">
+      {/* Header */}
+      <AppHeader
+        title="Даалгаврын хуваарь"
+        subtitle="Өдрөөр бүлэглэсэн"
+        icon={
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center shrink-0">
+            <BookOpen size={15} className="text-white" />
+          </span>
+        }
+      />
+
+      <div className="p-6">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-pink-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
@@ -232,28 +243,6 @@ export default function HomeworkTimelinePage() {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <button
-            onClick={() => router.push("/")}
-            className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
-          >
-            <ArrowLeft
-              size={24}
-              className="group-hover:text-pink-400 transition-colors"
-            />
-          </button>
-          <div className="text-right">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-400 to-orange-400 bg-clip-text text-transparent uppercase tracking-wider">
-              Даалгаврын хуваарь
-            </h1>
-            <p className="text-gray-400 text-sm italic flex items-center justify-end gap-1 mt-1">
-              <Calendar size={12} />
-              Өдрөөр бүлэглэсэн
-            </p>
-          </div>
-        </div>
-
         {/* Filter + Refresh */}
         <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
           <div className="flex items-center justify-between mb-4">
@@ -485,6 +474,7 @@ export default function HomeworkTimelinePage() {
             })}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

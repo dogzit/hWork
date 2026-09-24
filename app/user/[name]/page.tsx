@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Instagram, Loader2, ImageOff, MessageSquare, Heart } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import { HeaderActions } from "@/app/_components/AppHeader";
 
 type UserProfile = { name: string; avatar: string | null; bio: string | null; instagram: string | null };
 type Post = { id: string; userName: string; text: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
@@ -107,6 +108,9 @@ export default function UserPage() {
             <ArrowLeft size={20} className="text-white" />
           </button>
           <h1 className="font-bold text-sm text-white">{name}</h1>
+          <div className="ml-auto">
+            <HeaderActions />
+          </div>
         </div>
 
         {/* Avatar overlapping banner */}

@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Search,
   Newspaper,
+  User,
 } from "lucide-react";
 
 const navItems: { icon: LucideIcon; label: string; href: string }[] = [
@@ -18,6 +19,7 @@ const navItems: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: MessageCircle, label: "Чат", href: "/chat" },
   { icon: Newspaper, label: "Мэдээ", href: "/feed" },
   { icon: Search, label: "Хайлт", href: "/search" },
+  { icon: User, label: "Профайл", href: "/profile" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -59,7 +61,7 @@ export default function MobileNav() {
                   active ? "scale-110" : ""
                 }`}
               />
-              <span className="text-[9px] font-bold leading-none truncate max-w-full px-0.5">
+              <span className="text-[8px] sm:text-[9px] font-bold leading-none truncate max-w-full px-0.5">
                 {item.label}
               </span>
             </button>

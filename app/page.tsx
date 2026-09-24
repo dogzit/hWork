@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { BookOpen, Clock, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import BusSeatPanel from "./_components/BusSeatPanel";
+import AppHeader from "./_components/AppHeader";
 
 const MON_DAYS = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
 
@@ -34,7 +35,14 @@ export default function HomePage() {
     : "";
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface font-sans overflow-hidden">
+    <div className="min-h-screen bg-surface text-on-surface font-sans">
+      {/* Header */}
+      <AppHeader
+        showBack={false}
+        title="Нүүр хуудас"
+        subtitle={dateStr || "12Д Анги"}
+      />
+
       {/* Background */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-violet-600/20 to-purple-600/10 blur-[120px] animate-pulse" />

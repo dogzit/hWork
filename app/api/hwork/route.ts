@@ -35,6 +35,7 @@ export async function GET(req: Request) {
 
     const subject = searchParams.get("subject");
     const date = searchParams.get("date");
+    const userName = req.headers.get("x-user-name");
 
     const where: { subject?: string; date?: { gte: Date; lt: Date } } = {};
 
@@ -44,12 +45,24 @@ export async function GET(req: Request) {
       if (r) where.date = { gte: r.start, lt: r.next };
     }
 
-    const items = await prisma.hwork.findMany({
-      where,
-      orderBy: { date: "desc" },
-    });
+    const [items, myChecks] = await Promise.all([
+      prisma.hwork.findMany({
+        where,
+        orderBy: { date: "desc" },
+      }),
+      userName
+        ? prisma.hworkCheck.findMany({
+            where: { userName },
+            select: { hworkId: true },
+          })
+        : Promise.resolve([]),
+    ]);
 
-    return NextResponse.json(items);
+    const checkedSet = new Set(myChecks.map((c) => c.hworkId));
+
+    return NextResponse.json(
+      items.map((item) => ({ ...item, checked: checkedSet.has(item.id) })),
+    );
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" } satisfies ApiError, {

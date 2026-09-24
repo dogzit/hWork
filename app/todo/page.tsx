@@ -3,13 +3,13 @@ import { useEffect, useState, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   CheckCircle2,
   Circle,
   Trash2,
   Plus,
 } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 // 1. Define the Todo Interface to satisfy TypeScript
 interface Todo {
@@ -119,7 +119,20 @@ export default function TodoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface p-4 sm:p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface font-sans">
+      {/* Header */}
+      <AppHeader
+        onBack={() => router.back()}
+        title={`${userName}-н жагсаалт`}
+        subtitle="Өнөөдрийн төлөвлөгөө"
+        icon={
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shrink-0">
+            <CheckCircle2 size={15} className="text-white" />
+          </span>
+        }
+      />
+
+      <div className="p-4 sm:p-6">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
@@ -127,22 +140,6 @@ export default function TodoPage() {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-10">
-          <button
-            onClick={() => router.back()}
-            className="p-2 shrink-0 hover:bg-card-hover rounded-full transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <div className="text-right min-w-0">
-            <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider truncate">
-              {userName}-н жагсаалт
-            </h1>
-            <p className="text-gray-400 text-xs sm:text-sm italic">Өнөөдрийн төлөвлөгөө</p>
-          </div>
-        </div>
-
         {/* Todo List Card */}
         <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl">
           {loading ? (
@@ -219,6 +216,7 @@ export default function TodoPage() {
             <Plus size={20} />
             <span className="hidden sm:inline">Нэмэх</span>
           </button>
+        </div>
         </div>
       </div>
     </div>

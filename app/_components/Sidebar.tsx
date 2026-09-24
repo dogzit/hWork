@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import LogoutConfirm from "./LogoutConfirm";
 import {
@@ -39,6 +39,14 @@ export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const [showLogout, setShowLogout] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(
+      localStorage.getItem("role") === "ADMIN" ||
+        (localStorage.getItem("name") ?? "").toLowerCase() === "admin",
+    );
+  }, []);
 
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-border bg-surface/80 backdrop-blur-xl">
@@ -92,14 +100,16 @@ export default function Sidebar() {
           <User size={20} />
           Профайл
         </button>
-        <button
-          onClick={() => router.push("/admin")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
-            hover:text-on-surface hover:bg-card-hover transition-all duration-200"
-        >
-          <Settings size={20} />
-          Админ
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => router.push("/admin")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
+              hover:text-on-surface hover:bg-card-hover transition-all duration-200"
+          >
+            <Settings size={20} />
+            Админ
+          </button>
+        )}
         <button
           onClick={() => setShowLogout(true)}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted

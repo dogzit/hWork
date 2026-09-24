@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Shuffle, Loader2 } from "lucide-react";
+import { Shuffle, Loader2 } from "lucide-react";
+import AppHeader from "@/app/_components/AppHeader";
 
 export default function RandomStudentPage() {
-  const router = useRouter();
   const [name, setName] = useState<string | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
@@ -47,13 +46,10 @@ export default function RandomStudentPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface flex flex-col items-center font-sans">
       {/* Header */}
-      <div className="sticky top-0 z-10 w-full bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.push("/")} className="p-2 hover:bg-card-hover rounded-xl transition-all">
-          <ArrowLeft size={20} />
-        </button>
-        <Shuffle size={18} className="text-violet-400" />
-        <h1 className="font-bold text-sm">Сурагч сонгох</h1>
-      </div>
+      <AppHeader
+        title="Сурагч сонгох"
+        icon={<Shuffle size={18} className="text-violet-400 shrink-0" />}
+      />
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 w-full max-w-sm">
         {/* Result display */}

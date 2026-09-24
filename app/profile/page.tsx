@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Camera,
   Save,
   Loader2,
@@ -19,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type Profile = {
   name: string;
@@ -104,7 +103,6 @@ function Confetti() {
 }
 
 export default function ProfilePage() {
-  const router = useRouter();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [bio, setBio] = useState("");
@@ -332,11 +330,8 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-surface text-on-surface font-sans">
-        <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-xl" />
-          <Skeleton className="h-4 w-20 rounded-lg" />
-        </div>
-        <div className="max-w-sm mx-auto px-4 py-8 space-y-6">
+        <AppHeader title="Профайл" showProfile={false} />
+        <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
           {/* Avatar skeleton */}
           <div className="flex flex-col items-center gap-4">
             <Skeleton className="h-24 w-24 rounded-full" />
@@ -387,17 +382,12 @@ export default function ProfilePage() {
       {/* Баярын цаас */}
       {showBirthday && <Confetti />}
 
-      <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => router.push("/")}
-          className="p-2 hover:bg-card-hover rounded-xl transition-all"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="font-bold text-sm">Профайл</h1>
-      </div>
+      <AppHeader title="Профайл" showProfile={false} />
 
-      <div className="max-w-sm mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-5xl mx-auto px-4 py-6 lg:py-10">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-6">
+        {/* ── Зүүн тал (desktop): профайнлын карт ── */}
+        <div className="lg:col-span-4 lg:sticky lg:top-20 lg:self-start space-y-6">
         {/* Avatar */}
         <div className="flex flex-col items-center gap-4">
           <div className="relative group">
@@ -465,6 +455,41 @@ export default function ProfilePage() {
           </div>
         </div>
 
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 text-center">
+            <p className="text-2xl font-black">{profile.completedTodos}</p>
+            <p className="text-[10px] text-on-surface-muted mt-1">
+              Биелсэн todo
+            </p>
+          </div>
+          <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 text-center">
+            <p className="text-2xl font-black">{pct}%</p>
+            <p className="text-[10px] text-on-surface-muted mt-1">
+              Гүйцэтгэл
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex justify-between text-[10px] text-on-surface-muted mb-1">
+            <span>Todo progress</span>
+            <span>
+              {profile.completedTodos}/{profile.totalTodos}
+            </span>
+          </div>
+          <div className="h-2 bg-surface-alt rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+        </div>{/* /зүүн тал */}
+
+        {/* ── Баруун тал (desktop): форм + аюулгүй байдал ── */}
+        <div className="lg:col-span-8 mt-6 lg:mt-0 space-y-6">
+
         {/* Төрсөн өдрийн мэнд хүргэх хэсэг */}
         {isBday && (
           <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-2xl p-4 text-center animate-pulse">
@@ -484,8 +509,8 @@ export default function ProfilePage() {
         )}
 
         {/* ── Хувийн мэдээлэл ── */}
-        <div className="bg-surface-elevated border border-border rounded-2xl p-4 space-y-4">
-          <h3 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest">
+        <div className="bg-surface-elevated border border-border rounded-2xl p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <h3 className="text-[10px] font-black text-on-surface-muted uppercase tracking-widest sm:col-span-2">
             Хувийн мэдээлэл
           </h3>
 
@@ -626,36 +651,6 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black">{profile.completedTodos}</p>
-            <p className="text-[10px] text-on-surface-muted mt-1">
-              Биелсэн todo
-            </p>
-          </div>
-          <div className="bg-surface-elevated border border-border-subtle rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black">{pct}%</p>
-            <p className="text-[10px] text-on-surface-muted mt-1">
-              Гүйцэтгэл
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex justify-between text-[10px] text-on-surface-muted mb-1">
-            <span>Todo progress</span>
-            <span>
-              {profile.completedTodos}/{profile.totalTodos}
-            </span>
-          </div>
-          <div className="h-2 bg-surface-alt rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-500"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
         {/* ── PIN солих модал ── */}
         {showPinModal && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -823,6 +818,8 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+        </div>{/* /баруун тал */}
+        </div>{/* /grid */}
       </div>
     </div>
   );

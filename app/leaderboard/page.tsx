@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Trophy, Medal, Flame, Loader2 } from "lucide-react";
+import { Trophy, Flame } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type Entry = { name: string; total: number; completed: number };
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 export default function LeaderboardPage() {
-  const router = useRouter();
   const [data, setData] = useState<Entry[]>([]);
   const [streak, setStreak] = useState<{ streak: number; totalCompleted: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,13 +28,11 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface font-sans">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.push("/")} className="p-2 hover:bg-card-hover rounded-xl transition-all">
-          <ArrowLeft size={20} />
-        </button>
-        <Trophy size={18} className="text-amber-400" />
-        <h1 className="font-bold text-sm">Тэргүүлэгчдийн самбар</h1>
-      </div>
+      <AppHeader
+        title="Тэргүүлэгчдийн самбар"
+        subtitle="Даалгавар хийснээрээ"
+        icon={<Trophy size={18} className="text-amber-400 shrink-0" />}
+      />
 
       <div className="max-w-lg mx-auto px-4 py-6 space-y-6">
         {/* Streak Card */}

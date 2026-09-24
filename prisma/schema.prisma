@@ -42,6 +42,19 @@ model Hwork {
   subject String
   date    DateTime
   images  String[] @default([])
+  checks  HworkCheck[]
+}
+
+// Хэрэглэгч бүрийн хийсэн даалгаврын тэмдэглээ (leaderboard-ийн эх үүсвэр)
+model HworkCheck {
+  id        String   @id @default(nanoid())
+  hworkId   String
+  userName  String
+  createdAt DateTime @default(now())
+  hwork     Hwork    @relation(fields: [hworkId], references: [id], onDelete: Cascade)
+
+  @@unique([hworkId, userName])
+  @@index([userName])
 }
 
 model DutySchedule {

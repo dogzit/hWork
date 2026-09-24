@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search, Instagram, Loader2 } from "lucide-react";
+import { Search, Instagram, Loader2 } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type UserResult = { name: string; avatar: string | null; bio: string | null; instagram: string | null };
 type PostResult = { id: string; userName: string; text: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
@@ -44,12 +45,7 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-sans">
-      <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.push("/")} className="p-2 hover:bg-card-hover rounded-xl transition-all">
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="font-bold text-sm">Хайлт</h1>
-      </div>
+      <AppHeader title="Хайлт" />
 
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         {/* Search input */}

@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   RefreshCw,
   BookOpen,
   Clock,
@@ -16,6 +15,7 @@ import {
   Filter,
 } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type Day = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
 type TimetableItem = {
@@ -291,7 +291,6 @@ export default function TimetableReadOnly({
   title = "Хичээлийн хуваарь",
   showBackButton = true,
 }: Props) {
-  const router = useRouter();
   const [data, setData] = useState<TimetableItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -430,7 +429,24 @@ export default function TimetableReadOnly({
   }, [activeDay, grid]);
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface font-sans">
+      {/* Header */}
+      <AppHeader
+        showBack={showBackButton}
+        title={title}
+        subtitle={
+          isToday && !isWeekend && currentLesson
+            ? `Одоо ${currentLesson}-р цаг явж байна`
+            : "Долоо хоногийн хуваарь"
+        }
+        icon={
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0">
+            <Clock size={15} className="text-white" />
+          </span>
+        }
+      />
+
+      <div className="p-6">
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-[140px] opacity-15 animate-pulse" />
         <div
@@ -441,34 +457,6 @@ export default function TimetableReadOnly({
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          {showBackButton ? (
-            <button
-              onClick={() => router.push("/")}
-              className="p-2 hover:bg-card-hover rounded-full transition-all duration-200 hover:scale-110 active:scale-95 group"
-            >
-              <ArrowLeft
-                size={24}
-                className="group-hover:text-cyan-400 transition-colors"
-              />
-            </button>
-          ) : (
-            <div />
-          )}
-          <div className="text-right">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider">
-              {title}
-            </h1>
-            <p className="text-gray-400 text-sm italic flex items-center justify-end gap-1 mt-1">
-              <CalendarDays size={12} />
-              {isToday && !isWeekend && currentLesson
-                ? `Одоо ${currentLesson}-р цаг явж байна`
-                : "Долоо хоногийн хуваарь"}
-            </p>
-          </div>
-        </div>
-
         {/* Day Tabs */}
         <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl p-4 mb-6 shadow-2xl">
           <div className="flex items-center justify-between mb-4">
@@ -654,6 +642,7 @@ export default function TimetableReadOnly({
             })}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

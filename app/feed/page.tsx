@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ArrowLeft, ImagePlus, Send, Loader2, X, Heart, MessageSquare } from "lucide-react";
+import { ImagePlus, Send, Loader2, X, Heart, MessageSquare } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type Post = {
   id: string;
@@ -35,7 +35,6 @@ function timeAgo(iso: string) {
 }
 
 export default function FeedPage() {
-  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState("");
@@ -148,12 +147,7 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-sans">
-      <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.push("/")} className="p-2 hover:bg-card-hover rounded-xl transition-all">
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="font-bold text-sm">12Д Мэдээний самбар</h1>
-      </div>
+      <AppHeader title="12Д Мэдээний самбар" />
 
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
         {/* New post */}

@@ -36,6 +36,7 @@ export default function LogoutConfirm({ open, onClose }: Props) {
       // cookie авч чадвал ч редирект хийнэ
     }
     localStorage.removeItem("name");
+    localStorage.removeItem("role");
     window.location.href = "/auth/login";
   };
 

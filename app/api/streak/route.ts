@@ -8,20 +8,20 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all completed todos with dates
-    const todos = await prisma.todo.findMany({
-      where: { userName, completed: true },
+    // Хийсэн даалгаврын тэмдэглээнүүд (leaderboard-ийн эх үүсвэр)
+    const checks = await prisma.hworkCheck.findMany({
+      where: { userName },
       select: { createdAt: true },
       orderBy: { createdAt: "desc" },
     });
 
-    if (todos.length === 0) {
+    if (checks.length === 0) {
       return NextResponse.json({ streak: 0, totalCompleted: 0 });
     }
 
     // Get unique dates (YYYY-MM-DD)
     const dates = new Set(
-      todos.map((t) => t.createdAt.toISOString().split("T")[0]),
+      checks.map((c) => c.createdAt.toISOString().split("T")[0]),
     );
     const sortedDates = Array.from(dates).sort((a, b) => b.localeCompare(a));
 
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       streak,
-      totalCompleted: todos.length,
+      totalCompleted: checks.length,
       activeDays: sortedDates.length,
     });
   } catch (e) {

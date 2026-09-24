@@ -3,22 +3,28 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // Get all users with their completed todo count
-    const users = await prisma.user.findMany({
-      where: { name: { not: "admin" } },
-      select: {
-        name: true,
-        todos: {
-          select: { completed: true },
-        },
-      },
-    });
+    // Хэрэглэгчид + нийт даалгавар + хэрэглэгч бүрийн хийсэн даалгаврын тоо
+    const [users, totalHworks, checks] = await Promise.all([
+      prisma.user.findMany({
+        where: { name: { not: "admin" } },
+        select: { name: true },
+      }),
+      prisma.hwork.count(),
+      prisma.hworkCheck.groupBy({
+        by: ["userName"],
+        _count: { _all: true },
+      }),
+    ]);
+
+    const checkMap = new Map(
+      checks.map((c) => [c.userName, c._count._all]),
+    );
 
     const leaderboard = users
       .map((u) => ({
         name: u.name,
-        total: u.todos.length,
-        completed: u.todos.filter((t) => t.completed).length,
+        total: totalHworks,
+        completed: checkMap.get(u.name) ?? 0,
       }))
       .sort((a, b) => b.completed - a.completed);
 

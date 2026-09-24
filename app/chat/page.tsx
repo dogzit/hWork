@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, Loader2, Reply, Trash2, X } from "lucide-react";
+import { Send, Loader2, Reply, Trash2, X } from "lucide-react";
 import Skeleton from "@/app/_components/Skeleton";
+import AppHeader from "@/app/_components/AppHeader";
 
 type Message = {
   id: string;
@@ -44,13 +44,13 @@ function parseReactions(arr: string[]) {
 }
 
 export default function ChatPage() {
-  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [userName, setUserName] = useState("");
   const [replyTo, setReplyTo] = useState<Message | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [reactMenu, setReactMenu] = useState<string | null>(null);
   const [selectedMsg, setSelectedMsg] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -69,6 +69,7 @@ export default function ChatPage() {
     // Effect-ийн шууд setState-ийг зөрүүлэхгүйн тулд timeout ашиглана
     const t = setTimeout(() => {
       setUserName(localStorage.getItem("name") ?? "");
+      setIsAdmin(localStorage.getItem("role") === "ADMIN");
       fetchMessages();
     }, 0);
     intervalRef.current = setInterval(fetchMessages, 3000);
@@ -128,16 +129,12 @@ export default function ChatPage() {
   return (
     <div className="min-h-screen bg-surface text-on-surface flex flex-col font-sans">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-surface/80 backdrop-blur-xl border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => router.push("/")} className="p-2 hover:bg-card-hover rounded-xl transition-all">
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="font-bold text-sm">12Д Ангийн Чат</h1>
-          <p className="text-[10px] text-on-surface-muted">{messages.length} мессеж</p>
-        </div>
-        <div className="ml-auto w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-      </div>
+      <AppHeader
+        title="12Д Ангийн Чат"
+        subtitle={`${messages.length} мессеж`}
+      >
+        <div className="ml-auto w-2 h-2 bg-emerald-500 rounded-full animate-pulse shrink-0" />
+      </AppHeader>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2" onClick={() => { setReactMenu(null); setSelectedMsg(null); }}>
@@ -158,7 +155,6 @@ export default function ChatPage() {
         ) : (
           messages.map((msg) => {
             const isMe = msg.userName === userName;
-            const isAdmin = userName.toLowerCase() === "admin";
             const reactions = parseReactions(msg.reaction || []);
             const replyText = getReplyText(msg.replyToId);
 
