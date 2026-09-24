@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExternalLink, QrCode, Download, X } from "lucide-react";
+import { toast } from "sonner";
+import { ExternalLink, QrCode, Download, X, Mail, Loader2 } from "lucide-react";
 import Image from "next/image";
 
 interface Booking {
@@ -19,6 +20,27 @@ export default function MyTicketCard({ refreshKey }: Props) {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [showQr, setShowQr] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const resend = async () => {
+    if (resending) return;
+    setResending(true);
+    try {
+      const r = await fetch("/api/bus/my-booking/resend", { method: "POST" });
+      const d = await r.json();
+      if (!r.ok) {
+        toast.error(d.error || "Илгээхэд алдаа");
+      } else if (d.dev) {
+        toast.info("Dev режим: email console-д хэвлэгдэв");
+      } else {
+        toast.success(`Шинэ QR ${d.email} рүү илгээгдэв`);
+      }
+    } catch {
+      toast.error("Сүлжээний алдаа");
+    } finally {
+      setResending(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -158,21 +180,34 @@ export default function MyTicketCard({ refreshKey }: Props) {
               Админд үзүүлж, скан хийлгэнэ үү. Дэлгэц гэрэлтүүлээд, QR-ыг нээлттэй харуулна.
             </p>
 
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <a
                 href={qrSrc}
                 download={`bus-qr-${booking.seatId}.png`}
-                className="flex-1 py-3 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-black uppercase tracking-widest hover:bg-zinc-700 active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="py-3 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-black uppercase tracking-widest hover:bg-zinc-700 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <Download size={14} /> Татах
               </a>
               <a
                 href={`/bus/ticket/${encodeURIComponent(booking.qrToken)}`}
-                className="flex-1 py-3 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="py-3 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-black uppercase tracking-widest hover:bg-zinc-700 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <ExternalLink size={14} /> Тасалбар
               </a>
             </div>
+
+            <button
+              onClick={resend}
+              disabled={resending}
+              className="mt-2 w-full py-3 rounded-xl bg-blue-600 text-white text-xs font-black uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {resending ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <Mail size={14} />
+              )}
+              Email рүү шинээр илгээх
+            </button>
           </div>
           <style>{`@keyframes sheetUp { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }`}</style>
         </div>
