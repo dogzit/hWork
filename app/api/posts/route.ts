@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { notifyAllUsersByEmail, postNotifyTemplate } from "@/lib/notify";
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,6 +51,11 @@ export async function POST(req: NextRequest) {
     const post = await prisma.post.create({
       data: { userName, text, images },
     });
+
+    if (text) {
+      const tpl = postNotifyTemplate({ userName, text });
+      void notifyAllUsersByEmail({ ...tpl, exceptUserName: userName });
+    }
 
     return NextResponse.json(post, { status: 201 });
   } catch (e) {

@@ -1,218 +1,132 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Clock, BookOpen, CheckSquare, MessageCircle, Search, Newspaper, Shuffle, User } from "lucide-react";
+import { BookOpen, Clock, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import BusSeatPanel from "./_components/BusSeatPanel";
+
+const MON_DAYS = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
+
+function getGreeting(hour: number) {
+  if (hour < 6) return { text: "Сайн шөнө", emoji: "🌙", gradient: "from-indigo-500 to-purple-600" };
+  if (hour < 12) return { text: "Өглөөний мэнд", emoji: "🌅", gradient: "from-orange-400 to-pink-500" };
+  if (hour < 18) return { text: "Өдрийн мэнд", emoji: "☀️", gradient: "from-cyan-400 to-blue-500" };
+  return { text: "Оройн мэнд", emoji: "🌆", gradient: "from-violet-500 to-purple-600" };
+}
 
 export default function HomePage() {
   const router = useRouter();
+  const [now, setNow] = useState<Date | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  // Hero cards — том, гол feature-ууд
-  const hero = [
-    {
-      icon: <BookOpen size={28} className="text-white" />,
-      gradient: "from-pink-600 to-orange-500",
-      glow: "bg-pink-500",
-      title: "Даалгавар",
-      desc: "Шинэ даалгавраа шалгах",
-      href: "/homeWork",
-      emoji: "📚",
-    },
-    {
-      icon: <Clock size={28} className="text-white" />,
-      gradient: "from-blue-600 to-cyan-500",
-      glow: "bg-blue-500",
-      title: "Хуваарь",
-      desc: "Өнөөдрийн цагууд",
-      href: "/timeTable",
-      emoji: "🕐",
-    },
-  ];
+  useEffect(() => {
+    setNow(new Date());
+    setMounted(true);
+    const id = setInterval(() => setNow(new Date()), 10000);
+    return () => clearInterval(id);
+  }, []);
 
-  // Grid cards — дунд хэмжээтэй
-  const grid = [
-    {
-      icon: <CheckSquare size={22} className="text-white" />,
-      gradient: "from-emerald-500 to-cyan-600",
-      title: "Todo",
-      desc: "Хийх ажлууд",
-      href: "/todo",
-    },
-    {
-      icon: <MessageCircle size={22} className="text-white" />,
-      gradient: "from-violet-500 to-purple-600",
-      title: "Чат",
-      desc: "Ангийн чат",
-      href: "/chat",
-    },
-    {
-      icon: <Search size={22} className="text-white" />,
-      gradient: "from-amber-500 to-orange-600",
-      title: "Хайлт",
-      desc: "Хүн, мэдээ хайх",
-      href: "/search",
-    },
-    {
-      icon: <Newspaper size={22} className="text-white" />,
-      gradient: "from-rose-500 to-pink-600",
-      title: "Мэдээ",
-      desc: "Зураг, мэдээ",
-      href: "/feed",
-    },
-  ];
+  const greeting = now
+    ? getGreeting(now.getHours())
+    : { text: "Сайн уу", emoji: "🎓", gradient: "from-violet-500 to-cyan-500" };
+  const dateStr = now ? `${MON_DAYS[now.getDay()]}, ${now.getMonth() + 1}/${now.getDate()}` : "";
+  const timeStr = now
+    ? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
+    : "";
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface p-5 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface font-sans overflow-hidden">
       {/* Background */}
-      <div className="fixed inset-0 overflow-hidden -z-10">
-        <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[160px] opacity-15 animate-pulse" />
-        <div className="absolute bottom-0 -right-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-[160px] opacity-15 animate-pulse" style={{ animationDelay: "1.5s" }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-multiply filter blur-[200px] opacity-10" />
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-violet-600/20 to-purple-600/10 blur-[120px] animate-pulse" />
+        <div
+          className="absolute -bottom-32 -right-32 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-cyan-500/15 to-blue-500/10 blur-[120px] animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
 
-      <div className="w-full max-w-md mx-auto pt-8 pb-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-surface-elevated border border-border shadow-xl flex items-center justify-center">
-              <span className="text-2xl">🎓</span>
-            </div>
-            <div className="flex-1">
-              <p className="text-on-surface-muted text-xs font-semibold uppercase tracking-wider">11Д анги</p>
-              <h1 className="text-2xl font-black tracking-tight">
-                Сайн уу{" "}
-                <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">!</span>
-              </h1>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Cards — 2 том card зэрэгцээ */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          {hero.map((card) => (
-            <button
-              key={card.href}
-              onClick={() => router.push(card.href)}
-              className="group relative overflow-hidden rounded-3xl border border-border-subtle bg-surface-elevated
-                p-5 text-left aspect-square flex flex-col justify-between
-                hover:border-border hover:scale-[1.03] hover:shadow-2xl
-                active:scale-[0.97] transition-all duration-200"
-            >
-              {/* Background glow */}
-              <div className={`absolute -inset-10 ${card.glow} rounded-full blur-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-
-              {/* Top — icon */}
-              <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
-                {card.icon}
-              </div>
-
-              {/* Bottom — text */}
-              <div className="relative">
-                <p className="font-black text-lg leading-tight">{card.title}</p>
-                <p className="text-xs text-on-surface-muted mt-0.5">{card.desc}</p>
-              </div>
-
-              {/* Corner emoji */}
-              <span className="absolute top-4 right-4 text-2xl opacity-20 group-hover:opacity-40 group-hover:scale-125 transition-all duration-300">
-                {card.emoji}
-              </span>
-            </button>
-          ))}
-        </div>
-        {/* Хаврын аялал - Special Event Card */}
-        <button
-          onClick={() => router.push("/bus")} // Эсвэл өөрийн хүссэн path
-          className="group w-full relative overflow-hidden rounded-3xl border border-pink-500/30 bg-surface-elevated
-    px-5 py-6 text-left mb-3
-    hover:border-pink-500/50 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(236,72,153,0.15)]
-    active:scale-[0.98] transition-all duration-300"
+      <div className="max-w-lg mx-auto px-5 pt-6 pb-24">
+        {/* Slim greeting */}
+        <div
+          className={`relative mb-6 transition-all duration-700 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
         >
-          {/* Moving Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-orange-500/10 to-pink-500/10 opacity-50 group-hover:opacity-80 transition-opacity" />
-
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform duration-300">
-                <span className="text-3xl">🌸</span>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-black text-lg tracking-tight">Хаврын аялал</p>
-                  <span className="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-500 text-[10px] font-bold uppercase tracking-widest animate-pulse">
-                    Soon
-                  </span>
-                </div>
-                <p className="text-xs text-on-surface-muted mt-0.5">Ангийн дурсамж бүтээх өдөр</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end">
-              <span className="text-2xl group-hover:scale-125 transition-transform duration-500">🏔️</span>
-              <p className="text-[10px] font-bold text-pink-500/60 mt-1 uppercase">05/01</p>
-            </div>
-          </div>
-
-          {/* Decorative elements */}
-          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl" />
-        </button>
-
-        {/* Grid Cards — 2x2 дунд хэмжээ */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          {grid.map((card) => (
-            <button
-              key={card.href}
-              onClick={() => router.push(card.href)}
-              className="group relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated
-                px-4 py-4 text-left
-                hover:border-border hover:scale-[1.03] hover:shadow-xl
-                active:scale-[0.97] transition-all duration-200"
-            >
+          <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-5">
+            <div
+              className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${greeting.gradient} rounded-full blur-[80px] opacity-20`}
+            />
+            <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 transition-transform duration-200`}>
-                  {card.icon}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-sm">{card.title}</p>
-                  <p className="text-[10px] text-on-surface-muted">{card.desc}</p>
+                <span className="text-3xl">{greeting.emoji}</span>
+                <div>
+                  <h1 className="text-xl font-black tracking-tight">{greeting.text}</h1>
+                  <p className="text-[10px] text-on-surface-muted uppercase tracking-widest font-bold">
+                    12Д Анги
+                  </p>
                 </div>
               </div>
-            </button>
-          ))}
+              {timeStr && (
+                <div className="text-right">
+                  <p className="text-2xl font-black tabular-nums tracking-tighter leading-none">
+                    {timeStr}
+                  </p>
+                  <p className="text-[10px] text-on-surface-muted font-medium mt-1 uppercase tracking-wider">
+                    {dateStr}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Random Student — нэг тусдаа wide card */}
-        <button
-          onClick={() => router.push("/random")}
-          className="group w-full relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-elevated
-            px-5 py-4 text-left mb-6
-            hover:border-border hover:scale-[1.02] hover:shadow-xl
-            active:scale-[0.98] transition-all duration-200"
+        {/* Quick actions — 2 primary */}
+        <div
+          className={`grid grid-cols-2 gap-3 mb-6 transition-all duration-700 delay-100 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
         >
-          <div className="absolute -inset-10 bg-indigo-500 rounded-full blur-3xl opacity-0 group-hover:opacity-5 transition-opacity duration-500" />
-          <div className="relative flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0 shadow-md group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-              <Shuffle size={20} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-sm">Сурагч сонгох</p>
-              <p className="text-[10px] text-on-surface-muted">Санамсаргүй нэг хүн сонгох 🎲</p>
-            </div>
-            <span className="text-2xl opacity-30 group-hover:opacity-60 group-hover:animate-bounce transition-all">🎯</span>
-          </div>
-        </button>
-
-        {/* Bottom bar — Profile */}
-        <div className="flex gap-3">
           <button
-            onClick={() => router.push("/profile")}
-            className="group flex-1 flex items-center justify-center gap-2
-              px-5 py-3 rounded-2xl
-              bg-surface-elevated border border-border-subtle text-on-surface-muted
-              hover:border-accent/30 hover:text-accent
-              hover:scale-[1.01] active:scale-[0.99]
-              transition-all duration-200 text-xs font-semibold"
+            onClick={() => router.push("/homeWork")}
+            className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl
+              p-4 text-left flex items-center gap-3
+              hover:border-pink-500/30 hover:bg-pink-500/[0.04]
+              active:scale-[0.97] transition-all duration-300"
           >
-            <User size={14} />
-            Профайл
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-500/20">
+              <BookOpen size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-sm">Даалгавар</p>
+              <p className="text-[10px] text-on-surface-muted">Шалгах</p>
+            </div>
+            <ArrowRight size={14} className="text-on-surface-muted/40 group-hover:text-on-surface-muted transition-colors" />
           </button>
+
+          <button
+            onClick={() => router.push("/timeTable")}
+            className="group relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl
+              p-4 text-left flex items-center gap-3
+              hover:border-blue-500/30 hover:bg-blue-500/[0.04]
+              active:scale-[0.97] transition-all duration-300"
+          >
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <Clock size={20} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-sm">Хуваарь</p>
+              <p className="text-[10px] text-on-surface-muted">Өнөөдрийн цаг</p>
+            </div>
+            <ArrowRight size={14} className="text-on-surface-muted/40 group-hover:text-on-surface-muted transition-colors" />
+          </button>
+        </div>
+
+        {/* Bus booking panel */}
+        <div
+          className={`transition-all duration-700 delay-200 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
+          <BusSeatPanel />
         </div>
       </div>
     </div>

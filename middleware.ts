@@ -39,8 +39,15 @@ async function verifyToken(token: string) {
   }
 }
 
-const PUBLIC_API = ["/api/auth/login", "/api/auth/signup", "/api/auth/logout"];
+const PUBLIC_API = [
+  "/api/auth/login",
+  "/api/auth/signup",
+  "/api/auth/logout",
+  "/api/auth/forgot-pin",
+  "/api/qr/",
+];
 const PUBLIC_PAGES = ["/auth/login", "/auth/signup"];
+const PUBLIC_PAGE_PREFIXES = ["/bus/ticket/"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -67,6 +74,10 @@ export async function middleware(req: NextRequest) {
       String((payload as Record<string, unknown>).name ?? ""),
     );
     return res;
+  }
+
+  if (PUBLIC_PAGE_PREFIXES.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
   }
 
   if (!PUBLIC_PAGES.includes(pathname)) {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Search, Instagram, Loader2 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type UserResult = { name: string; avatar: string | null; bio: string | null; instagram: string | null };
 type PostResult = { id: string; userName: string; text: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
@@ -73,7 +74,18 @@ export default function SearchPage() {
 
         {/* Results */}
         {loading ? (
-          <div className="flex justify-center py-12"><Loader2 className="animate-spin text-on-surface-muted" size={24} /></div>
+          <div className="space-y-4 stagger-in">
+            <Skeleton className="h-4 w-32 rounded-md" />
+            {[1,2,3].map(i => (
+              <div key={i} className="flex items-center gap-3 p-3 bg-surface-elevated border border-border-subtle rounded-2xl">
+                <Skeleton className="h-11 w-11 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-24 rounded-md" />
+                  <Skeleton className="h-2.5 w-32 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : searched && users.length === 0 && posts.length === 0 ? (
           <div className="text-center py-12 text-on-surface-muted text-sm">Олдсонгүй</div>
         ) : (

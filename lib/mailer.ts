@@ -1,0 +1,135 @@
+import { Resend } from "resend";
+
+type Attachment = {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+};
+
+type SendArgs = {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+  attachments?: Attachment[];
+};
+
+const DEFAULT_FROM = "12D Bus <onboarding@resend.dev>";
+
+let resendClient: Resend | null = null;
+
+function getClient() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return null;
+  if (!resendClient) resendClient = new Resend(key);
+  return resendClient;
+}
+
+export async function sendMail({ to, subject, html, text, attachments }: SendArgs) {
+  const client = getClient();
+  const from = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM;
+
+  if (!client) {
+    console.warn(
+      "[mailer] RESEND_API_KEY not set — printing email to console instead:",
+    );
+    console.log(`  To:      ${to}`);
+    console.log(`  From:    ${from}`);
+    console.log(`  Subject: ${subject}`);
+    console.log(`  Text:    ${text ?? "(html only)"}`);
+    if (attachments?.length) {
+      console.log(`  Attach:  ${attachments.map((a) => a.filename).join(", ")}`);
+    }
+    return { ok: true as const, dev: true as const };
+  }
+
+  const payload: Parameters<typeof client.emails.send>[0] = {
+    from,
+    to,
+    subject,
+    html,
+    text,
+  };
+  if (attachments?.length) {
+    payload.attachments = attachments.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.contentType,
+    }));
+  }
+
+  const { data, error } = await client.emails.send(payload);
+
+  if (error) {
+    console.error("[mailer] send failed:", error);
+    return { ok: false as const, error: error.message };
+  }
+  return { ok: true as const, id: data?.id };
+}
+
+export function otpEmailTemplate(code: string) {
+  const subject = "12Д Автобус — Баталгаажуулах код";
+  const text = `Таны email баталгаажуулах код: ${code}\nЭнэ код 10 минутын дараа хүчингүй болно.`;
+  const html = `
+    <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0f; color: #fff;">
+      <h1 style="margin:0 0 8px 0; font-size:22px;">12Д Автобус</h1>
+      <p style="color:#a1a1aa; margin:0 0 24px 0;">Email баталгаажуулах код</p>
+      <div style="background:#18181b; border:1px solid #27272a; border-radius:16px; padding:24px; text-align:center;">
+        <p style="color:#71717a; text-transform:uppercase; letter-spacing:2px; font-size:11px; margin:0 0 8px 0; font-weight:700;">Таны код</p>
+        <p style="font-size:42px; letter-spacing:8px; font-weight:900; margin:0; color:#818cf8; font-family:monospace;">${code}</p>
+        <p style="color:#71717a; font-size:12px; margin:16px 0 0 0;">10 минутын дараа хүчингүй болно</p>
+      </div>
+      <p style="color:#52525b; font-size:11px; text-align:center; margin-top:24px;">Энэ email-г та хүсээгүй бол үл тоомсорлоно уу.</p>
+    </div>`;
+  return { subject, html, text };
+}
+
+export function bookingEmailTemplate(args: {
+  seatId: string;
+  userName: string;
+  qrImageUrl: string | null;
+  qrDataUrl: string | null;
+  ticketUrl?: string;
+  status: "APPROVED" | "PENDING";
+}) {
+  const { seatId, userName, qrImageUrl, qrDataUrl, ticketUrl, status } = args;
+  const isPending = status === "PENDING";
+  const subject = isPending
+    ? `12Д Автобус — Хүсэлт хүлээгдэж байна (${seatId})`
+    : `12Д Автобус — Захиалга баталгаажлаа (${seatId})`;
+  const statusLine = isPending
+    ? "Таны VIP хүсэлт админ хүлээгдэж байна. Батлагдсаны дараа энэ QR ажиллана."
+    : "Автобусанд суух үедээ энэ QR кодыг админд үзүүлнэ үү.";
+  const text = `${subject}\n\nСуудал: ${seatId}\nЗахиалагч: ${userName}\n${statusLine}`;
+
+  const qrImg = qrImageUrl
+    ? `<img src="${qrImageUrl}" alt="QR" width="240" height="240" style="width:240px; height:240px; background:#fff; border-radius:12px; padding:12px; box-sizing:border-box; display:block; margin:0 auto;" />`
+    : qrDataUrl
+      ? `<img src="${qrDataUrl}" alt="QR" width="240" height="240" style="width:240px; height:240px; background:#fff; border-radius:12px; padding:12px; box-sizing:border-box; display:block; margin:0 auto;" />
+         <p style="color:#a1a1aa; font-size:11px; margin:12px 0 0 0;">QR харагдахгүй бол хавсаргасан файлыг нээнэ үү</p>`
+      : `<p style="color:#f87171;">QR үүсгэхэд алдаа гарлаа</p>`;
+
+  const ticketButton = ticketUrl
+    ? `<div style="text-align:center; margin-top:20px;">
+         <a href="${ticketUrl}" style="display:inline-block; background:#3b82f6; color:#fff; text-decoration:none; padding:14px 28px; border-radius:12px; font-weight:800; font-size:13px; letter-spacing:1px; text-transform:uppercase;">
+           Тасалбарыг нээх →
+         </a>
+         <p style="color:#71717a; font-size:11px; margin-top:8px;">QR харагдахгүй бол дээрх линк дээр дарж утсанд нээнэ үү</p>
+       </div>`
+    : "";
+
+  const html = `
+    <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0f; color: #fff;">
+      <h1 style="margin:0 0 8px 0; font-size:22px;">12Д Автобус</h1>
+      <p style="color:#a1a1aa; margin:0 0 24px 0;">${isPending ? "Захиалгын хүсэлт" : "Захиалга баталгаажлаа"}</p>
+      <div style="background:#18181b; border:1px solid #27272a; border-radius:16px; padding:24px; text-align:center;">
+        <p style="color:#71717a; text-transform:uppercase; letter-spacing:2px; font-size:11px; margin:0 0 8px 0; font-weight:700;">Суудал</p>
+        <p style="font-size:36px; font-weight:900; margin:0 0 16px 0; color:#fff;">${seatId}</p>
+        ${qrImg}
+        <p style="color:#a1a1aa; font-size:12px; margin:16px 0 0 0;">Захиалагч: <b style="color:#fff;">${userName}</b></p>
+      </div>
+      ${ticketButton}
+      <p style="color:#a1a1aa; font-size:13px; margin-top:20px; text-align:center;">${statusLine}</p>
+    </div>`;
+  return { subject, html, text };
+}

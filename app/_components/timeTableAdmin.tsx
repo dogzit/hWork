@@ -12,6 +12,7 @@ import {
   Loader2,
   CalendarDays,
 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type Day = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
 type TimetableItem = {
@@ -239,9 +240,14 @@ export default function TimetableAdminBoard({
 
         {/* Lesson list */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="animate-spin text-blue-500" size={28} />
-            <p className="text-gray-600 text-sm">Ачаалж байна...</p>
+          <div className="space-y-2 stagger-in">
+            {[1,2,3,4,5,6,7].map(i => (
+              <div key={i} className="flex items-center gap-3.5 px-4 py-3.5 border border-border-subtle rounded-2xl bg-white/[0.03]">
+                <Skeleton className="w-9 h-9 rounded-xl shrink-0" />
+                <div className="flex-1"><Skeleton className="h-4 w-24 rounded-lg" /></div>
+                <Skeleton className="w-4 h-4 rounded-md shrink-0" />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">

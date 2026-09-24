@@ -1,20 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { seatId, userName } = await req.json();
+    const userName = req.headers.get("x-user-name");
+    if (!userName) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!seatId || !userName) {
+    const { seatId } = await req.json();
+    if (!seatId || typeof seatId !== "string") {
       return NextResponse.json(
-        { error: "Мэдээлэл дутуу байна" },
+        { error: "seatId шаардлагатай" },
         { status: 400 },
       );
     }
 
-    // Захиалгыг шалгах (Зөвхөн тухайн хэрэглэгчийнх мөн эсэх)
     const booking = await prisma.busBooking.findUnique({
-      where: { seatId: seatId },
+      where: { seatId },
     });
 
     if (!booking) {
@@ -24,20 +27,22 @@ export async function POST(req: Request) {
       );
     }
 
-    if (booking.userName !== userName) {
+    const isOwner = booking.userName === userName;
+    const isAdmin = userName.toLowerCase() === "admin";
+    if (!isOwner && !isAdmin) {
       return NextResponse.json(
         { error: "Бусдын захиалгыг цуцлах боломжгүй" },
         { status: 403 },
       );
     }
 
-    // Захиалгыг устгах
     await prisma.busBooking.delete({
-      where: { seatId: seatId },
+      where: { seatId },
     });
 
     return NextResponse.json({ success: true, message: "Захиалга цуцлагдлаа" });
   } catch (error) {
+    console.error("Bus cancel error:", error);
     return NextResponse.json(
       { error: "Сервер дээр алдаа гарлаа" },
       { status: 500 },

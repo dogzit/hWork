@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { isNonEmptyString } from "@/lib/validation";
+import { homeworkNotifyTemplate, notifyAllUsersByEmail } from "@/lib/notify";
 
 type ApiError = { error: string };
 
@@ -107,6 +108,14 @@ export async function POST(req: Request) {
         images,
       },
     });
+
+    // Fire-and-forget email notifications to all students.
+    const tpl = homeworkNotifyTemplate({
+      subject: created.subject,
+      title: created.title,
+      date: created.date,
+    });
+    void notifyAllUsersByEmail(tpl);
 
     return NextResponse.json(created, { status: 201 });
   } catch (e) {

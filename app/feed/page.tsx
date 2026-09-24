@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, ImagePlus, Send, Loader2, X, Heart, MessageSquare } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type Post = {
   id: string;
@@ -151,7 +152,7 @@ export default function FeedPage() {
         <button onClick={() => router.push("/")} className="p-2 hover:bg-card-hover rounded-xl transition-all">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="font-bold text-sm">11Д Мэдээний самбар</h1>
+        <h1 className="font-bold text-sm">12Д Мэдээний самбар</h1>
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
@@ -189,7 +190,26 @@ export default function FeedPage() {
 
         {/* Posts */}
         {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="animate-spin text-on-surface-muted" size={24} /></div>
+          <div className="space-y-6 stagger-in">
+            <div className="bg-surface-elevated border border-border rounded-2xl p-4 space-y-3">
+              <Skeleton className="h-16 w-full rounded-xl" />
+              <Skeleton className="h-10 w-full rounded-xl" />
+            </div>
+            {[1,2,3].map(i => (
+              <div key={i} className="bg-surface-elevated border border-border-subtle rounded-2xl overflow-hidden">
+                <div className="p-4 pb-2 flex items-center gap-2">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="space-y-1"><Skeleton className="h-3.5 w-20 rounded-md" /><Skeleton className="h-2.5 w-12 rounded-md" /></div>
+                </div>
+                <Skeleton className="h-4 w-full px-4" style={{ margin: '0 16px' }} />
+                <Skeleton className="h-48 w-full rounded-none" style={{ borderRadius: 0 }} />
+                <div className="flex gap-3 p-3">
+                  <Skeleton className="h-8 w-16 rounded-xl" />
+                  <Skeleton className="h-8 w-16 rounded-xl" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-16 text-on-surface-muted text-sm">Мэдээ байхгүй байна</div>
         ) : (
@@ -236,7 +256,7 @@ export default function FeedPage() {
               {openComments === post.id && (
                 <div className="border-t border-border-subtle px-4 py-3 space-y-3">
                   {loadingComments ? (
-                    <div className="flex justify-center py-2"><Loader2 size={16} className="animate-spin text-on-surface-muted" /></div>
+                    <div className="space-y-2 py-2"><Skeleton className="h-8 w-full rounded-xl" /><Skeleton className="h-8 w-3/4 rounded-xl" /></div>
                   ) : comments.length === 0 ? (
                     <p className="text-xs text-on-surface-muted text-center py-2">Сэтгэгдэл байхгүй</p>
                   ) : (

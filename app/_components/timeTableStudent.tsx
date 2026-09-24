@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Filter,
 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type Day = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY";
 type TimetableItem = {
@@ -522,9 +523,17 @@ export default function TimetableReadOnly({
 
         {/* Lessons */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <Loader2 className="animate-spin text-cyan-500" size={32} />
-            <p className="text-gray-400">Ачаалж байна...</p>
+          <div className="space-y-3 stagger-in">
+            {[1,2,3,4,5,6,7].map(i => (
+              <div key={i} className="flex items-center gap-4 px-5 py-4 border border-border-subtle rounded-2xl bg-white/[0.03]">
+                <Skeleton className="w-11 h-11 rounded-2xl shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-4 w-28 rounded-lg" />
+                  <Skeleton className="h-3 w-20 rounded-md" />
+                </div>
+                <Skeleton className="w-4 h-4 rounded-md shrink-0" />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="space-y-2">

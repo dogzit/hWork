@@ -13,6 +13,7 @@ import {
   ZoomIn,
   Loader2,
 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type HworkItem = {
   id: string;
@@ -388,9 +389,18 @@ export default function HomeworkDatePage() {
 
         {/* List */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <Loader2 className="animate-spin text-pink-500" size={32} />
-            <p className="text-gray-400">Ачаалж байна...</p>
+          <div className="space-y-4 stagger-in">
+            {[1,2,3].map(i => (
+              <div key={i} className="rounded-2xl border border-border-subtle bg-white/[0.03] overflow-hidden p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-xl shrink-0" />
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+                <Skeleton className="h-5 w-full rounded-lg" />
+                <Skeleton className="h-5 w-3/4 rounded-lg" />
+                <Skeleton className="h-48 w-full rounded-xl" />
+              </div>
+            ))}
           </div>
         ) : dayHomework.length === 0 ? (
           <div className="text-center py-20 bg-surface-elevated border border-border rounded-3xl">

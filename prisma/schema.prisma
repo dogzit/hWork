@@ -14,6 +14,10 @@ model User {
   avatar      String?
   bio         String?
   instagram   String?
+  phone       String?
+  email       String?
+  birthDate   DateTime?
+  fullName    String?
   createdAt   DateTime     @default(now())
   Session     Session[]
   todos       Todo[]
@@ -128,11 +132,51 @@ model BusLayout {
 }
 
 model BusBooking {
-  id       String @id @default(nanoid())
-  seatId   String @unique
-  userName String
-  status   String @default("APPROVED")
-  user     User   @relation(fields: [userName], references: [name], onDelete: Cascade)
+  id        String    @id @default(nanoid())
+  seatId    String    @unique
+  userName  String
+  email     String
+  status    String    @default("APPROVED") // PENDING | APPROVED | BOARDED
+  qrToken   String    @unique
+  boardedAt DateTime?
+  boardedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userName], references: [name], onDelete: Cascade)
+
+  @@index([qrToken])
+}
+
+model EmailOtp {
+  id        String   @id @default(nanoid())
+  email     String
+  userName  String?
+  purpose   String   @default("BUS_BOOKING") // BUS_BOOKING | SIGNUP | FORGOT_PIN
+  codeHash  String
+  codeSalt  String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email, purpose])
+  @@index([userName, email])
+  @@index([expiresAt])
+}
+
+// --- Notifications ---
+model Notification {
+  id        String   @id @default(nanoid())
+  userName  String
+  title     String
+  body      String?
+  icon      String?
+  href      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userName, read])
+  @@index([createdAt])
 }
 
 enum Day {

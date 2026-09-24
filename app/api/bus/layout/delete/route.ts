@@ -1,8 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const userName = req.headers.get("x-user-name");
+    if (!userName) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (userName.toLowerCase() !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { seatId } = await req.json();
 
     if (!seatId) {
@@ -12,15 +20,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Эхлээд тухайн суудалтай холбоотой захиалгыг устгана
-    await prisma.busBooking.deleteMany({
-      where: { seatId: seatId },
-    });
-
-    // 2. Дараа нь суудлын байршлыг (layout) устгана
-    await prisma.busLayout.delete({
-      where: { seatId: seatId },
-    });
+    await prisma.$transaction([
+      prisma.busBooking.deleteMany({ where: { seatId } }),
+      prisma.busLayout.delete({ where: { seatId } }),
+    ]);
 
     return NextResponse.json({
       success: true,

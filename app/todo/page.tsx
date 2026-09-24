@@ -10,6 +10,7 @@ import {
   Trash2,
   Plus,
 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 // 1. Define the Todo Interface to satisfy TypeScript
 interface Todo {
@@ -148,9 +149,13 @@ export default function TodoPage() {
         {/* Todo List Card */}
         <div className="bg-surface-elevated border border-border backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl">
           {loading ? (
-            <div className="flex flex-col items-center justify-center p-20 gap-4">
-              <Loader2 className="animate-spin text-emerald-500" size={32} />
-              <p className="text-gray-400">Ачаалж байна...</p>
+            <div className="p-6 space-y-4 stagger-in">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="flex items-center gap-4 p-5">
+                  <Skeleton className="h-6 w-6 rounded-full shrink-0" />
+                  <Skeleton className="h-5 rounded-lg" style={{ width: `${50 + Math.random() * 40}%` }} />
+                </div>
+              ))}
             </div>
           ) : todos.length > 0 ? (
             <div className="divide-y divide-white/5">

@@ -1,15 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 interface SeatInput {
   id: string;
   x: number;
   y: number;
-  isPremium: boolean; // Үүнийг нэмлээ
+  isPremium: boolean;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const userName = req.headers.get("x-user-name");
+    if (!userName) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (userName.toLowerCase() !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json();
     const seats: SeatInput[] = body.seats;
 
@@ -20,17 +28,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // Prisma гүйлгээ (Transaction)
     await prisma.$transaction([
-      // 1. Хуучин бүтцийг цэвэрлэх
       prisma.busLayout.deleteMany({}),
-      // 2. Шинэ бүтцийг бүгдийг нь нэмэх
       prisma.busLayout.createMany({
         data: seats.map((s) => ({
           seatId: s.id,
           x: s.x,
           y: s.y,
-          isPremium: s.isPremium ?? false, // Frontend-ээс ирсэн утгыг хадгалах
+          isPremium: s.isPremium ?? false,
         })),
       }),
     ]);

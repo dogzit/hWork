@@ -1,5 +1,12 @@
 import prisma from "@/lib/prisma";
-import { hashPin, isValidPin, makePinSalt, normalizePin } from "@/lib/auth";
+import {
+  createAuthToken,
+  hashPin,
+  isValidPin,
+  makePinSalt,
+  normalizePin,
+  setAuthTokenCookie,
+} from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 type ApiError = { error: string };
@@ -7,6 +14,16 @@ type ApiError = { error: string };
 function isNonEmptyString(x: unknown): x is string {
   return typeof x === "string" && x.trim().length > 0;
 }
+
+function isValidEmail(v: unknown): v is string {
+  return (
+    typeof v === "string" &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) &&
+    v.length <= 254
+  );
+}
+
+const SIGNUP_OTP_MAX_AGE_MS = 30 * 60 * 1000;
 
 export async function POST(req: Request) {
   try {
@@ -19,42 +36,94 @@ export async function POST(req: Request) {
 
     const body = raw as Record<string, unknown>;
     const name = body.name;
-    // Accept both `number` and legacy `pin` field names.
     const pin = body.pin ?? body.number;
+    const fullName = body.fullName;
+    const emailRaw = body.email;
+    const phone = body.phone;
+    const birthDateRaw = body.birthDate;
 
     if (!isNonEmptyString(name)) {
       return NextResponse.json(
-        { error: "name is required" } satisfies ApiError,
+        { error: "Хэрэглэгчийн нэр шаардлагатай" } satisfies ApiError,
         { status: 400 },
       );
     }
     if (!isValidPin(pin)) {
       return NextResponse.json(
-        { error: "number must be 4 or 6 digits" } satisfies ApiError,
+        { error: "PIN 4 эсвэл 6 оронтой байх ёстой" } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+    if (!isNonEmptyString(fullName)) {
+      return NextResponse.json(
+        { error: "Бүтэн нэр шаардлагатай" } satisfies ApiError,
+        { status: 400 },
+      );
+    }
+    if (!isValidEmail(emailRaw)) {
+      return NextResponse.json(
+        { error: "Хүчинтэй email шаардлагатай" } satisfies ApiError,
         { status: 400 },
       );
     }
 
+    const email = emailRaw.trim().toLowerCase();
+    const nameTrimmed = name.trim();
     const pinTrimmed = normalizePin(pin);
+
+    // Ensure email was OTP-verified within 30 minutes (via signup verify-otp).
+    const verifiedOtp = await prisma.emailOtp.findFirst({
+      where: {
+        email,
+        purpose: "SIGNUP",
+        used: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (
+      !verifiedOtp ||
+      Date.now() - verifiedOtp.createdAt.getTime() > SIGNUP_OTP_MAX_AGE_MS
+    ) {
+      return NextResponse.json(
+        {
+          error: "Email баталгаажаагүй. Дахин баталгаажуулна уу",
+        } satisfies ApiError,
+        { status: 403 },
+      );
+    }
+
     const pinSalt = makePinSalt();
     const pinHash = hashPin(pinTrimmed, pinSalt);
 
-    await prisma.user.create({
+    const birthDate =
+      isNonEmptyString(birthDateRaw) && !Number.isNaN(Date.parse(birthDateRaw))
+        ? new Date(birthDateRaw)
+        : null;
+
+    const user = await prisma.user.create({
       data: {
-        name: name.trim(),
+        name: nameTrimmed,
         pinSalt,
         pinHash,
+        fullName: isNonEmptyString(fullName) ? fullName.trim().slice(0, 100) : null,
+        email,
+        phone: isNonEmptyString(phone) ? phone.trim().slice(0, 20) : null,
+        birthDate,
       },
     });
 
-    return NextResponse.json({ ok: true }, { status: 201 });
+    const token = await createAuthToken({ id: user.id, name: user.name });
+    const res = NextResponse.json(
+      { ok: true, name: user.name },
+      { status: 201 },
+    );
+    setAuthTokenCookie(res, token);
+    return res;
   } catch (e) {
     const code = (e as { code?: string } | undefined)?.code;
     if (code === "P2002") {
       return NextResponse.json(
-        {
-          error: "Бүртгэлтэй нэр байна",
-        } satisfies ApiError,
+        { error: "Энэ нэр эсвэл email бүртгэлтэй байна" } satisfies ApiError,
         { status: 409 },
       );
     }

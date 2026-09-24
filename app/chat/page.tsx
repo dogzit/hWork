@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Send, Loader2, Reply, Trash2, X } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type Message = {
   id: string;
@@ -126,7 +127,7 @@ export default function ChatPage() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="font-bold text-sm">11Д Ангийн Чат</h1>
+          <h1 className="font-bold text-sm">12Д Ангийн Чат</h1>
           <p className="text-[10px] text-on-surface-muted">{messages.length} мессеж</p>
         </div>
         <div className="ml-auto w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -135,7 +136,17 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2" onClick={() => { setReactMenu(null); setSelectedMsg(null); }}>
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-on-surface-muted" size={24} /></div>
+          <div className="space-y-4 py-4">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}>
+                <div className="max-w-[70%] space-y-1.5">
+                  {i % 2 !== 0 && <Skeleton className="h-2.5 w-16 rounded-md ml-2" />}
+                  <Skeleton className="h-10 rounded-2xl" style={{ width: `${60 + Math.random() * 30}%` }} />
+                  <Skeleton className="h-2 w-12 rounded-md ml-2" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : messages.length === 0 ? (
           <div className="text-center py-20 text-on-surface-muted text-sm">Эхний мессежээ бичээрэй!</div>
         ) : (

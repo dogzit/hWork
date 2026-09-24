@@ -1,10 +1,28 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { busApprovedTemplate, notifyUserByEmail } from "@/lib/notify";
 
-export async function POST(req: Request) {
+function getAppUrl(req: NextRequest): string {
+  const explicit = process.env.APP_URL;
+  if (explicit) return explicit.replace(/\/$/, "");
+  const vercel = process.env.VERCEL_URL;
+  if (vercel) return `https://${vercel}`;
+  const proto = req.headers.get("x-forwarded-proto") ?? "http";
+  const host = req.headers.get("host") ?? "localhost:3000";
+  return `${proto}://${host}`;
+}
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { seatId, status } = body;
+    const userName = req.headers.get("x-user-name");
+    if (!userName) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (userName.toLowerCase() !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { seatId, status } = await req.json();
 
     if (!seatId || !status) {
       return NextResponse.json(
@@ -13,28 +31,26 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Хэрэв статус APPROVED бол BusBooking хүснэгтийн төлөвийг шинэчилнэ
     if (status === "APPROVED") {
-      await prisma.busBooking.update({
-        where: {
-          seatId: seatId,
-        },
-        data: {
-          status: "APPROVED",
-        },
+      const updated = await prisma.busBooking.update({
+        where: { seatId },
+        data: { status: "APPROVED" },
       });
+
+      const appUrl = getAppUrl(req);
+      const ticketUrl = `${appUrl}/bus/ticket/${encodeURIComponent(updated.qrToken)}`;
+      const tpl = busApprovedTemplate({ seatId: updated.seatId, ticketUrl });
+      void notifyUserByEmail(updated.userName, tpl);
+
       return NextResponse.json({
         success: true,
         message: "Захиалга баталгаажлаа",
       });
     }
 
-    // 2. Хэрэв статус REJECTED бол захиалгыг бүрмөсөн устгана
     if (status === "REJECTED") {
       await prisma.busBooking.delete({
-        where: {
-          seatId: seatId,
-        },
+        where: { seatId },
       });
       return NextResponse.json({
         success: true,

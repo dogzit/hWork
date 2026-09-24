@@ -13,6 +13,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type HworkItem = {
   id: string;
@@ -347,9 +348,20 @@ export default function HomeworkTimelinePage() {
 
         {/* Timeline */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <Loader2 className="animate-spin text-pink-500" size={32} />
-            <p className="text-gray-400">Ачаалж байна...</p>
+          <div className="space-y-3 stagger-in">
+            {[1,2,3].map(i => (
+              <div key={i} className="flex items-stretch rounded-2xl border border-border-subtle bg-white/[0.03] overflow-hidden">
+                <div className="w-20 flex-shrink-0 flex flex-col items-center justify-center py-5 gap-1">
+                  <Skeleton className="h-8 w-10 rounded-lg" />
+                  <Skeleton className="h-3 w-12 rounded-md" />
+                </div>
+                <div className="flex-1 px-5 py-4 space-y-3">
+                  <Skeleton className="h-3 w-32 rounded-md" />
+                  <div className="flex gap-2"><Skeleton className="h-5 w-16 rounded-full" /><Skeleton className="h-5 w-14 rounded-full" /></div>
+                  <div className="space-y-1.5"><Skeleton className="h-3 w-full rounded-md" /><Skeleton className="h-3 w-3/4 rounded-md" /></div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : groupedByDate.length === 0 ? (
           <div className="text-center py-20 bg-surface-elevated border border-border rounded-3xl">

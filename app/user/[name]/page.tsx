@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Instagram, Loader2, ImageOff, MessageSquare, Heart } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type UserProfile = { name: string; avatar: string | null; bio: string | null; instagram: string | null };
 type Post = { id: string; userName: string; text: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
@@ -60,8 +61,35 @@ export default function UserPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <Loader2 className="animate-spin text-on-surface-muted" size={24} />
+      <div className="min-h-screen bg-surface text-on-surface font-sans">
+        {/* Banner skeleton */}
+        <div className="relative">
+          <Skeleton className="h-32 w-full rounded-none" style={{ borderRadius: 0 }} />
+          <div className="absolute top-0 left-0 right-0 z-10 px-4 py-3 flex items-center gap-3">
+            <Skeleton className="h-9 w-9 rounded-xl" />
+            <Skeleton className="h-4 w-24 rounded-lg" />
+          </div>
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+            <Skeleton className="h-24 w-24 rounded-full border-4 border-surface" />
+          </div>
+        </div>
+        <div className="max-w-md mx-auto px-4 pt-16 pb-8 space-y-6">
+          {/* Name skeleton */}
+          <div className="text-center space-y-2">
+            <Skeleton className="h-6 w-32 mx-auto rounded-lg" />
+            <Skeleton className="h-4 w-48 mx-auto rounded-lg" />
+          </div>
+          {/* Stats skeleton */}
+          <div className="flex justify-center gap-6">
+            <Skeleton className="h-12 w-16 rounded-xl" />
+            <Skeleton className="h-12 w-16 rounded-xl" />
+          </div>
+          {/* Posts skeleton */}
+          <div className="space-y-4">
+            <Skeleton className="h-48 w-full rounded-2xl" />
+            <Skeleton className="h-48 w-full rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }

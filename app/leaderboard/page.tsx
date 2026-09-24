@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Trophy, Medal, Flame, Loader2 } from "lucide-react";
+import Skeleton from "@/app/_components/Skeleton";
 
 type Entry = { name: string; total: number; completed: number };
 
@@ -56,8 +57,20 @@ export default function LeaderboardPage() {
 
         {/* Leaderboard */}
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="animate-spin text-on-surface-muted" size={24} />
+          <div className="space-y-3 stagger-in">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="flex items-center gap-3 p-4 rounded-2xl border bg-surface-elevated border-border-subtle">
+                <Skeleton className="w-8 h-8 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3.5 w-24 rounded-md" />
+                  <Skeleton className="h-1.5 w-full rounded-full" />
+                </div>
+                <div className="text-right space-y-1">
+                  <Skeleton className="h-5 w-8 rounded-md" />
+                  <Skeleton className="h-2.5 w-6 rounded-md" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : data.length === 0 ? (
           <div className="text-center py-16 text-on-surface-muted text-sm">Хэрэглэгч олдсонгүй</div>
