@@ -13,6 +13,7 @@ import {
   ListTodo,
   Shield,
   ScanLine,
+  Users,
 } from "lucide-react";
 
 export default function AdminHomePage() {
@@ -67,6 +68,14 @@ export default function AdminHomePage() {
       title: "QR баталгаажуулах",
       desc: "Автобусанд суух үед QR унших",
       href: "/admin/bus/verify",
+    },
+    {
+      icon: <Users size={20} className="text-white" />,
+      gradient: "from-teal-600 to-emerald-500",
+      glow: "bg-teal-500",
+      title: "Хэрэглэгчийн эрх",
+      desc: "Хэнийг админ болгох, эрх хасах",
+      href: "/admin/users",
     },
     {
       icon: <Shuffle size={20} className="text-white" />,

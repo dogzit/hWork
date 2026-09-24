@@ -24,7 +24,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     } else {
       // Хэрэв нэвтэрчихсэн байхад login эсвэл signup руу орох гэж үзвэл:
       if (isPublicPath) {
-        const target = storedName.toLowerCase() === "admin" ? "/admin" : "/";
+        const target =
+          localStorage.getItem("role") === "ADMIN" ||
+            storedName.toLowerCase() === "admin"
+            ? "/admin"
+            : "/";
         router.replace(target);
         return;
       }

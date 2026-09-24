@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAdminFromHeaders } from "@/lib/requireAuth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const isOwner = booking.userName === userName;
-    const isAdmin = userName.toLowerCase() === "admin";
+    const isAdmin = isAdminFromHeaders(req);
     if (!isOwner && !isAdmin) {
       return NextResponse.json(
         { error: "Бусдын захиалгыг цуцлах боломжгүй" },

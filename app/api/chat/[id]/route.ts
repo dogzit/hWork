@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { isAdminFromHeaders } from "@/lib/requireAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 // Delete message (only own messages)
@@ -16,7 +17,7 @@ export async function DELETE(
     if (!msg) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     // Only own messages or admin can delete
-    if (msg.userName !== userName && userName.toLowerCase() !== "admin") {
+    if (msg.userName !== userName && !isAdminFromHeaders(req)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

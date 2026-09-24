@@ -34,7 +34,12 @@ export default function LoginPage() {
   useEffect(() => {
     const storedName = localStorage.getItem("name");
     if (storedName) {
-      router.push(storedName.toLowerCase() === "admin" ? "/admin" : "/");
+      router.push(
+        localStorage.getItem("role") === "ADMIN" ||
+          storedName.toLowerCase() === "admin"
+          ? "/admin"
+          : "/",
+      );
     } else {
       setChecking(false);
     }
@@ -69,8 +74,13 @@ export default function LoginPage() {
         return;
       }
       localStorage.setItem("name", data.name.toLowerCase());
+      localStorage.setItem("role", data.role ?? "USER");
       toast.success(`Тавтай морил, ${data.name}! ✨`);
-      router.push(data.name.toLowerCase() === "admin" ? "/admin" : "/");
+      router.push(
+        (data.role ?? "USER") === "ADMIN" || data.name.toLowerCase() === "admin"
+          ? "/admin"
+          : "/",
+      );
     } catch {
       toast.error("Сервертэй холбогдож чадсангүй.");
       setLoading(false);

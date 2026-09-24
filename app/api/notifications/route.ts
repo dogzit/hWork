@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { isAdminFromHeaders } from "@/lib/requireAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -35,8 +36,7 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const userName = req.headers.get("x-user-name");
-    if (!userName || userName.toLowerCase() !== "admin") {
+    if (!isAdminFromHeaders(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

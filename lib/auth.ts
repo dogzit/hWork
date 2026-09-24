@@ -39,12 +39,16 @@ function getJwtSecret() {
   return secret;
 }
 
-export async function createAuthToken(user: { id: string; name: string }) {
+export async function createAuthToken(user: {
+  id: string;
+  name: string;
+  role?: string;
+}) {
   const secret = getJwtSecret();
   const enc = new TextEncoder();
 
   // HS256 symmetric signature
-  return await new SignJWT({ name: user.name })
+  return await new SignJWT({ name: user.name, role: user.role ?? "USER" })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
@@ -60,6 +64,7 @@ export async function verifyAuthToken(token: string) {
   return {
     userId: payload.sub,
     name: (payload as { name?: string }).name,
+    role: (payload as { role?: string }).role ?? "USER",
     exp: payload.exp,
   };
 }

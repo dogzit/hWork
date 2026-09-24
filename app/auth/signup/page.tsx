@@ -49,7 +49,12 @@ export default function SignupPage() {
   useLayoutEffect(() => {
     const storedName = localStorage.getItem("name");
     if (storedName) {
-      router.replace(storedName.toLowerCase() === "admin" ? "/admin" : "/");
+      router.replace(
+        localStorage.getItem("role") === "ADMIN" ||
+          storedName.toLowerCase() === "admin"
+          ? "/admin"
+          : "/",
+      );
     } else {
       setChecking(false);
     }
@@ -163,8 +168,13 @@ export default function SignupPage() {
         return;
       }
       localStorage.setItem("name", data.name.toLowerCase());
+      localStorage.setItem("role", data.role ?? "USER");
       toast.success(`Тавтай морил, ${data.name}! ✨`);
-      router.push(data.name.toLowerCase() === "admin" ? "/admin" : "/");
+      router.push(
+        (data.role ?? "USER") === "ADMIN" || data.name.toLowerCase() === "admin"
+          ? "/admin"
+          : "/",
+      );
     } catch {
       toast.error("Сервертэй холбогдож чадсангүй");
     } finally {

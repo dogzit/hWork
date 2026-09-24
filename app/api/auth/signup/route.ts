@@ -112,9 +112,13 @@ export async function POST(req: Request) {
       },
     });
 
-    const token = await createAuthToken({ id: user.id, name: user.name });
+    const token = await createAuthToken({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    });
     const res = NextResponse.json(
-      { ok: true, name: user.name },
+      { ok: true, name: user.name, role: user.role },
       { status: 201 },
     );
     setAuthTokenCookie(res, token);

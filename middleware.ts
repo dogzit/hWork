@@ -73,6 +73,10 @@ export async function middleware(req: NextRequest) {
       "x-user-name",
       String((payload as Record<string, unknown>).name ?? ""),
     );
+    res.headers.set(
+      "x-user-role",
+      String((payload as Record<string, unknown>).role ?? "USER"),
+    );
     return res;
   }
 
@@ -96,7 +100,14 @@ export async function middleware(req: NextRequest) {
     }
 
     const userName = String((payload as Record<string, unknown>).name ?? "");
-    if (pathname.startsWith("/admin") && userName.toLowerCase() !== "admin") {
+    const role = String(
+      (payload as Record<string, unknown>).role ?? "USER",
+    );
+    if (
+      pathname.startsWith("/admin") &&
+      role !== "ADMIN" &&
+      userName.toLowerCase() !== "admin"
+    ) {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }

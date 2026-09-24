@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { isAdminFromHeaders } from "@/lib/requireAuth";
 import { NextRequest, NextResponse } from "next/server";
 
 type ApiError = { error: string };
@@ -10,8 +11,7 @@ type ApiError = { error: string };
  */
 export async function POST(req: NextRequest) {
   try {
-    const userName = req.headers.get("x-user-name");
-    if (!userName || userName.toLowerCase() !== "admin") {
+    if (!isAdminFromHeaders(req)) {
       return NextResponse.json({ error: "Unauthorized" } satisfies ApiError, {
         status: 401,
       });
@@ -70,8 +70,7 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
-    const userName = req.headers.get("x-user-name");
-    if (!userName || userName.toLowerCase() !== "admin") {
+    if (!isAdminFromHeaders(req)) {
       return NextResponse.json({ error: "Unauthorized" } satisfies ApiError, {
         status: 401,
       });

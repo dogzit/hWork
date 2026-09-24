@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { isAdminFromHeaders } from "@/lib/requireAuth";
 import { busApprovedTemplate, notifyUserByEmail } from "@/lib/notify";
 
 function getAppUrl(req: NextRequest): string {
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     if (!userName) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    if (userName.toLowerCase() !== "admin") {
+    if (!isAdminFromHeaders(req)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
