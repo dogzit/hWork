@@ -53,17 +53,22 @@ function getAge(birthDate: string | null): number | null {
   return age;
 }
 
-/** Баярын цаасны хэсэгүүд үүсгэх */
+/** Баярын цаасны хэсэгүүд үүсгэх (индексээс хамаарсан тогтмол pseudo-random) */
+function pseudoRandom(seed: number) {
+  const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 function Confetti() {
   const colors = ["#f43f5e", "#8b5cf6", "#06b6d4", "#f59e0b", "#10b981", "#ec4899"];
   const pieces = Array.from({ length: 50 }, (_, i) => ({
     id: i,
-    left: Math.random() * 100,
-    delay: Math.random() * 3,
-    duration: 2 + Math.random() * 3,
+    left: pseudoRandom(i) * 100,
+    delay: pseudoRandom(i + 100) * 3,
+    duration: 2 + pseudoRandom(i + 200) * 3,
     color: colors[i % colors.length],
-    size: 6 + Math.random() * 8,
-    rotation: Math.random() * 360,
+    size: 6 + pseudoRandom(i + 300) * 8,
+    rotation: pseudoRandom(i + 400) * 360,
   }));
 
   return (
@@ -78,7 +83,7 @@ function Confetti() {
             width: p.size,
             height: p.size,
             backgroundColor: p.color,
-            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
+            borderRadius: p.id % 2 === 0 ? "50%" : "2px",
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
             transform: `rotate(${p.rotation}deg)`,

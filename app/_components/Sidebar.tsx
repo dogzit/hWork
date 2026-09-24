@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import LogoutConfirm from "./LogoutConfirm";
 import {
   Home,
   BookOpen,
@@ -28,15 +30,15 @@ const navItems = [
   { icon: <Trophy size={20} />, label: "Тэргүүлэгчид", href: "/leaderboard" },
 ];
 
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    localStorage.clear();
-    window.location.href = "/auth/login";
-  };
+  const [showLogout, setShowLogout] = useState(false);
 
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-border bg-surface/80 backdrop-blur-xl">
@@ -58,7 +60,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
-          const active = pathname === item.href;
+          const active = isActive(pathname, item.href);
           return (
             <button
               key={item.href}
@@ -99,7 +101,7 @@ export default function Sidebar() {
           Админ
         </button>
         <button
-          onClick={handleLogout}
+          onClick={() => setShowLogout(true)}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
             hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
         >
@@ -107,6 +109,8 @@ export default function Sidebar() {
           Гарах
         </button>
       </div>
+
+      <LogoutConfirm open={showLogout} onClose={() => setShowLogout(false)} />
     </aside>
   );
 }

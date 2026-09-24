@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   Circle,
-  Loader2,
   Trash2,
   Plus,
 } from "lucide-react";
@@ -48,8 +47,7 @@ export default function TodoPage() {
         const data = await response.json();
         setTodos(data);
       }
-    } catch (err) {
-      console.error("Fetch error:", err);
+    } catch {
       toast.error("Жагсаалтыг ачаалахад алдаа гарлаа");
     } finally {
       setLoading(false);
@@ -72,8 +70,7 @@ export default function TodoPage() {
         setNewTask("");
         toast.success("Амжилттай нэмэгдлээ!");
       }
-    } catch (err) {
-      console.error("Add error:", err);
+    } catch {
       toast.error("Нэмэхэд алдаа гарлаа");
     }
   };
@@ -92,7 +89,7 @@ export default function TodoPage() {
       });
 
       if (!response.ok) throw new Error();
-    } catch (err) {
+    } catch {
       toast.error("Төлөв өөрчлөхөд алдаа гарлаа");
       // Revert state on error
       setTodos((prev) =>
@@ -109,7 +106,7 @@ export default function TodoPage() {
       const response = await fetch(`/api/todos/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error();
       toast.info("Устгагдлаа");
-    } catch (err) {
+    } catch {
       toast.error("Устгахад алдаа гарлаа");
       setTodos(previousTodos);
     }
@@ -122,7 +119,7 @@ export default function TodoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface p-6 font-sans">
+    <div className="min-h-screen bg-surface text-on-surface p-4 sm:p-6 font-sans">
       {/* Background Orbs */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-[128px] opacity-20"></div>
@@ -131,18 +128,18 @@ export default function TodoPage() {
 
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-10">
+        <div className="flex items-center justify-between gap-3 mb-6 sm:mb-10">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-card-hover rounded-full transition-colors"
+            className="p-2 shrink-0 hover:bg-card-hover rounded-full transition-colors"
           >
             <ArrowLeft size={24} />
           </button>
-          <div className="text-right">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider">
+          <div className="text-right min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent uppercase tracking-wider truncate">
               {userName}-н жагсаалт
             </h1>
-            <p className="text-gray-400 text-sm italic">Өнөөдрийн төлөвлөгөө</p>
+            <p className="text-gray-400 text-xs sm:text-sm italic">Өнөөдрийн төлөвлөгөө</p>
           </div>
         </div>
 
@@ -153,7 +150,7 @@ export default function TodoPage() {
               {[1,2,3,4,5].map(i => (
                 <div key={i} className="flex items-center gap-4 p-5">
                   <Skeleton className="h-6 w-6 rounded-full shrink-0" />
-                  <Skeleton className="h-5 rounded-lg" style={{ width: `${50 + Math.random() * 40}%` }} />
+                  <Skeleton className="h-5 rounded-lg" style={{ width: `${50 + (i % 4) * 10}%` }} />
                 </div>
               ))}
             </div>
@@ -162,12 +159,12 @@ export default function TodoPage() {
               {todos.map((todo) => (
                 <div
                   key={todo.id}
-                  className="flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors group"
+                  className="flex items-center justify-between gap-2 p-4 sm:p-5 hover:bg-white/[0.02] transition-colors group"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                     <button
                       onClick={() => toggleTodo(todo.id, todo.completed)}
-                      className="text-emerald-400 hover:scale-110 transition-transform"
+                      className="text-emerald-400 hover:scale-110 transition-transform shrink-0"
                     >
                       {todo.completed ? (
                         <CheckCircle2
@@ -179,7 +176,7 @@ export default function TodoPage() {
                       )}
                     </button>
                     <span
-                      className={`text-lg transition-all duration-300 ${todo.completed
+                      className={`text-base sm:text-lg leading-snug transition-all duration-300 break-words ${todo.completed
                           ? "line-through text-gray-500 opacity-60"
                           : "text-on-surface"
                         }`}
@@ -189,7 +186,8 @@ export default function TodoPage() {
                   </div>
                   <button
                     onClick={() => deleteTodo(todo.id)}
-                    className=" group-hover:opacity-100 p-2 text-gray-500 hover:text-red-500 transition-all"
+                    className="shrink-0 group-hover:opacity-100 p-2 text-gray-500 hover:text-red-500 transition-all"
+                    aria-label="Устгах"
                   >
                     <Trash2 size={20} />
                   </button>
@@ -197,7 +195,7 @@ export default function TodoPage() {
               ))}
             </div>
           ) : (
-            <div className="p-20 text-center">
+            <div className="p-10 sm:p-20 text-center">
               <div className="text-5xl mb-4 opacity-50">🍃</div>
               <p className="text-gray-500">Одоогоор хийх ажил алга.</p>
             </div>
@@ -205,21 +203,21 @@ export default function TodoPage() {
         </div>
 
         {/* Add Task Input */}
-        <div className="mt-8 flex gap-3">
+        <div className="mt-6 sm:mt-8 flex gap-2 sm:gap-3">
           <input
             type="text"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Шинэ ажил нэмэх..."
-            className="flex-1 bg-surface-elevated border border-border rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all placeholder:text-gray-600 shadow-inner"
+            className="flex-1 min-w-0 bg-surface-elevated border border-border rounded-2xl px-4 sm:px-6 py-3.5 sm:py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all placeholder:text-gray-600 shadow-inner"
           />
           <button
             onClick={handleAddTask}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 rounded-2xl font-bold transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-900/20"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 sm:px-8 rounded-2xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20 shrink-0"
           >
             <Plus size={20} />
-            <span>Нэмэх</span>
+            <span className="hidden sm:inline">Нэмэх</span>
           </button>
         </div>
       </div>

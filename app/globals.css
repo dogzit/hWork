@@ -403,6 +403,27 @@ button:hover {
   cursor: pointer;
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📱 MOBILE — Safe area (iPhone home indicator)
+   viewport-fit=cover шаардлагатай (layout.tsx)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS zoom-оос сэргийлэх: бага font-tai input-уудыг 16px болгоно */
+@media (max-width: 640px) {
+  input.text-sm,
+  input.text-xs,
+  textarea.text-sm,
+  textarea.text-xs,
+  select.text-sm,
+  select.text-xs {
+    font-size: 16px !important;
+    line-height: 1.5;
+  }
+}
+
 /* ============================================================
    NEW THEMES — Games, Anime, K-Pop, Aesthetic
    Одоо байгаа globals.css дотор байгаа theme-уудын доор нэмнэ

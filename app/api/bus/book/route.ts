@@ -83,10 +83,18 @@ export async function POST(req: NextRequest) {
           throw new Error("SEAT_TAKEN");
         }
 
-        await tx.busBooking.deleteMany({ where: { userName } });
+        // 1 хүн 1 суудал: өөр суудал аль хэдийн захиалсан бол зөвшөөрөхгүй
+        const ownBooking = await tx.busBooking.findFirst({
+          where: { userName, NOT: { seatId } },
+        });
+        if (ownBooking) {
+          throw new Error("ALREADY_BOOKED");
+        }
 
-        return tx.busBooking.create({
-          data: {
+        return tx.busBooking.upsert({
+          where: { seatId },
+          update: { email, status, qrToken },
+          create: {
             seatId,
             userName,
             email,
@@ -99,6 +107,16 @@ export async function POST(req: NextRequest) {
       if (err instanceof Error && err.message === "SEAT_TAKEN") {
         return NextResponse.json(
           { error: "Энэ суудал захиалагдсан байна" },
+          { status: 409 },
+        );
+      }
+      if (err instanceof Error && err.message === "ALREADY_BOOKED") {
+        return NextResponse.json(
+          {
+            error:
+              "Та аль хэдийн нэг суудал захиалсан байна. Шинээр захиалахын тулд өмнөх захиалгаа цуцлаа уу.",
+            code: "ALREADY_BOOKED",
+          },
           { status: 409 },
         );
       }

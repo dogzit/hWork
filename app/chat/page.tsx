@@ -66,10 +66,16 @@ export default function ChatPage() {
   };
 
   useEffect(() => {
-    setUserName(localStorage.getItem("name") ?? "");
-    fetchMessages();
+    // Effect-ийн шууд setState-ийг зөрүүлэхгүйн тулд timeout ашиглана
+    const t = setTimeout(() => {
+      setUserName(localStorage.getItem("name") ?? "");
+      fetchMessages();
+    }, 0);
     intervalRef.current = setInterval(fetchMessages, 3000);
-    return () => clearInterval(intervalRef.current);
+    return () => {
+      clearTimeout(t);
+      clearInterval(intervalRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -141,7 +147,7 @@ export default function ChatPage() {
               <div key={i} className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}>
                 <div className="max-w-[70%] space-y-1.5">
                   {i % 2 !== 0 && <Skeleton className="h-2.5 w-16 rounded-md ml-2" />}
-                  <Skeleton className="h-10 rounded-2xl" style={{ width: `${60 + Math.random() * 30}%` }} />
+                  <Skeleton className="h-10 rounded-2xl" style={{ width: `${60 + (i % 4) * 8}%` }} />
                   <Skeleton className="h-2 w-12 rounded-md ml-2" />
                 </div>
               </div>
@@ -255,13 +261,16 @@ export default function ChatPage() {
       )}
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-surface/80 backdrop-blur-xl border-t border-border px-4 py-3">
+      <div
+        className="sticky bottom-[calc(3.5rem_+_env(safe-area-inset-bottom))] lg:bottom-0
+          bg-surface/80 backdrop-blur-xl border-t border-border px-4 py-3"
+      >
         <div className="flex gap-2 max-w-2xl mx-auto">
           <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             placeholder={replyTo ? "Хариулт бичих..." : "Мессеж бичих..."}
             maxLength={500}
-            className="flex-1 bg-surface-elevated border border-border rounded-2xl px-4 py-3 text-sm
+            className="flex-1 min-w-0 bg-surface-elevated border border-border rounded-2xl px-4 py-3 text-sm
               text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:ring-2 focus:ring-accent/30 transition-all" />
           <button onClick={send} disabled={!text.trim() || sending}
             className="w-11 h-11 rounded-2xl bg-accent/20 border border-accent/30 text-accent

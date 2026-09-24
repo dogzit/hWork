@@ -15,12 +15,13 @@ interface Seat {
 interface SeatModalProps {
   seat: Seat;
   currentUserName: string;
+  ownSeatId: string | null;
   onClose: () => void;
   onStartBook: (seat: Seat) => void;
   onCancel: (seatId: string) => Promise<void>;
 }
 
-function SeatModal({ seat, currentUserName, onClose, onStartBook, onCancel }: SeatModalProps) {
+function SeatModal({ seat, currentUserName, ownSeatId, onClose, onStartBook, onCancel }: SeatModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const isBooked = !!seat.bookedBy;
   const isPending = seat.status === "PENDING";
@@ -30,6 +31,10 @@ function SeatModal({ seat, currentUserName, onClose, onStartBook, onCancel }: Se
     navigator.clipboard.writeText(text);
     toast.success("Дансны дугаар хуулагдлаа");
   };
+
+  // 1 хүн 1 суудал: өөр суудалтай хэрэглэгч чөлөөт суудал дээр дарвал зогсооно
+  const blockedByLimit =
+    !isBooked && !isOwnSeat && !!ownSeatId && ownSeatId !== seat.seatId;
 
   const handleAction = async () => {
     if (isOwnSeat) {
@@ -123,6 +128,16 @@ function SeatModal({ seat, currentUserName, onClose, onStartBook, onCancel }: Se
             </div>
           )}
 
+          {blockedByLimit && (
+            <div className="bg-orange-500/5 border border-orange-500/15 rounded-2xl px-4 py-3 mb-4">
+              <p className="text-orange-200/80 text-xs leading-relaxed">
+                <span className="text-orange-400 font-bold">1 хүн 1 суудал:</span>{" "}
+                Таны {ownSeatId} суудал аль хэдийн захиалагдсан байна.
+                Шинээр авахын тулд өмнөх захиалгаа цуцлаа уу.
+              </p>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button
               onClick={onClose}
@@ -134,7 +149,7 @@ function SeatModal({ seat, currentUserName, onClose, onStartBook, onCancel }: Se
             {(!isBooked || isOwnSeat) && (
               <button
                 onClick={handleAction}
-                disabled={isLoading}
+                disabled={isLoading || blockedByLimit}
                 className={`flex-[1.5] py-4 rounded-2xl text-xs font-black uppercase tracking-widest active:scale-95 transition-all ${
                   isLoading
                     ? "bg-zinc-700 text-zinc-500"
@@ -149,9 +164,11 @@ function SeatModal({ seat, currentUserName, onClose, onStartBook, onCancel }: Se
                   ? "Түр хүлээ..."
                   : isOwnSeat
                     ? "Захиалга цуцлах"
-                    : seat.isPremium
-                      ? "Хүсэлт илгээх"
-                      : "Одоо захиалах"}
+                    : blockedByLimit
+                      ? "Нэг суудал л боломжтой"
+                      : seat.isPremium
+                        ? "Хүсэлт илгээх"
+                        : "Одоо захиалах"}
               </button>
             )}
           </div>
@@ -225,6 +242,23 @@ export default function BusSeatPanel() {
     }
   };
 
+  // 1 хүн 1 суудал: одоогийн хэрэглэгчийн захиалсан суудал
+  const ownSeat = seats.find((s) => s.bookedBy === currentUserName) ?? null;
+
+  const handleSeatClick = (seat: Seat) => {
+    if (
+      !seat.bookedBy &&
+      ownSeat &&
+      ownSeat.seatId !== seat.seatId
+    ) {
+      toast.error(
+        `Та аль хэдийн ${ownSeat.seatId} суудал захиалсан байна. 1 хүн 1 суудал!`,
+      );
+      return;
+    }
+    setSelectedSeat(seat);
+  };
+
   return (
     <div className="w-full text-white flex flex-col items-center">
       <div className="w-full max-w-md">
@@ -234,6 +268,13 @@ export default function BusSeatPanel() {
             <p className="text-[10px] tracking-[0.3em] uppercase text-zinc-500 font-bold">
               Transit Mode
             </p>
+            {ownSeat && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                <span className="text-[9px] font-black uppercase tracking-wider text-blue-400">
+                  Таны суудал: {ownSeat.seatId}
+                </span>
+              </div>
+            )}
           </div>
           <div className="bg-zinc-900 border border-zinc-800 p-3 rounded-2xl text-center shadow-inner">
             <p className="text-[9px] uppercase text-zinc-500 font-bold mb-1">Захиалсан</p>
@@ -284,7 +325,7 @@ export default function BusSeatPanel() {
                 return (
                   <button
                     key={seat.seatId}
-                    onClick={() => setSelectedSeat(seat)}
+                    onClick={() => handleSeatClick(seat)}
                     style={{
                       position: "absolute",
                       left: `${seat.x}px`,
@@ -320,6 +361,7 @@ export default function BusSeatPanel() {
         <SeatModal
           seat={selectedSeat}
           currentUserName={currentUserName}
+          ownSeatId={ownSeat?.seatId ?? null}
           onClose={() => setSelectedSeat(null)}
           onStartBook={(s) => {
             setBookingSeat(s);

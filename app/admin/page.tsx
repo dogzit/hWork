@@ -1,6 +1,7 @@
 "use client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import LogoutConfirm from "@/app/_components/LogoutConfirm";
 import {
   LogOut,
   Calendar,
@@ -16,13 +17,7 @@ import {
 
 export default function AdminHomePage() {
   const router = useRouter();
-
-  const handleLogout = async () => {
-    toast.info("Гарч байна...", { duration: 1200 });
-    await fetch("/api/auth/logout", { method: "POST" });
-    localStorage.removeItem("name");
-    window.location.href = "/auth/login";
-  };
+  const [showLogout, setShowLogout] = useState(false);
 
   const cards = [
     {
@@ -184,7 +179,7 @@ export default function AdminHomePage() {
         {/* Logout */}
         <button
           type="button"
-          onClick={handleLogout}
+          onClick={() => setShowLogout(true)}
           className="group w-full flex items-center justify-center gap-2
             px-5 py-3.5 rounded-2xl backdrop-blur-xl
             bg-surface-elevated border border-border-subtle text-on-surface-muted
@@ -199,6 +194,8 @@ export default function AdminHomePage() {
           Системээс гарах
         </button>
       </div>
+
+      <LogoutConfirm open={showLogout} onClose={() => setShowLogout(false)} />
     </div>
   );
 }

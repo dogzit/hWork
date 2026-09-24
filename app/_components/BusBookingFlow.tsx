@@ -101,7 +101,7 @@ export default function BusBookingFlow({ seat, onClose, onDone }: Props) {
       }
       if (res.status === 409) {
         toast.error(data.error || "Энэ суудал захиалагдсан");
-        onClose();
+        if (data.code !== "ALREADY_BOOKED") onClose();
         return;
       }
       toast.error(data.error || data.message || "Алдаа гарлаа");
