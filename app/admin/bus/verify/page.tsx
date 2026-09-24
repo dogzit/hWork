@@ -49,6 +49,23 @@ export default function AdminVerifyPage() {
   const html5QrRef = useRef<any>(null);
   const lastScannedRef = useRef<{ token: string; at: number } | null>(null);
 
+  /**
+   * QR-ийн агуулга нь `token` эсвэл `${APP_URL}/bus/ticket/{token}` URL байж болно.
+   * Аль ч тохиолдолд token хэсгийг гаргаж авна.
+   */
+  const extractToken = (raw: string): string => {
+    const trimmed = raw.trim();
+    const match = trimmed.match(/\/bus\/ticket\/([^/?#]+)/);
+    if (match) {
+      try {
+        return decodeURIComponent(match[1]);
+      } catch {
+        return match[1];
+      }
+    }
+    return trimmed;
+  };
+
   const stopScanner = useCallback(async () => {
     if (html5QrRef.current) {
       try {
@@ -60,7 +77,8 @@ export default function AdminVerifyPage() {
     setScannerReady(false);
   }, []);
 
-  const handleToken = useCallback(async (token: string, confirmNow = false) => {
+  const handleToken = useCallback(async (raw: string, confirmNow = false) => {
+    const token = extractToken(raw);
     setResult({ kind: "loading" });
     try {
       const res = await fetch("/api/bus/verify-qr", {

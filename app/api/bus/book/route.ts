@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateQrToken, qrPngBuffer } from "@/lib/qr";
+import { generateQrToken, qrPayloadForBooking, qrPngBuffer } from "@/lib/qr";
 import { bookingEmailTemplate, sendMail } from "@/lib/mailer";
 
 function getAppUrl(req: NextRequest): string {
@@ -124,11 +124,11 @@ export async function POST(req: NextRequest) {
     }
 
     const appUrl = getAppUrl(req);
+    const qrPayload = qrPayloadForBooking(appUrl, booking.qrToken);
     const selfHostedQrUrl = `${appUrl}/api/qr/${encodeURIComponent(booking.qrToken)}`;
-    const publicFallbackUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&data=${encodeURIComponent(booking.qrToken)}`;
-    const ticketUrl = `${appUrl}/bus/ticket/${encodeURIComponent(booking.qrToken)}`;
+    const ticketUrl = qrPayload;
 
-    const attachmentBuf = await qrPngBuffer(booking.qrToken).catch(() => null);
+    const attachmentBuf = await qrPngBuffer(qrPayload).catch(() => null);
 
     const { subject, html, text } = bookingEmailTemplate({
       seatId: booking.seatId,
@@ -153,8 +153,6 @@ export async function POST(req: NextRequest) {
           ]
         : undefined,
     });
-
-    console.log("[book] qr urls:", { selfHostedQrUrl, publicFallbackUrl });
 
     return NextResponse.json({
       success: true,

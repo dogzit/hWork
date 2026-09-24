@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import BusBookingFlow from "./BusBookingFlow";
+import MyTicketCard from "./MyTicketCard";
 
 interface Seat {
   seatId: string;
@@ -185,6 +186,7 @@ export default function BusSeatPanel() {
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [bookingSeat, setBookingSeat] = useState<Seat | null>(null);
   const [currentUserName, setCurrentUserName] = useState("Guest");
+  const [ticketRefreshKey, setTicketRefreshKey] = useState(0);
 
   useEffect(() => {
     const name = localStorage.getItem("name") || "Guest";
@@ -233,6 +235,7 @@ export default function BusSeatPanel() {
         toast.info("Захиалга цуцлагдлаа");
         setSelectedSeat(null);
         loadSeats();
+        setTicketRefreshKey((k) => k + 1);
       } else {
         const d = await res.json();
         toast.error(d.error || "Цуцлахад алдаа гарлаа");
@@ -261,6 +264,7 @@ export default function BusSeatPanel() {
 
   return (
     <div className="w-full text-white flex flex-col items-center">
+      <MyTicketCard refreshKey={ticketRefreshKey} />
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -379,6 +383,7 @@ export default function BusSeatPanel() {
           }}
           onDone={() => {
             loadSeats();
+            setTicketRefreshKey((k) => k + 1);
           }}
         />
       )}
