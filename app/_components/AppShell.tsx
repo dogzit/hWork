@@ -16,13 +16,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Админ хуудсууд өөрийн header-гүй тул floating товчнуудыг үлдээнэ.
-  // Бусад хуудас AppHeader ашиглана (дээшээ шахагдах асуудал арилна).
-  const showFloatingActions = pathname.startsWith("/admin");
+  // Админ хуудсууд өөрийн AdminSidebar ашиглана → сурагчийн sidebar
+  // дээш нь давхардаггүй. Dashboard (`/admin`) AppHeader-тай тул
+  // floating товч тэнд хэрэггүй; бусад админ дэд хуудасанд үлдээнэ.
+  const isAdminPage = pathname.startsWith("/admin");
+  const showFloatingActions = isAdminPage && pathname !== "/admin";
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      {!isAdminPage && <Sidebar />}
 
       <div className="flex-1 flex flex-col min-h-screen pb-[calc(3.75rem_+_env(safe-area-inset-bottom))] lg:pb-0">
         <main className="flex-1">{children}</main>

@@ -16,6 +16,8 @@ import {
   Settings,
   Trophy,
   LogOut,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 
 const navItems = [
@@ -30,6 +32,8 @@ const navItems = [
   { icon: <Trophy size={20} />, label: "Тэргүүлэгчид", href: "/leaderboard" },
 ];
 
+const COLLAPSED_KEY = "sidebar_collapsed";
+
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
@@ -40,40 +44,88 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [showLogout, setShowLogout] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setCollapsed(localStorage.getItem(COLLAPSED_KEY) === "1");
     setIsAdmin(
       localStorage.getItem("role") === "ADMIN" ||
         (localStorage.getItem("name") ?? "").toLowerCase() === "admin",
     );
   }, []);
 
+  const toggle = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(COLLAPSED_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
+
+  if (!mounted) {
+    // Avoid layout flicker while reading localStorage.
+    return <aside className="hidden lg:flex w-64 shrink-0" aria-hidden />;
+  }
+
+  const width = collapsed ? "w-16" : "w-64";
+
   return (
-    <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 border-r border-border bg-surface/80 backdrop-blur-xl">
-      {/* Logo */}
-      <div className="px-5 py-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg">
-          <span className="text-lg">🎓</span>
+    <aside
+      className={`hidden lg:flex flex-col ${width} h-screen sticky top-0 border-r border-border bg-surface/80 backdrop-blur-xl transition-[width] duration-300 ease-out overflow-hidden`}
+    >
+      {/* Logo + toggle */}
+      <div className="px-3 py-4 flex items-center justify-between gap-2">
+        <div
+          className={`flex items-center gap-3 min-w-0 ${collapsed ? "px-1" : "px-2"}`}
+        >
+          <div className="w-10 h-10 shrink-0 rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg">
+            <span className="text-lg">🎓</span>
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-sm font-black bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent truncate">
+                12Д Анги
+              </p>
+              <p className="text-[9px] text-on-surface-muted uppercase tracking-widest">
+                Web App
+              </p>
+            </div>
+          )}
         </div>
-        <div>
-          <p className="text-sm font-black bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-            12Д Анги
-          </p>
-          <p className="text-[9px] text-on-surface-muted uppercase tracking-widest">
-            Web App
-          </p>
-        </div>
+
+        {!collapsed && (
+          <button
+            onClick={toggle}
+            aria-label="Sidebar хаах"
+            className="shrink-0 p-2 rounded-xl text-on-surface-muted hover:bg-card-hover hover:text-on-surface transition-colors"
+          >
+            <PanelLeftClose size={16} />
+          </button>
+        )}
       </div>
 
+      {collapsed && (
+        <button
+          onClick={toggle}
+          aria-label="Sidebar нээх"
+          className="mx-3 mb-2 p-2 rounded-xl text-on-surface-muted hover:bg-card-hover hover:text-on-surface transition-colors flex items-center justify-center"
+        >
+          <PanelLeft size={16} />
+        </button>
+      )}
+
       {/* Nav */}
-      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
         {navItems.map((item) => {
           const active = isActive(pathname, item.href);
           return (
             <button
               key={item.href}
               onClick={() => router.push(item.href)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+              title={collapsed ? item.label : undefined}
+              className={`w-full flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} py-2.5 rounded-xl text-sm font-medium transition-all duration-200
                 ${
                   active
                     ? "bg-accent/15 text-accent border border-accent/20"
@@ -83,7 +135,7 @@ export default function Sidebar() {
               <span className={active ? "text-accent" : "text-on-surface-muted"}>
                 {item.icon}
               </span>
-              {item.label}
+              {!collapsed && <span className="truncate">{item.label}</span>}
             </button>
           );
         })}
@@ -94,29 +146,32 @@ export default function Sidebar() {
         <div className="border-t border-border-subtle mb-2" />
         <button
           onClick={() => router.push("/profile")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
-            hover:text-on-surface hover:bg-card-hover transition-all duration-200"
+          title={collapsed ? "Профайл" : undefined}
+          className={`w-full flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
+            hover:text-on-surface hover:bg-card-hover transition-all duration-200`}
         >
           <User size={20} />
-          Профайл
+          {!collapsed && "Профайл"}
         </button>
         {isAdmin && (
           <button
             onClick={() => router.push("/admin")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
-              hover:text-on-surface hover:bg-card-hover transition-all duration-200"
+            title={collapsed ? "Админ" : undefined}
+            className={`w-full flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
+              hover:text-on-surface hover:bg-card-hover transition-all duration-200`}
           >
             <Settings size={20} />
-            Админ
+            {!collapsed && "Админ"}
           </button>
         )}
         <button
           onClick={() => setShowLogout(true)}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
-            hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+          title={collapsed ? "Гарах" : undefined}
+          className={`w-full flex items-center ${collapsed ? "justify-center px-0" : "gap-3 px-3"} py-2.5 rounded-xl text-sm font-medium text-on-surface-muted
+            hover:text-red-400 hover:bg-red-500/10 transition-all duration-200`}
         >
           <LogOut size={20} />
-          Гарах
+          {!collapsed && "Гарах"}
         </button>
       </div>
 

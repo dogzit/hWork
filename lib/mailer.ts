@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 
 type Attachment = {
   filename: string;
@@ -14,27 +14,35 @@ type SendArgs = {
   attachments?: Attachment[];
 };
 
-const DEFAULT_FROM = "12D Bus <onboarding@resend.dev>";
+let transporterCache: Transporter | null = null;
 
-let resendClient: Resend | null = null;
+function getTransporter() {
+  if (transporterCache) return transporterCache;
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+  if (!user || !pass) return null;
 
-function getClient() {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  if (!resendClient) resendClient = new Resend(key);
-  return resendClient;
+  transporterCache = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user, pass },
+  });
+  return transporterCache;
+}
+
+function fromAddress() {
+  const user = process.env.EMAIL_USER || "";
+  const name = process.env.EMAIL_FROM_NAME || "12Д Ангийн Апп";
+  return `${name} <${user}>`;
 }
 
 export async function sendMail({ to, subject, html, text, attachments }: SendArgs) {
-  const client = getClient();
-  const from = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM;
+  const t = getTransporter();
 
-  if (!client) {
+  if (!t) {
     console.warn(
-      "[mailer] RESEND_API_KEY not set — printing email to console instead:",
+      "[mailer] EMAIL_USER/EMAIL_PASS not set — printing email to console instead:",
     );
     console.log(`  To:      ${to}`);
-    console.log(`  From:    ${from}`);
     console.log(`  Subject: ${subject}`);
     console.log(`  Text:    ${text ?? "(html only)"}`);
     if (attachments?.length) {
@@ -43,28 +51,32 @@ export async function sendMail({ to, subject, html, text, attachments }: SendArg
     return { ok: true as const, dev: true as const };
   }
 
-  const payload: Parameters<typeof client.emails.send>[0] = {
-    from,
-    to,
-    subject,
-    html,
-    text,
-  };
-  if (attachments?.length) {
-    payload.attachments = attachments.map((a) => ({
-      filename: a.filename,
-      content: a.content,
-      contentType: a.contentType,
-    }));
+  try {
+    const info = await t.sendMail({
+      from: fromAddress(),
+      to,
+      subject,
+      html,
+      text,
+      attachments: attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      })),
+    });
+    console.log("[mailer] sent:", { id: info.messageId, to });
+    return { ok: true as const, id: info.messageId };
+  } catch (e) {
+    console.error("[mailer] send failed:", {
+      err: e instanceof Error ? e.message : String(e),
+      to,
+      subject,
+    });
+    return {
+      ok: false as const,
+      error: e instanceof Error ? e.message : "unknown error",
+    };
   }
-
-  const { data, error } = await client.emails.send(payload);
-
-  if (error) {
-    console.error("[mailer] send failed:", error);
-    return { ok: false as const, error: error.message };
-  }
-  return { ok: true as const, id: data?.id };
 }
 
 export function otpEmailTemplate(code: string) {
