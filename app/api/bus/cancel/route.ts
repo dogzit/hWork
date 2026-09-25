@@ -1,6 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminFromHeaders } from "@/lib/requireAuth";
+import { sendMail } from "@/lib/mailer";
+
+function cancelledEmailTemplate(args: {
+  seatId: string;
+  byAdmin: boolean;
+}) {
+  const subject = args.byAdmin
+    ? `12Д Автобус — Захиалга цуцлагдлаа (${args.seatId})`
+    : `12Д Автобус — Захиалга цуцлагдлаа (${args.seatId})`;
+  const reason = args.byAdmin
+    ? "Таны захиалгыг админ цуцалсан байна."
+    : "Таны захиалгыг өөрөө цуцаллаа.";
+  const text = `${subject}\n\nСуудал: ${args.seatId}\n${reason}\nQR код одоо ажиллахгүй.`;
+  const html = `
+    <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0f; color: #fff;">
+      <h1 style="margin:0 0 8px 0; font-size:22px;">12Д Автобус</h1>
+      <p style="color:#a1a1aa; margin:0 0 24px 0;">Захиалга цуцлагдлаа</p>
+      <div style="background:#18181b; border:1px solid #27272a; border-radius:16px; padding:20px; text-align:center;">
+        <p style="color:#71717a; text-transform:uppercase; letter-spacing:2px; font-size:11px; margin:0 0 8px 0; font-weight:700;">Суудал</p>
+        <p style="font-size:36px; font-weight:900; margin:0 0 12px 0;">${args.seatId}</p>
+        <p style="color:#a1a1aa; font-size:12px; margin:0;">${reason}</p>
+      </div>
+      <p style="color:#a1a1aa; font-size:13px; margin-top:20px; text-align:center;">Өмнөх QR ажиллахгүй боллоо.</p>
+    </div>`;
+  return { subject, html, text };
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +66,14 @@ export async function POST(req: NextRequest) {
     await prisma.busBooking.delete({
       where: { seatId },
     });
+
+    if (booking.email) {
+      const tpl = cancelledEmailTemplate({
+        seatId: booking.seatId,
+        byAdmin: !isOwner && isAdmin,
+      });
+      void sendMail({ to: booking.email, ...tpl });
+    }
 
     return NextResponse.json({ success: true, message: "Захиалга цуцлагдлаа" });
   } catch (error) {

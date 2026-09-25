@@ -264,7 +264,17 @@ export default function BusSeatPanel() {
 
   return (
     <div className="w-full text-white flex flex-col items-center">
-      <MyTicketCard refreshKey={ticketRefreshKey} />
+      <MyTicketCard
+        refreshKey={ticketRefreshKey}
+        onCancelled={() => {
+          loadSeats();
+          setTicketRefreshKey((k) => k + 1);
+        }}
+        onChanged={() => {
+          loadSeats();
+          setTicketRefreshKey((k) => k + 1);
+        }}
+      />
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <div>
