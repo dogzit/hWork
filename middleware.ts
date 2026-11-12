@@ -44,6 +44,7 @@ const PUBLIC_API = [
   "/api/auth/signup",
   "/api/auth/logout",
   "/api/auth/forgot-pin",
+  "/api/auth/me",
   "/api/qr/",
 ];
 const PUBLIC_PAGES = ["/auth/login", "/auth/signup"];

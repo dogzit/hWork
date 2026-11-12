@@ -33,16 +33,36 @@ export default function LoginPage() {
 
   useEffect(() => {
     const storedName = localStorage.getItem("name");
-    if (storedName) {
-      router.push(
-        localStorage.getItem("role") === "ADMIN" ||
-          storedName.toLowerCase() === "admin"
-          ? "/admin"
-          : "/",
-      );
-    } else {
+    if (!storedName) {
       setChecking(false);
+      return;
     }
+
+    // localStorage зөвхөн client-side заавар бөгөөд хуучирсан байж болно
+    // (жишээ нь: cookie устсан/хугацаа дууссан боловч localStorage үлдсэн).
+    // Иймд бодит сервер дээрх session-г баталгаажуулж байж чиглүүлнэ,
+    // эс тэгвэл login <-> redirect хооронд хязгааргүй давталт үүсэж,
+    // дэлгэц бүрэн хоосон (black screen) болдог байсан.
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.authenticated) {
+          router.push(data.role === "ADMIN" || data.name?.toLowerCase() === "admin" ? "/admin" : "/");
+        } else {
+          localStorage.removeItem("name");
+          localStorage.removeItem("role");
+          setChecking(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setChecking(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   useEffect(() => {

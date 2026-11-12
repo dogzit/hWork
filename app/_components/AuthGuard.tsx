@@ -21,21 +21,47 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace("/auth/login");
         return;
       }
-    } else {
-      // Хэрэв нэвтэрчихсэн байхад login эсвэл signup руу орох гэж үзвэл:
-      if (isPublicPath) {
-        const target =
-          localStorage.getItem("role") === "ADMIN" ||
-            storedName.toLowerCase() === "admin"
-            ? "/admin"
-            : "/";
-        router.replace(target);
-        return;
-      }
+      setChecking(false);
+      return;
     }
 
-    // Шалгаж дууссан бол агуулгыг харуулна
-    setChecking(false);
+    if (!isPublicPath) {
+      // localStorage-д нэр байгаа ч, энэ нь хуучирсан байж болно
+      // (cookie устсан/хугацаа дууссан). Public биш хуудсан дээр
+      // server аль хэдийн middleware-ээр шалгасан тул энд зүгээр
+      // UI-г харуулна — давхар шалгалт хийх шаардлагагүй.
+      setChecking(false);
+      return;
+    }
+
+    // Хэрэв нэвтэрчихсэн мэт санагдаад login/signup руу орох гэж байвал
+    // бодит session-г /api/auth/me-ээр баталгаажуулна. Үгүй бол зөвхөн
+    // localStorage-д итгэж router.replace хийснээр login <-> redirect
+    // хооронд хязгааргүй давталт (black screen) үүсэж байсан.
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.authenticated) {
+          router.replace(
+            data.role === "ADMIN" || data.name?.toLowerCase() === "admin"
+              ? "/admin"
+              : "/",
+          );
+        } else {
+          localStorage.removeItem("name");
+          localStorage.removeItem("role");
+          setChecking(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setChecking(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, pathname]);
 
   // Шалгаж дуустал (redirect хийгдэх хооронд) хоосон дэлгэц харуулна
